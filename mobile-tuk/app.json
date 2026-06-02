@@ -1,0 +1,27 @@
+{
+    "expo": {
+        "name": "mobile-tuk",
+        "slug": "mobile-tuk",
+        "version": "1.0.0",
+        "orientation": "portrait",
+        "scheme": "mobile-tuk",
+        "userInterfaceStyle": "automatic",
+        "ios": {
+            "supportsTablet": true
+        },
+        "android": {
+            "adaptiveIcon": {
+                "backgroundColor": "#ffffff"
+            }
+        },
+        "web": {
+            "bundler": "metro"
+        },
+        "plugins": [
+            "expo-router"
+        ],
+        "experiments": {
+            "typedRoutes": true
+        }
+    }
+}

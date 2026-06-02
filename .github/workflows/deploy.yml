@@ -1,0 +1,138 @@
+name: Deploy GoWash App to cPanel
+
+on:
+  push:
+    branches:
+      - main # Change this to your deploy branch (e.g. master/main)
+
+jobs:
+  deploy-admin-web:
+    name: Build and Deploy Admin Web
+    runs-on: ubuntu-latest
+    steps:
+      - name: 🔍 Checkout code
+        uses: actions/checkout@v4
+
+      - name: ⚙️ Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+          cache-dependency-path: 'admin-web/package-lock.json'
+
+      - name: 📦 Install Dependencies
+        run: |
+          cd admin-web
+          npm ci
+
+      - name: 🏗️ Build Project
+        run: |
+          cd admin-web
+          npm run build
+
+      - name: 📂 Deploy via FTP to cPanel
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          local-dir: ./admin-web/dist/
+          server-dir: /gowash.nilmaalliance.com/
+          dangerous-clean-slate: false
+
+  deploy-mobile-web:
+    name: Build and Deploy Customer App (Web)
+    runs-on: ubuntu-latest
+    steps:
+      - name: 🔍 Checkout code
+        uses: actions/checkout@v4
+
+      - name: ⚙️ Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+          cache-dependency-path: 'mobile/package-lock.json'
+
+      - name: 📦 Install Dependencies
+        run: |
+          cd mobile
+          npm ci
+
+      - name: 🏗️ Build Expo Web Build
+        run: |
+          cd mobile
+          npx expo export --platform web
+
+      - name: 📂 Deploy via FTP to cPanel
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          local-dir: ./mobile/dist/
+          server-dir: /gowashmobile.nilmaalliance.com/
+          dangerous-clean-slate: false
+
+  deploy-mobile-tuk-web:
+    name: Build and Deploy Driver App (Web)
+    runs-on: ubuntu-latest
+    steps:
+      - name: 🔍 Checkout code
+        uses: actions/checkout@v4
+
+      - name: ⚙️ Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+          cache-dependency-path: 'mobile-tuk/package-lock.json'
+
+      - name: 📦 Install Dependencies
+        run: |
+          cd mobile-tuk
+          npm ci
+
+      - name: 🏗️ Build Expo Web Build
+        run: |
+          cd mobile-tuk
+          npx expo export --platform web
+
+      - name: 📂 Deploy via FTP to cPanel
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          local-dir: ./mobile-tuk/dist/
+          server-dir: /gowashtuk.nilmaalliance.com/
+          dangerous-clean-slate: false
+
+  deploy-backend:
+    name: Deploy Express Backend
+    runs-on: ubuntu-latest
+    steps:
+      - name: 🔍 Checkout code
+        uses: actions/checkout@v4
+
+      - name: ⚙️ Prepare Backend restart trigger
+        run: |
+          mkdir -p backend/tmp
+          touch backend/tmp/restart.txt
+
+      - name: 📂 Deploy via FTP to cPanel
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          local-dir: ./backend/
+          server-dir: /gowashbackend.nilmaalliance.com/
+          dangerous-clean-slate: false
+          exclude: |
+            **/.git*
+            **/.git*/**
+            **/node_modules/**
+            **/.env
+            **/requests.log
+            **/server.log

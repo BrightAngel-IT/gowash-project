@@ -1,0 +1,28 @@
+# Root Gitignore for GoWash project
+
+# Dependencies
+**/node_modules/
+**/web-build/
+**/dist/
+
+# Environment files
+**/.env
+**/.env.local
+**/.env.production
+
+# Logs
+**/*.log
+**/requests.log
+**/server.log
+
+# Temporary files
+**/.expo/
+**/.vscode/
+**/tsconfig.tsbuildinfo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Secrets
+**/github_pat_*
