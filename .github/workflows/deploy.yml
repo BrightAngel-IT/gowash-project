@@ -92,7 +92,7 @@ jobs:
       - name: 📦 Install Dependencies
         run: |
           cd mobile-tuk
-          npm ci
+          npm install --legacy-peer-deps
 
       - name: 🏗️ Build Expo Web Build
         run: |
@@ -116,6 +116,16 @@ jobs:
       - name: 🔍 Checkout code
         uses: actions/checkout@v4
 
+      - name: ⚙️ Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: 📦 Install Dependencies
+        run: |
+          cd backend
+          npm install --production
+
       - name: ⚙️ Prepare Backend restart trigger
         run: |
           mkdir -p backend/tmp
@@ -130,10 +140,10 @@ jobs:
           local-dir: ./backend/
           server-dir: /gowashbackend.nilmaalliance.com/
           dangerous-clean-slate: false
+          timeout: 600000
           exclude: |
             **/.git*
             **/.git*/**
-            **/node_modules/**
             **/.env
             **/requests.log
             **/server.log
