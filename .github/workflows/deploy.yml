@@ -147,3 +147,4 @@ jobs:
             **/.env
             **/requests.log
             **/server.log
+            **/node_modules/**

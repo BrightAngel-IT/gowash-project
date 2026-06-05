@@ -18,6 +18,7 @@ const pool = process.env.DATABASE_URL
         password: process.env.DB_PASSWORD || '1234',
         database: process.env.DB_NAME || 'gowash',
         port: process.env.DB_PORT || 5432,
+        ssl: process.env.DB_SSL === 'true' ? { rejectUnauthorized: false } : false
     });
 
 // Test connection
