@@ -1,27 +1,35 @@
 {
-    "expo": {
-        "name": "mobile-tuk",
-        "slug": "mobile-tuk",
-        "version": "1.0.0",
-        "orientation": "portrait",
-        "scheme": "mobile-tuk",
-        "userInterfaceStyle": "automatic",
-        "ios": {
-            "supportsTablet": true
-        },
-        "android": {
-            "adaptiveIcon": {
-                "backgroundColor": "#ffffff"
-            }
-        },
-        "web": {
-            "bundler": "metro"
-        },
-        "plugins": [
-            "expo-router"
-        ],
-        "experiments": {
-            "typedRoutes": true
-        }
+  "expo": {
+    "name": "mobile-tuk",
+    "slug": "mobile-tuk",
+    "version": "1.0.0",
+    "icon": "./assets/images/icon.png",
+    "orientation": "portrait",
+    "scheme": "mobile-tuk",
+    "userInterfaceStyle": "automatic",
+    "ios": {
+      "supportsTablet": true
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#ffffff"
+      },
+      "package": "com.brightaangel.mobiletuk"
+    },
+    "web": {
+      "bundler": "metro"
+    },
+    "plugins": [
+      "expo-router"
+    ],
+    "experiments": {
+      "typedRoutes": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "fd415f73-bc2f-40b9-a98a-40e1e6baea5d"
+      }
     }
+  }
 }
