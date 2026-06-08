@@ -12,9 +12,7 @@ services:
       - key: NODE_VERSION
         value: 18.18.0
       - key: DATABASE_URL
-        fromDatabase:
-          name: gowash-db
-          property: connectionString
+        sync: false
       - key: SMTP_HOST
         value: smtp.gmail.com
       - key: SMTP_PORT
@@ -26,9 +24,3 @@ services:
       - key: SMTP_FROM
         value: GoWash Support <your-email@gmail.com>
 
-databases:
-  - name: gowash-db
-    region: singapore
-    plan: free
-    databaseName: gowash
-    user: gowash_user
