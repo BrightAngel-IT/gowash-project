@@ -1,7 +1,7 @@
 import express from 'express';
 import { getAllServices, getServiceById, createService, updateService, deleteService } from '../controllers/serviceController.js';
 
-import { createOrder, getUserOrders, getOrderById, updateOrderStatus, getOrderStats } from '../controllers/orderController.js';
+import { createOrder, getUserOrders, getOrderById, updateOrderStatus, getOrderStats, editOrder } from '../controllers/orderController.js';
 import { getUserProfile, updateUserProfile, getAllUsers, getUserStats } from '../controllers/userController.js';
 import { generateOrdersCSV, generateRevenueReport, generateCustomerReport } from '../controllers/reportController.js';
 import { getDashboard, getAvailableJobs, updateStatus, acceptJob, getAllDrivers, getDriverProfile, getDriverHistory } from '../controllers/driverController.js';
@@ -37,6 +37,7 @@ router.use('/laundries', laundryRoutes);
 router.post('/orders', createOrder);
 router.get('/orders', getUserOrders);
 router.get('/orders/:id', getOrderById);
+router.put('/orders/:id', editOrder);
 router.patch('/orders/:id/status', updateOrderStatus);
 router.get('/stats/orders', getOrderStats);
 

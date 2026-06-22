@@ -154,7 +154,6 @@ export default function ForgotPasswordScreen() {
                                         onChangeText={setOtp}
                                         keyboardType="number-pad"
                                         maxLength={6}
-                                        style={[styles.input, { letterSpacing: 8, textAlign: 'center', fontSize: 24 }]}
                                     />
                                 </View>
                                 <TouchableOpacity style={styles.buttonPrimary} onPress={handleVerifyOtp} disabled={loading}>

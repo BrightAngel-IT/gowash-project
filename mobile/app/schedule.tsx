@@ -8,10 +8,8 @@ import Animated, { FadeInDown, FadeInRight, BounceIn, Layout, FadeIn, FadeOut, S
 import { LinearGradient } from 'expo-linear-gradient';
 import api, { getUser } from '@/constants/api';
 import * as Location from 'expo-location';
-import AppMap, { Marker } from '@/components/AppMap';
 
-const { width } = Dimensions.get('window');
-
+// Removed global Dimensions width to use responsive styles
 const STEPS = ['Services', 'Items', 'Logistics', 'Review'];
 
 const ADDONS = [
@@ -67,6 +65,8 @@ export default function AdvancedScheduleScreen() {
     const [currentStep, setCurrentStep] = useState(0);
     const [selectedDate, setSelectedDate] = useState(dates[0].full);
     const [selectedTime, setSelectedTime] = useState(timeSlots[0]);
+    const [deliveryDate, setDeliveryDate] = useState(dates[2].full); // Default 2 days later
+    const [deliverySpeed, setDeliverySpeed] = useState('Standard');
     const [services, setServices] = useState<any[]>([]);
     const [activeServiceId, setActiveServiceId] = useState<number | null>(null);
     const [loading, setLoading] = useState(true);
@@ -275,21 +275,16 @@ export default function AdvancedScheduleScreen() {
         });
 
         const addonsTotal = selectedAddons.reduce((sum, id) => sum + (ADDONS.find(a => a.id === id)?.price || 0), 0);
-        const serviceFee = itemsTotal > 0 ? 150 : 0;
+        const serviceFee = itemsTotal > 0 ? 39 : 0; // Fixed Service Fee
         
-        // Dynamic Delivery Fee Calculation (Client-side estimation)
-        let deliveryFee = itemsTotal > 0 ? 250 : 0;
-        if (customerCoords && laundry?.lat && laundry?.lng) {
-            const R = 6371;
-            const dLat = (laundry.lat - customerCoords.lat) * Math.PI / 180;
-            const dLon = (laundry.lng - customerCoords.lng) * Math.PI / 180;
-            const a = 
-                Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-                Math.cos(customerCoords.lat * Math.PI / 180) * Math.cos(laundry.lat * Math.PI / 180) * 
-                Math.sin(dLon / 2) * Math.sin(dLon / 2);
-            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-            const distance = R * c;
-            deliveryFee = Math.max(150, Math.round(distance * 100));
+        let deliveryFee = 0;
+        if (itemsTotal > 0) {
+            // Fixed Delivery Fee
+            deliveryFee = 125;
+            
+            if (deliverySpeed === 'Express') {
+                deliveryFee += 300; // Priority Fee
+            }
         }
 
         const grandTotal = itemsTotal + addonsTotal + serviceFee + deliveryFee;
@@ -522,8 +517,30 @@ export default function AdvancedScheduleScreen() {
                             ))}
                         </View>
 
+                        <Text style={[styles.subLabel, { marginTop: 20 }]}>Delivery Speed</Text>
+                        <View style={styles.timeGrid}>
+                            <TouchableOpacity style={[styles.timeBox, deliverySpeed === 'Standard' && styles.timeBoxActive]} onPress={() => setDeliverySpeed('Standard')}>
+                                <Text style={[styles.timeText, deliverySpeed === 'Standard' && styles.textWhite]}>Standard Delivery</Text>
+                                <Text style={[{ fontSize: 11, color: Colors.textSecondary, marginTop: 4, textAlign: 'center' }, deliverySpeed === 'Standard' && {color: '#e2e8f0'}]}>2-3 Business Days</Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity style={[styles.timeBox, deliverySpeed === 'Express' && styles.timeBoxActive]} onPress={() => setDeliverySpeed('Express')}>
+                                <Text style={[styles.timeText, deliverySpeed === 'Express' && styles.textWhite]}>Express Delivery</Text>
+                                <Text style={[{ fontSize: 11, color: Colors.textSecondary, marginTop: 4, textAlign: 'center' }, deliverySpeed === 'Express' && {color: '#e2e8f0'}]}>1 Business Day (Priority Fee)</Text>
+                            </TouchableOpacity>
+                        </View>
+
+                        <Text style={[styles.subLabel, { marginTop: 20 }]}>Choose Delivery Date</Text>
+                        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.dateList}>
+                            {dates.map((d, i) => (
+                                <TouchableOpacity key={i} style={[styles.dateCard, deliveryDate === d.full && styles.dateCardActive]} onPress={() => setDeliveryDate(d.full)}>
+                                    <Text style={[styles.dateDay, deliveryDate === d.full && styles.textWhite]}>{d.day}</Text>
+                                    <Text style={[styles.dateNum, deliveryDate === d.full && styles.textWhite]}>{d.date}</Text>
+                                </TouchableOpacity>
+                            ))}
+                        </ScrollView>
+
                         <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 20, marginBottom: 8 }}>
-                            <Text style={styles.subLabel}>Pickup Address</Text>
+                            <Text style={styles.subLabel}>Delivery Address (Editable)</Text>
                             <TouchableOpacity onPress={handleFetchLocation} disabled={isLocating} style={styles.fetchLocationBtn}>
                                 {isLocating ? (
                                     <ActivityIndicator size="small" color={Colors.primary} />
@@ -538,29 +555,6 @@ export default function AdvancedScheduleScreen() {
                         <View style={styles.inputBox}>
                             <Ionicons name="location-outline" size={20} color={Colors.textSecondary} />
                             <TextInput style={styles.input} value={address} onChangeText={setAddress} multiline placeholder="Enter detailed address" />
-                        </View>
-
-                        <View style={styles.mapContainer}>
-                            <AppMap
-                                style={styles.map}
-                                region={{
-                                    latitude: customerCoords.lat,
-                                    longitude: customerCoords.lng,
-                                    latitudeDelta: 0.01,
-                                    longitudeDelta: 0.01,
-                                }}
-                                onPress={handleMapPress}
-                            >
-                                <Marker
-                                    coordinate={{
-                                        latitude: customerCoords.lat,
-                                        longitude: customerCoords.lng
-                                    }}
-                                    draggable
-                                    onDragEnd={handleMapPress}
-                                />
-                            </AppMap>
-                            <Text style={styles.mapHint}>Tap or drag pin to set exact location</Text>
                         </View>
 
                         <Text style={[styles.subLabel, { marginTop: 20 }]}>Additional Instructions</Text>
@@ -615,14 +609,15 @@ export default function AdvancedScheduleScreen() {
                                 )}
 
                                 <View style={styles.receiptDivider} />
-                                <View style={styles.receiptTotalRow}><Text style={styles.receiptLabel}>Items Subtotal</Text><Text style={styles.receiptValue}>LKR {itemsTotal + addonsTotal}</Text></View>
-                                <View style={styles.receiptTotalRow}><Text style={styles.receiptLabel}>Service Fee</Text><Text style={styles.receiptValue}>LKR {serviceFee}</Text></View>
-                                <View style={styles.receiptTotalRow}><Text style={styles.receiptLabel}>Delivery Charge</Text><Text style={styles.receiptValue}>LKR {deliveryFee}</Text></View>
-                                <View style={[styles.receiptTotalRow, { marginTop: 10 }]}><Text style={styles.receiptGrandLabel}>Total Payable</Text><Text style={styles.receiptGrandValue}>LKR {grandTotal}.00</Text></View>
+                                <View style={styles.receiptTotalRow}><Text style={styles.receiptLabel}>Amount</Text><Text style={styles.receiptValue}>Rs. {itemsTotal + addonsTotal}</Text></View>
+                                <View style={styles.receiptTotalRow}><Text style={styles.receiptLabel}>Service Fee (Fixed)</Text><Text style={styles.receiptValue}>Rs. {serviceFee}</Text></View>
+                                <View style={styles.receiptTotalRow}><Text style={styles.receiptLabel}>Delivery Fee (Fixed)</Text><Text style={styles.receiptValue}>Rs. {deliveryFee}</Text></View>
+                                <View style={[styles.receiptTotalRow, { marginTop: 10 }]}><Text style={styles.receiptGrandLabel}>Total</Text><Text style={styles.receiptGrandValue}>Rs. {grandTotal}</Text></View>
                             </View>
 
                             <View style={styles.logisticSummary}>
-                                <View style={styles.logRow}><Ionicons name="calendar" size={16} color={Colors.textSecondary} /><Text style={styles.logText}>{selectedDate} • {selectedTime}</Text></View>
+                                <View style={styles.logRow}><Ionicons name="calendar" size={16} color={Colors.textSecondary} /><Text style={styles.logText}>Pickup: {selectedDate} • {selectedTime}</Text></View>
+                                <View style={styles.logRow}><Ionicons name="calendar" size={16} color={Colors.textSecondary} /><Text style={styles.logText}>Delivery: {deliveryDate} ({deliverySpeed})</Text></View>
                                 <View style={styles.logRow}><Ionicons name="location" size={16} color={Colors.textSecondary} /><Text style={styles.logText} numberOfLines={1}>{address}</Text></View>
                             </View>
                         </Animated.View>
@@ -656,7 +651,7 @@ export default function AdvancedScheduleScreen() {
                 <View style={styles.footerPriceRow}>
                     <View>
                         <Text style={styles.footerTotalLabel}>ESTIMATED TOTAL</Text>
-                        <Text style={styles.footerTotalPrice}>LKR {grandTotal}.00</Text>
+                        <Text style={styles.footerTotalPrice}>LKR {currentStep === 3 ? grandTotal : (itemsTotal + addonsTotal + serviceFee)}.00</Text>
                     </View>
                     <View style={styles.itemBadge}>
                         <Text style={styles.itemBadgeText}>{totalItemsCount} ITEMS</Text>
@@ -710,7 +705,7 @@ const styles = StyleSheet.create({
     stepTitle: { fontSize: 24, fontWeight: '900', color: Colors.text, marginBottom: 8 },
     stepSubtitle: { fontSize: 14, color: Colors.textSecondary, marginBottom: 24, lineHeight: 20 },
     servicesGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 15, marginBottom: 30 },
-    serviceBox: { width: (width - 68) / 2.2, borderRadius: 24, height: 140, overflow: 'hidden', elevation: 4, shadowColor: '#000', shadowOpacity: 0.05, shadowRadius: 10, shadowOffset: { width: 0, height: 4 } },
+    serviceBox: { width: '47%', borderRadius: 24, height: 140, overflow: 'hidden', elevation: 4, shadowColor: '#000', shadowOpacity: 0.05, shadowRadius: 10, shadowOffset: { width: 0, height: 4 } },
     serviceBoxActive: { transform: [{ scale: 1.02 }] },
     serviceGradient: { flex: 1, padding: 16, justifyContent: 'flex-end' },
     serviceBoxName: { fontSize: 13, fontWeight: '800', color: Colors.text, marginTop: 10 },
@@ -732,7 +727,7 @@ const styles = StyleSheet.create({
     catGroup: { marginBottom: 30 },
     catHeader: { fontSize: 13, fontWeight: '900', color: Colors.textSecondary, textTransform: 'uppercase', marginBottom: 15, marginLeft: 5 },
     itemRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 16, backgroundColor: '#fff', borderRadius: 20, marginBottom: 10, borderWidth: 1, borderColor: '#F1F5F9', elevation: 2, shadowColor: '#000', shadowOpacity: 0.02 },
-    itemMain: { flexDirection: 'row', alignItems: 'center', gap: 15 },
+    itemMain: { flexDirection: 'row', alignItems: 'center', gap: 15, flex: 1 },
     itemIconCircle: { width: 40, height: 40, borderRadius: 12, backgroundColor: '#F0F4FF', justifyContent: 'center', alignItems: 'center' },
     itemName: { fontSize: 16, fontWeight: '700', color: Colors.text },
     itemPrice: { fontSize: 12, color: Colors.textSecondary, fontWeight: '600' },
@@ -746,7 +741,7 @@ const styles = StyleSheet.create({
     dateDay: { fontSize: 12, color: Colors.textSecondary, marginBottom: 5 },
     dateNum: { fontSize: 20, fontWeight: '900', color: Colors.text },
     timeGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12 },
-    timeBox: { width: (width - 60) / 2, padding: 18, borderRadius: 18, backgroundColor: '#F8FAFC', borderWidth: 1, borderColor: '#F1F5F9', alignItems: 'center' },
+    timeBox: { width: '48%', padding: 18, borderRadius: 18, backgroundColor: '#F8FAFC', borderWidth: 1, borderColor: '#F1F5F9', alignItems: 'center' },
     timeBoxActive: { backgroundColor: Colors.primary, borderColor: Colors.primary },
     timeText: { fontWeight: '700', color: Colors.textSecondary },
     inputBox: { flexDirection: 'row', padding: 18, backgroundColor: '#F8FAFC', borderRadius: 20, borderWidth: 1, borderColor: '#F1F5F9', gap: 12 },

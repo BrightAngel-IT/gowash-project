@@ -169,9 +169,17 @@ export default function DashboardScreen() {
         }
     };
 
+    const isOnlineRef = useRef(isOnline);
+
+    useEffect(() => {
+        isOnlineRef.current = isOnline;
+    }, [isOnline]);
+
     useEffect(() => {
         fetchDashboard();
-        socketRef.current = io(SOCKET_URL);
+        socketRef.current = io(SOCKET_URL, {
+            transports: ['websocket']
+        });
 
         socketRef.current.on('connect', () => {
             console.log('Driver connected to socket');
@@ -179,7 +187,7 @@ export default function DashboardScreen() {
 
         socketRef.current.on('new_driver_job', (job: any) => {
             console.log('New job received:', job);
-            if (isOnline) {
+            if (isOnlineRef.current) {
                 setNewJob(job);
                 setIsJobTaken(false);
             }
@@ -200,7 +208,7 @@ export default function DashboardScreen() {
         return () => {
             if (socketRef.current) socketRef.current.disconnect();
         };
-    }, [isOnline]);
+    }, []);
 
     useEffect(() => {
         requestLocationPermission();
@@ -301,15 +309,15 @@ export default function DashboardScreen() {
                         <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={theme.tint} />
                     }
                 >
-                    {driver?.isProfileIncomplete && (
+                    {(driver as any)?.isProfileIncomplete && (
                         <TouchableOpacity 
                             style={styles.profileIncompleteBanner}
                             onPress={() => router.push({
                                 pathname: '/complete-profile',
                                 params: { 
-                                    userId: driver.id,
-                                    name: driver.name,
-                                    email: driver.email
+                                    userId: driver?.id,
+                                    name: driver?.name,
+                                    email: driver?.email
                                 }
                             })}
                         >

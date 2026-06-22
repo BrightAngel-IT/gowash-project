@@ -9,10 +9,12 @@ import Animated, { FadeInDown, Layout } from 'react-native-reanimated';
 
 import api, { getUser } from '@/constants/api';
 import { useFocusEffect } from '@react-navigation/native';
+import { useRouter } from 'expo-router';
 
 const tabs = ['Active', 'History'];
 
 export default function OrdersScreen() {
+    const router = useRouter();
     const [activeTab, setActiveTab] = useState('Active');
     const [orders, setOrders] = useState<any[]>([]);
     const [loading, setLoading] = useState(false);
@@ -84,6 +86,7 @@ export default function OrdersScreen() {
                         layout={Layout.springify()}
                         style={styles.card}
                     >
+                        <TouchableOpacity onPress={() => router.push(`/order/${item.id}`)} activeOpacity={0.8}>
                         <View style={styles.cardHeader}>
                             <View style={styles.typeContainer}>
                                 <View style={[styles.iconBox, { backgroundColor: getStatusColor(item.status) + '15' }]}>
@@ -91,7 +94,7 @@ export default function OrdersScreen() {
                                 </View>
                                 <View>
                                     <Text style={styles.orderType}>{item.serviceName}</Text>
-                                    <Text style={styles.orderDate}>{new Date(item.created_at).toLocaleDateString()}</Text>
+                                    <Text style={styles.orderDate}>{new Date(item.created_at).toLocaleString()}</Text>
                                 </View>
                             </View>
                             <View style={[styles.statusBadge, { backgroundColor: getStatusColor(item.status) + '20' }]}>
@@ -114,6 +117,7 @@ export default function OrdersScreen() {
                                 <View style={[styles.progressFill, { width: '60%', backgroundColor: Colors.primary }]} />
                             </View>
                         ) : null}
+                        </TouchableOpacity>
                     </Animated.View>
                 )}
                 ListEmptyComponent={

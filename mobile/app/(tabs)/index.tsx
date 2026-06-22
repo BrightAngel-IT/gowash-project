@@ -252,6 +252,9 @@ export default function DashboardScreen() {
                   </View>
                   <Text style={styles.serviceNameVertical}>{service.name}</Text>
                   <Text style={styles.servicePrice}>{service.price}</Text>
+                  <View style={{ position: 'absolute', bottom: 10, right: 10, backgroundColor: '#F1F5F9', borderRadius: 10, padding: 4 }}>
+                    <Ionicons name="chevron-forward" size={14} color={Colors.textSecondary} />
+                  </View>
                 </TouchableOpacity>
               </Animated.View>
             ))}

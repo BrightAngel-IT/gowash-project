@@ -45,13 +45,8 @@ export const createOrder = async (req, res) => {
         }
         const customerName = users.rows[0].name;
 
-        // Calculate delivery fee: Rs 100 per KM
-        let finalDeliveryFee = deliveryFee || 0;
-        if (customerLat && customerLng && laundryLat && laundryLng) {
-            const distance = calculateDistance(customerLat, customerLng, laundryLat, laundryLng);
-            finalDeliveryFee = Math.max(150, Math.round(distance * 100)); // Minimum 150 LKR
-            console.log(`📏 Calculated distance: ${distance} km, fee: ${finalDeliveryFee}`);
-        }
+        // Use the delivery fee from the frontend (which includes fixed base fee + any express fees)
+        let finalDeliveryFee = deliveryFee !== undefined ? deliveryFee : 125;
 
         // Calculate total price: items + finalDeliveryFee
         const totalPrice = (reqTotalPrice - (deliveryFee || 0)) + finalDeliveryFee;
@@ -151,7 +146,11 @@ export const getOrderById = async (req, res) => {
         const result = await db.query(
             `SELECT o.*, s.name as "serviceName", s.color as "serviceColor", 
                     l.name as "laundryName", l.address as "laundryAddress",
-                    l.lat as "laundry_lat", l.lng as "laundry_lng"
+                    l.lat as "laundry_lat", l.lng as "laundry_lng",
+                    COALESCE(
+                        (SELECT json_agg(oi.*) FROM order_items oi WHERE oi.order_id = o.id),
+                        '[]'::json
+                    ) as "itemsList"
              FROM orders o 
              LEFT JOIN services s ON o.service_id = s.id 
              LEFT JOIN laundries l ON o.laundry_id = l.id
@@ -270,6 +269,71 @@ export const getOrderStats = async (req, res) => {
         });
     } catch (error) {
         console.error('Get stats error:', error);
+        res.status(500).json({ message: "Server error" });
+    }
+};
+
+// Edit an order (update items, total price, and details)
+export const editOrder = async (req, res) => {
+    const orderId = req.params.id;
+    const { items, totalPrice: reqTotalPrice, orderItems, deliveryFee, pickupDate, pickupTime, address, notes, customerLat, customerLng } = req.body;
+    
+    try {
+        // Check if order exists and is Pending
+        const orderCheck = await db.query('SELECT status FROM orders WHERE id = $1', [orderId]);
+        if (orderCheck.rows.length === 0) {
+            return res.status(404).json({ message: "Order not found" });
+        }
+        if (orderCheck.rows[0].status !== 'Pending') {
+            return res.status(400).json({ message: "Only 'Pending' orders can be edited." });
+        }
+        
+        // Use the delivery fee from the frontend (which includes fixed base fee + any express fees)
+        let finalDeliveryFee = deliveryFee !== undefined ? deliveryFee : 125;
+        const totalPrice = (reqTotalPrice - (deliveryFee || 0)) + finalDeliveryFee;
+        
+        // Delete existing items
+        await db.query('DELETE FROM order_items WHERE order_id = $1', [orderId]);
+        
+        // Insert new items
+        if (orderItems && Array.isArray(orderItems)) {
+            for (const item of orderItems) {
+                await db.query(
+                    `INSERT INTO order_items (order_id, service_id, item_id, item_name, quantity, price_per_unit, total_price, pieces) 
+                     VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
+                    [orderId, item.serviceId, item.itemId, item.itemName, item.quantity, item.pricePerUnit, item.totalPrice, item.pieces || null]
+                );
+            }
+        }
+        
+        // Update order record including logistics details
+        await db.query(
+            `UPDATE orders 
+             SET items = $1, total_price = $2, delivery_fee = $3, 
+                 pickup_date = COALESCE($4, pickup_date), 
+                 pickup_time = COALESCE($5, pickup_time), 
+                 address = COALESCE($6, address), 
+                 notes = COALESCE($7, notes),
+                 customer_lat = COALESCE($8, customer_lat),
+                 customer_lng = COALESCE($9, customer_lng)
+             WHERE id = $10`, 
+            [
+                items, 
+                totalPrice, 
+                finalDeliveryFee, 
+                pickupDate || null, 
+                pickupTime || null, 
+                address || null, 
+                notes || null, 
+                customerLat || null, 
+                customerLng || null, 
+                orderId
+            ]
+        );
+        
+        res.json({ message: "Order updated successfully" });
+    } catch (error) {
+        console.error('Edit order error:', error);
         res.status(500).json({ message: "Server error" });
     }
 };

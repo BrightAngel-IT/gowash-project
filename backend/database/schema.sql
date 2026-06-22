@@ -229,7 +229,7 @@ CREATE TABLE IF NOT EXISTS laundry_item_prices (
     id SERIAL PRIMARY KEY,
     laundry_id INT NOT NULL,
     item_id VARCHAR(100) NOT NULL,
-    price DECIMAL(10, 2) NOT NULL,
+    price DECIMAL(10, 2) NOT NULL, 
     unit VARCHAR(50) DEFAULT 'item',
     FOREIGN KEY (laundry_id) REFERENCES laundries(id) ON DELETE CASCADE,
     FOREIGN KEY (item_id) REFERENCES master_items(id) ON DELETE CASCADE,
@@ -275,3 +275,5 @@ ON CONFLICT (id) DO UPDATE SET
     icon = EXCLUDED.icon, 
     category = EXCLUDED.category, 
     base_price = EXCLUDED.base_price;
+
+  

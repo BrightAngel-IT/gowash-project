@@ -82,7 +82,7 @@ function App() {
         }
       }
     }
-  }, []);
+  }, []);  
 
   useEffect(() => {
     let interval;
@@ -162,7 +162,7 @@ function App() {
         audioRef.current.loop = true;
         audioRef.current.volume = 0.5;
         audioRef.current.play().catch(e => console.log("Audio play failed (interaction needed):", e));
-      }
+      } 
     } catch (e) {
       console.error(e);
     }

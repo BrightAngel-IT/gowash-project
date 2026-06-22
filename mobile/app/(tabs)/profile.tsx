@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, Image, TouchableOpacity, ScrollView, Switch } from 'react-native';
+import { View, Text, StyleSheet, Image, TouchableOpacity, ScrollView, Switch, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
@@ -11,6 +11,8 @@ export default function ProfileScreen() {
     const router = useRouter();
     const [user, setUser] = React.useState<any>(null);
     const [stats, setStats] = React.useState({ orders: 0, spent: 0 });
+    const [notificationsEnabled, setNotificationsEnabled] = React.useState(true);
+    const [darkModeEnabled, setDarkModeEnabled] = React.useState(false);
 
     React.useEffect(() => {
         loadProfile();
@@ -29,28 +31,41 @@ export default function ProfileScreen() {
         router.replace('/(auth)/welcome');
     };
 
-    const menuGroups = [
+    const handleFeature = (featureName: string) => {
+        Alert.alert('Coming Soon', `${featureName} is currently under development.`);
+    };
+
+    type MenuItem = {
+        icon: string;
+        label: string;
+        action: () => void;
+        type?: string;
+        value?: boolean | string;
+        color?: string;
+    };
+
+    const menuGroups: { title: string, items: MenuItem[] }[] = [
         {
             title: 'Account',
             items: [
-                { icon: 'person-outline', label: 'Edit Profile' },
-                { icon: 'location-outline', label: 'Saved Addresses' },
-                { icon: 'wallet-outline', label: 'Payment Methods' },
+                { icon: 'person-outline', label: 'Edit Profile', action: () => handleFeature('Edit Profile') },
+                { icon: 'location-outline', label: 'Saved Addresses', action: () => handleFeature('Saved Addresses') },
+                { icon: 'wallet-outline', label: 'Payment Methods', action: () => handleFeature('Payment Methods') },
             ]
         },
         {
             title: 'Preferences',
             items: [
-                { icon: 'notifications-outline', label: 'Notifications', type: 'switch', value: true },
-                { icon: 'moon-outline', label: 'Dark Mode', type: 'switch', value: false },
-                { icon: 'language-outline', label: 'Language', value: 'English' },
+                { icon: 'notifications-outline', label: 'Notifications', type: 'switch', value: notificationsEnabled, action: () => setNotificationsEnabled(!notificationsEnabled) },
+                { icon: 'moon-outline', label: 'Dark Mode', type: 'switch', value: darkModeEnabled, action: () => setDarkModeEnabled(!darkModeEnabled) },
+                { icon: 'language-outline', label: 'Language', value: 'English', action: () => handleFeature('Language Selection') },
             ]
         },
         {
             title: 'Support',
             items: [
-                { icon: 'help-circle-outline', label: 'Help Center' },
-                { icon: 'document-text-outline', label: 'Privacy Policy' },
+                { icon: 'help-circle-outline', label: 'Help Center', action: () => handleFeature('Help Center') },
+                { icon: 'document-text-outline', label: 'Privacy Policy', action: () => handleFeature('Privacy Policy') },
                 { icon: 'log-out-outline', label: 'Log Out', color: Colors.error, action: handleLogout },
             ]
         }
@@ -111,6 +126,7 @@ export default function ProfileScreen() {
                                         {item.type === 'switch' ? (
                                             <Switch
                                                 value={item.value as boolean}
+                                                onValueChange={item.action}
                                                 trackColor={{ false: Colors.border, true: Colors.primary }}
                                                 thumbColor={'#fff'}
                                             />
