@@ -186,17 +186,17 @@ export default function EditOrderScreen() {
 
         let deliveryFeeNum = parseFloat(order.delivery_fee);
         if (isNaN(deliveryFeeNum)) {
-            deliveryFeeNum = 0;
+            deliveryFeeNum = 125;
         }
 
         // New grand total is simply the new items total + delivery fee
         const newGrandTotal = newItemsTotal + deliveryFeeNum;
 
-        return { newItemsTotal, oldItemsTotal: 0, newGrandTotal, totalItemsCount };
+        return { newItemsTotal, oldItemsTotal: 0, newGrandTotal, totalItemsCount, deliveryFeeNum };
     };
 
     const handleSaveChanges = async () => {
-        const { newGrandTotal, totalItemsCount } = calculateTotals();
+        const { newGrandTotal, totalItemsCount, deliveryFeeNum } = calculateTotals();
 
         if (totalItemsCount === 0) {
             Alert.alert('Empty Order', 'Please add at least one item to your order.');
@@ -237,7 +237,7 @@ export default function EditOrderScreen() {
                 items: totalItemsCount,
                 totalPrice: newGrandTotal,
                 orderItems: orderItemsFormatted,
-                deliveryFee: order.delivery_fee,
+                deliveryFee: deliveryFeeNum,
                 pickupDate,
                 pickupTime,
                 address,
@@ -346,7 +346,7 @@ export default function EditOrderScreen() {
                 <Text style={[styles.sectionHeading, { marginTop: 10 }]}>Items</Text>
 
                 {categories.map(cat => (
-                    <Animated.View key={cat} entering={FadeInRight} style={styles.catGroup}>
+                    <View key={cat} style={styles.catGroup}>
                         <Text style={styles.catHeader}>{cat}</Text>
                         {catalogItems.filter(item => (item.category || 'Items') === cat).map(item => {
                             const count = basket[item.id] || 0;
@@ -364,26 +364,27 @@ export default function EditOrderScreen() {
                                         </View>
                                     </View>
                                     <View style={styles.stepper}>
-                                        <TouchableOpacity onPress={() => updateItemCount(item.id, -1)} style={[styles.stepBtn, count === 0 && { opacity: 0.3 }]} disabled={count === 0}>
-                                            <Ionicons name="remove" size={18} color={Colors.text} />
+                                        <TouchableOpacity style={styles.stepBtn} onPress={() => updateItemCount(item.id, -1)}>
+                                            <Ionicons name="remove" size={16} color={Colors.primary} />
                                         </TouchableOpacity>
                                         <Text style={styles.stepCount}>{count}</Text>
-                                        <TouchableOpacity onPress={() => updateItemCount(item.id, 1)} style={styles.stepBtn}>
-                                            <Ionicons name="add" size={18} color={Colors.text} />
+                                        <TouchableOpacity style={styles.stepBtn} onPress={() => updateItemCount(item.id, 1)}>
+                                            <Ionicons name="add" size={16} color={Colors.primary} />
                                         </TouchableOpacity>
                                     </View>
                                 </View>
                             );
                         })}
-                    </Animated.View>
+                    </View>
                 ))}
             </ScrollView>
 
             <View style={styles.footer}>
                 <View style={styles.footerPriceRow}>
                     <View>
-                        <Text style={styles.footerTotalLabel}>NEW ESTIMATED TOTAL</Text>
-                        <Text style={styles.footerTotalPrice}>LKR {newGrandTotal}</Text>
+                        <Text style={styles.footerTotalLabel}>TOTAL ESTIMATE</Text>
+                        <Text style={styles.footerTotalPrice}>LKR {Math.round(newGrandTotal)}</Text>
+                        <Text style={{ fontSize: 11, color: Colors.textSecondary, marginTop: 2 }}>Includes LKR {deliveryFeeNum} Delivery</Text>
                     </View>
                     <View style={styles.itemBadge}>
                         <Text style={styles.itemBadgeText}>{totalItemsCount} ITEMS</Text>
