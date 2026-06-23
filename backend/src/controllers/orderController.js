@@ -276,7 +276,7 @@ export const getOrderStats = async (req, res) => {
 // Edit an order (update items, total price, and details)
 export const editOrder = async (req, res) => {
     const orderId = req.params.id;
-    const { items, totalPrice: reqTotalPrice, orderItems, deliveryFee, pickupDate, pickupTime, address, notes, customerLat, customerLng } = req.body;
+    const { items, totalPrice: reqTotalPrice, orderItems, deliveryFee, pickupDate, pickupTime, address, notes, customerLat, customerLng, serviceId } = req.body;
     
     try {
         // Check if order exists and is Pending
@@ -315,7 +315,8 @@ export const editOrder = async (req, res) => {
                  address = COALESCE($6, address), 
                  notes = COALESCE($7, notes),
                  customer_lat = COALESCE($8, customer_lat),
-                 customer_lng = COALESCE($9, customer_lng)
+                 customer_lng = COALESCE($9, customer_lng),
+                 service_id = COALESCE($11, service_id)
              WHERE id = $10`, 
             [
                 items, 
@@ -327,7 +328,8 @@ export const editOrder = async (req, res) => {
                 notes || null, 
                 customerLat || null, 
                 customerLng || null, 
-                orderId
+                orderId,
+                serviceId || null
             ]
         );
         

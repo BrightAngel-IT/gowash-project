@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator, Alert, TextInput } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter, Stack } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { Colors, Typography } from '@/constants/theme';
 import api from '@/constants/api';
@@ -29,6 +29,8 @@ export default function EditOrderScreen() {
     const router = useRouter();
     const [order, setOrder] = useState<any>(null);
     const [catalogItems, setCatalogItems] = useState<any[]>([]);
+    const [services, setServices] = useState<any[]>([]);
+    const [selectedServiceId, setSelectedServiceId] = useState<number | null>(null);
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     
@@ -67,10 +69,27 @@ export default function EditOrderScreen() {
             setPickupTime(fetchedOrder.pickup_time || timeSlots[0]);
             setCustomerCoords({ lat: fetchedOrder.customer_lat, lng: fetchedOrder.customer_lng });
 
-            // 2. Fetch available items for this laundry & service
-            const catalogRes = await api.get(`/item-prices?laundryId=${fetchedOrder.laundry_id}&serviceId=${fetchedOrder.service_id}`);
+            // Fetch services
+            const svcsRes = await api.get('/services');
+            setServices(svcsRes.data);
+            setSelectedServiceId(fetchedOrder.service_id);
+
+            // Fetch catalog
+            await fetchCatalog(fetchedOrder.laundry_id, fetchedOrder.service_id, fetchedOrder.itemsList);
+
+        } catch (error) {
+            console.error('Error fetching data for edit:', error);
+            Alert.alert('Error', 'Failed to load order data.');
+            router.back();
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const fetchCatalog = async (laundryId: number, serviceId: number, initialItemsList: any[] = []) => {
+        try {
+            const catalogRes = await api.get(`/item-prices?laundryId=${laundryId}&serviceId=${serviceId}`);
             
-            // If API returns empty, fallback to basic list (similar to schedule.tsx)
             let items = catalogRes.data;
             if (!items || items.length === 0) {
                  items = [
@@ -82,23 +101,33 @@ export default function EditOrderScreen() {
             }
             setCatalogItems(items);
 
-            // 3. Initialize basket with existing items
             const initialBasket: { [key: string]: number } = {};
-            if (fetchedOrder.itemsList && fetchedOrder.itemsList.length > 0) {
-                fetchedOrder.itemsList.forEach((item: any) => {
-                    // Match by item_id (which might be a string like 'shirt' or a number)
+            if (initialItemsList && initialItemsList.length > 0) {
+                initialItemsList.forEach((item: any) => {
                     initialBasket[item.item_id] = item.quantity;
                 });
             }
             setBasket(initialBasket);
-
-        } catch (error) {
-            console.error('Error fetching data for edit:', error);
-            Alert.alert('Error', 'Failed to load order data.');
-            router.back();
-        } finally {
-            setLoading(false);
+        } catch(e) {
+            console.log(e);
         }
+    };
+
+    const changeService = (newServiceId: number) => {
+        if (newServiceId === selectedServiceId) return;
+        
+        Alert.alert(
+            "Change Service",
+            "Changing the service will clear your current items. Continue?",
+            [
+                { text: "Cancel", style: "cancel" },
+                { text: "Yes", onPress: async () => {
+                    setSelectedServiceId(newServiceId);
+                    setBasket({});
+                    await fetchCatalog(order.laundry_id, newServiceId, []);
+                }}
+            ]
+        );
     };
 
     const updateItemCount = (itemId: string | number, delta: number) => {
@@ -199,7 +228,8 @@ export default function EditOrderScreen() {
                 address,
                 notes,
                 customerLat: customerCoords?.lat,
-                customerLng: customerCoords?.lng
+                customerLng: customerCoords?.lng,
+                serviceId: selectedServiceId
             };
 
             await api.put(`/orders/${id}`, updateData);
@@ -229,6 +259,7 @@ export default function EditOrderScreen() {
 
     return (
         <SafeAreaView style={styles.container}>
+            <Stack.Screen options={{ headerShown: false }} />
             <View style={styles.header}>
                 <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
                     <Ionicons name="close" size={24} color={Colors.text} />
@@ -273,6 +304,19 @@ export default function EditOrderScreen() {
                         <TextInput style={styles.input} value={notes} onChangeText={setNotes} multiline placeholder="Any special instructions..." />
                     </View>
                 </Animated.View>
+
+                <Text style={[styles.sectionHeading, { marginTop: 10 }]}>Select Service</Text>
+                <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{marginBottom: 20}}>
+                    {services.map((svc) => (
+                        <TouchableOpacity 
+                            key={svc.id} 
+                            style={[styles.serviceCard, selectedServiceId === svc.id && styles.serviceCardActive]}
+                            onPress={() => changeService(svc.id)}
+                        >
+                            <Text style={[styles.serviceCardText, selectedServiceId === svc.id && styles.textWhite]}>{svc.name}</Text>
+                        </TouchableOpacity>
+                    ))}
+                </ScrollView>
 
                 <Text style={[styles.sectionHeading, { marginTop: 10 }]}>Items</Text>
 
@@ -369,6 +413,9 @@ const styles = StyleSheet.create({
     timeGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
     timeBox: { width: '48%', padding: 14, borderRadius: 12, backgroundColor: '#F8FAFC', borderWidth: 1, borderColor: '#F1F5F9', alignItems: 'center' },
     timeBoxActive: { backgroundColor: Colors.primary, borderColor: Colors.primary },
+    serviceCard: { paddingHorizontal: 20, paddingVertical: 12, borderRadius: 12, backgroundColor: '#F8FAFC', marginRight: 10, borderWidth: 1, borderColor: '#F1F5F9' },
+    serviceCardActive: { backgroundColor: Colors.primary, borderColor: Colors.primary },
+    serviceCardText: { fontSize: 14, fontWeight: '600', color: Colors.text },
     timeText: { fontSize: 13, fontWeight: '600', color: Colors.text },
     inputBox: { flexDirection: 'row', alignItems: 'flex-start', backgroundColor: '#F8FAFC', padding: 14, borderRadius: 14, borderWidth: 1, borderColor: '#F1F5F9' },
     input: { flex: 1, marginLeft: 10, fontSize: 14, color: Colors.text, minHeight: 40, textAlignVertical: 'top' }
