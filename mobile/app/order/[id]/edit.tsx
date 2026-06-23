@@ -104,7 +104,17 @@ export default function EditOrderScreen() {
             const initialBasket: { [key: string]: number } = {};
             if (initialItemsList && initialItemsList.length > 0) {
                 initialItemsList.forEach((item: any) => {
-                    initialBasket[item.item_id] = item.quantity;
+                    const slugFromName = item.item_name.toLowerCase().replace(/\s+/g, '_');
+                    const match = catalogItems.find(c => 
+                        c.id.toString() === item.item_id.toString() ||
+                        c.name.toLowerCase().replace(/\s+/g, '_') === slugFromName ||
+                        c.name.toLowerCase().replace(/\s+/g, '_') === item.item_id
+                    );
+                    if (match) {
+                        initialBasket[match.id] = item.quantity;
+                    } else {
+                        initialBasket[item.item_id] = item.quantity;
+                    }
                 });
             }
             setBasket(initialBasket);
