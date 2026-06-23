@@ -15,6 +15,75 @@ const calculateDistance = (lat1, lon1, lat2, lon2) => {
     return parseFloat(d.toFixed(1));
 };
 
+// Helper to parse legacy notes for old orders
+const parseLegacyNotes = (order) => {
+    if (order.itemsList && order.itemsList.length > 0) return order;
+    if (!order.notes || !order.notes.includes('[Items:')) return order;
+
+    let itemsList = [];
+    let cleanNotes = order.notes;
+
+    try {
+        const match = cleanNotes.match(/\[Items:\s*(.+?)\]/);
+        if (match) {
+            if (match[1].includes(':')) {
+                const services = match[1].split(' | ');
+                services.forEach(srv => {
+                    const parts = srv.split(': ');
+                    if (parts.length === 2) {
+                        const srvName = parts[0].trim();
+                        const srvItems = parts[1].trim();
+                        srvItems.split(',').forEach(itemStr => {
+                            const itemStrTrim = itemStr.trim();
+                            if (!itemStrTrim) return;
+                            const lastXIndex = itemStrTrim.lastIndexOf('x');
+                            let name = itemStrTrim;
+                            let qty = 1;
+                            if (lastXIndex !== -1 && lastXIndex > 0) {
+                                name = itemStrTrim.substring(0, lastXIndex).trim();
+                                qty = parseInt(itemStrTrim.substring(lastXIndex + 1).trim()) || 1;
+                            }
+                            itemsList.push({
+                                item_id: name.toLowerCase().replace(/\s+/g, '_'),
+                                item_name: `${srvName} - ${name}`,
+                                quantity: qty,
+                                price_per_unit: '-',
+                                total_price: '-'
+                            });
+                        });
+                    }
+                });
+            } else {
+                match[1].split(',').forEach(itemStr => {
+                    const itemStrTrim = itemStr.trim();
+                    if (!itemStrTrim) return;
+                    const lastXIndex = itemStrTrim.lastIndexOf('x');
+                    let name = itemStrTrim;
+                    let qty = 1;
+                    if (lastXIndex !== -1 && lastXIndex > 0) {
+                        name = itemStrTrim.substring(0, lastXIndex).trim();
+                        qty = parseInt(itemStrTrim.substring(lastXIndex + 1).trim()) || 1;
+                    }
+                    itemsList.push({
+                        item_id: name.toLowerCase().replace(/\s+/g, '_'),
+                        item_name: name,
+                        quantity: qty,
+                        price_per_unit: '-',
+                        total_price: '-'
+                    });
+                });
+            }
+        }
+        cleanNotes = cleanNotes.replace(/\[Items:.*?\]/g, '').replace(/\[Add-ons:.*?\]/g, '').trim();
+    } catch (e) {
+        console.log('Error parsing legacy items', e);
+    }
+
+    order.itemsList = itemsList;
+    order.notes = cleanNotes;
+    return order;
+};
+
 // Create a new order
 export const createOrder = async (req, res) => {
     const { userId, serviceId, items, pickupDate, pickupTime, address, laundryId, notes, totalPrice: reqTotalPrice, orderItems, deliveryFee, customerLat, customerLng } = req.body;
@@ -133,7 +202,8 @@ export const getUserOrders = async (req, res) => {
         queryText += ' ORDER BY o.created_at DESC';
 
         const result = await db.query(queryText, params);
-        res.json(result.rows);
+        const orders = result.rows.map(parseLegacyNotes);
+        res.json(orders);
     } catch (error) {
         console.error('Get orders error:', error);
         res.status(500).json({ message: "Server error" });
@@ -159,7 +229,7 @@ export const getOrderById = async (req, res) => {
         );
 
         if (result.rows.length > 0) {
-            res.json(result.rows[0]);
+            res.json(parseLegacyNotes(result.rows[0]));
         } else {
             res.status(404).json({ message: "Order not found" });
         }
