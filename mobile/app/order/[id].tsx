@@ -60,7 +60,38 @@ export default function OrderDetailsScreen() {
         );
     }
 
-    const itemsList = order.itemsList || [];
+    let itemsList = order.itemsList || [];
+    let cleanNotes = order.notes || '';
+
+    // Legacy parser for old orders that saved items in notes horizontally
+    if (itemsList.length === 0 && cleanNotes.includes('[Items:')) {
+        try {
+            const match = cleanNotes.match(/\[Items:\s*(.+?)\]/);
+            if (match) {
+                const services = match[1].split(' | ');
+                services.forEach(srv => {
+                    const parts = srv.split(': ');
+                    if (parts.length === 2) {
+                        const srvName = parts[0];
+                        const srvItems = parts[1];
+                        srvItems.split(', ').forEach(itemStr => {
+                            const [nameAndQty, pcs] = itemStr.split(' (');
+                            const [name, qty] = nameAndQty.split('x');
+                            itemsList.push({
+                                item_name: `${srvName} - ${name}`,
+                                quantity: qty || 1,
+                                price_per_unit: '-',
+                                total_price: '-'
+                            });
+                        });
+                    }
+                });
+            }
+            cleanNotes = cleanNotes.replace(/\[Items:.*?\]/g, '').replace(/\[Add-ons:.*?\]/g, '').trim();
+        } catch (e) {
+            console.log('Error parsing legacy items', e);
+        }
+    }
 
     return (
         <SafeAreaView style={styles.container}>
@@ -89,12 +120,12 @@ export default function OrderDetailsScreen() {
                         <Ionicons name="location-outline" size={18} color={Colors.textSecondary} />
                         <Text style={styles.infoText} numberOfLines={2}>{order.address}</Text>
                     </View>
-                    {order.notes && (
+                    {cleanNotes ? (
                         <View style={styles.infoRow}>
                             <Ionicons name="document-text-outline" size={18} color={Colors.textSecondary} />
-                            <Text style={styles.infoText}>{order.notes}</Text>
+                            <Text style={styles.infoText}>{cleanNotes}</Text>
                         </View>
-                    )}
+                    ) : null}
                 </Animated.View>
 
                 <Animated.View entering={FadeInDown.delay(200)} style={styles.card}>
@@ -105,9 +136,9 @@ export default function OrderDetailsScreen() {
                             <View key={index} style={styles.itemRow}>
                                 <View style={styles.itemLeft}>
                                     <Text style={styles.itemName}>{item.item_name}</Text>
-                                    <Text style={styles.itemMeta}>Qty: {item.quantity} x LKR {item.price_per_unit}</Text>
+                                    <Text style={styles.itemMeta}>Qty: {item.quantity} {item.price_per_unit !== '-' ? `x LKR ${item.price_per_unit}` : ''}</Text>
                                 </View>
-                                <Text style={styles.itemTotal}>LKR {item.total_price}</Text>
+                                <Text style={styles.itemTotal}>{item.total_price !== '-' ? `LKR ${item.total_price}` : ''}</Text>
                             </View>
                         ))
                     ) : (

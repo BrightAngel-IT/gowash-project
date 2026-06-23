@@ -461,20 +461,53 @@ function App() {
                   <h4 style={{ margin: 0, fontSize: '14px' }}>Itemized Breakdown</h4>
                 </div>
                 <div className="items-list-pro" style={{ padding: '10px' }}>
-                  {selectedOrder.itemsList && selectedOrder.itemsList.length > 0 &&
-                    selectedOrder.itemsList.map((item, idx) => (
-                      <div key={idx} className="item-row-pro" style={{ display: 'flex', justifyContent: 'space-between', padding: '10px', borderBottom: idx === selectedOrder.itemsList.length - 1 ? 'none' : '1px solid #f1f5f9' }}>
-                        <div>
-                          <p style={{ margin: 0, fontWeight: '600', fontSize: '14px' }}>{item.item_name} <span style={{ color: '#64748b', fontWeight: '400' }}>x {item.quantity} {item.pieces ? `(${item.pieces} pc)` : ''}</span></p>
-                          <p style={{ margin: 0, fontSize: '11px', color: '#94a3b8' }}>LKR {item.price_per_unit} per unit</p>
-                        </div>
-                        <p style={{ margin: 0, fontWeight: '700', color: 'var(--primary)' }}>LKR {item.total_price}</p>
-                      </div>
-                    ))
-                  }
-                  {(!selectedOrder.itemsList || selectedOrder.itemsList.length === 0) && (
-                    <p style={{ textAlign: 'center', padding: '20px', color: '#94a3b8' }}>No item details available</p>
-                  )}
+                  {(() => {
+                    let items = selectedOrder.itemsList || [];
+                    let notes = selectedOrder.notes || '';
+                    if (items.length === 0 && notes.includes('[Items:')) {
+                      try {
+                        const match = notes.match(/\[Items:\s*(.+?)\]/);
+                        if (match) {
+                          const services = match[1].split(' | ');
+                          services.forEach(srv => {
+                            const parts = srv.split(': ');
+                            if (parts.length === 2) {
+                              const srvName = parts[0];
+                              const srvItems = parts[1];
+                              srvItems.split(', ').forEach(itemStr => {
+                                const [nameAndQty, pcs] = itemStr.split(' (');
+                                const [name, qty] = nameAndQty.split('x');
+                                items.push({
+                                  item_name: `${srvName} - ${name}`,
+                                  quantity: qty || 1,
+                                  price_per_unit: '-',
+                                  total_price: '-'
+                                });
+                              });
+                            }
+                          });
+                        }
+                      } catch (e) { console.error(e); }
+                    }
+
+                    return (
+                      <>
+                        {items.length > 0 ? (
+                          items.map((item, idx) => (
+                            <div key={idx} className="item-row-pro" style={{ display: 'flex', justifyContent: 'space-between', padding: '10px', borderBottom: idx === items.length - 1 ? 'none' : '1px solid #f1f5f9' }}>
+                              <div>
+                                <p style={{ margin: 0, fontWeight: '600', fontSize: '14px' }}>{item.item_name} <span style={{ color: '#64748b', fontWeight: '400' }}>x {item.quantity} {item.pieces ? `(${item.pieces} pc)` : ''}</span></p>
+                                {item.price_per_unit !== '-' && <p style={{ margin: 0, fontSize: '11px', color: '#94a3b8' }}>LKR {item.price_per_unit} per unit</p>}
+                              </div>
+                              <p style={{ margin: 0, fontWeight: '700', color: 'var(--primary)' }}>{item.total_price !== '-' ? `LKR ${item.total_price}` : ''}</p>
+                            </div>
+                          ))
+                        ) : (
+                          <p style={{ textAlign: 'center', padding: '20px', color: '#94a3b8' }}>No item details available</p>
+                        )}
+                      </>
+                    );
+                  })()}
                   {selectedOrder.delivery_fee > 0 && (
                     <div className="item-row-pro" style={{ display: 'flex', justifyContent: 'space-between', padding: '10px', background: '#f8fafc', borderTop: '1px dashed #cbd5e1' }}>
                       <p style={{ margin: 0, fontWeight: '600', fontSize: '14px', color: '#64748b' }}>Delivery Charge</p>
