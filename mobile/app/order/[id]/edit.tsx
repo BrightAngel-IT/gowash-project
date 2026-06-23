@@ -162,32 +162,29 @@ export default function EditOrderScreen() {
 
         // Calculate new items total
         Object.entries(basket).forEach(([itemId, qty]) => {
-            const catalogItem = catalogItems.find(i => i.id.toString() === itemId.toString());
-            if (catalogItem) {
-                newItemsTotal += (catalogItem.current_price * qty);
-                totalItemsCount += qty;
-            } else {
-                // If item is not in catalog but was in old order, try to find its old price
-                const oldItem = order.itemsList.find((i: any) => i.item_id.toString() === itemId.toString());
-                if (oldItem) {
-                    newItemsTotal += (oldItem.price_per_unit * qty);
+            if (qty > 0) {
+                const catalogItem = catalogItems.find(i => i.id.toString() === itemId.toString());
+                if (catalogItem) {
+                    newItemsTotal += (catalogItem.current_price * qty);
                     totalItemsCount += qty;
+                } else {
+                    // If item is not in catalog but was in old order, try to find its old price
+                    const oldItem = order.itemsList?.find((i: any) => i.item_id.toString() === itemId.toString() || i.item_id === itemId);
+                    if (oldItem) {
+                        const price = parseFloat(oldItem.price_per_unit);
+                        if (!isNaN(price)) {
+                            newItemsTotal += (price * qty);
+                        }
+                        totalItemsCount += qty;
+                    }
                 }
             }
         });
 
-        // Calculate old items total to find the difference
-        let oldItemsTotal = 0;
-        if (order.itemsList) {
-            order.itemsList.forEach((item: any) => {
-                oldItemsTotal += parseFloat(item.total_price);
-            });
-        }
+        // New grand total is simply the new items total + delivery fee
+        const newGrandTotal = newItemsTotal + (deliveryFee || 0);
 
-        // New grand total = old grand total - old items total + new items total
-        const newGrandTotal = parseFloat(order.total_price) - oldItemsTotal + newItemsTotal;
-
-        return { newItemsTotal, oldItemsTotal, newGrandTotal, totalItemsCount };
+        return { newItemsTotal, oldItemsTotal: 0, newGrandTotal, totalItemsCount };
     };
 
     const handleSaveChanges = async () => {
