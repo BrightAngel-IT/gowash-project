@@ -104,17 +104,17 @@ export default function EditOrderScreen() {
             const initialBasket: { [key: string]: number } = {};
             if (initialItemsList && initialItemsList.length > 0) {
                 initialItemsList.forEach((item: any) => {
-                    const slugFromName = item.item_name.toLowerCase().replace(/\s+/g, '_');
-                    const match = catalogItems.find(c => 
+                    const slugFromName = item.item_name ? item.item_name.toLowerCase().replace(/\s+/g, '_') : '';
+                    const match = items.find(c => 
                         c.id.toString() === item.item_id.toString() ||
                         c.name.toLowerCase().replace(/\s+/g, '_') === slugFromName ||
                         c.name.toLowerCase().replace(/\s+/g, '_') === item.item_id
                     );
                     if (match) {
-                        initialBasket[match.id] = item.quantity;
-                    } else {
-                        initialBasket[item.item_id] = item.quantity;
+                        initialBasket[match.id] = (initialBasket[match.id] || 0) + item.quantity;
                     }
+                    // We DO NOT add unmatched items to the basket anymore.
+                    // This prevents hidden items (from other services or legacy notes) from driving up the total price.
                 });
             }
             setBasket(initialBasket);
