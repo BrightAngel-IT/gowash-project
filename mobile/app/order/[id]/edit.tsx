@@ -189,10 +189,12 @@ export default function EditOrderScreen() {
             deliveryFeeNum = 125;
         }
 
-        // New grand total is simply the new items total + delivery fee
-        const newGrandTotal = newItemsTotal + deliveryFeeNum;
+        const serviceFee = newItemsTotal > 0 ? 39 : 0;
 
-        return { newItemsTotal, oldItemsTotal: 0, newGrandTotal, totalItemsCount, deliveryFeeNum };
+        // New grand total is simply the new items total + delivery fee + service fee
+        const newGrandTotal = newItemsTotal + deliveryFeeNum + serviceFee;
+
+        return { newItemsTotal, oldItemsTotal: 0, newGrandTotal, totalItemsCount, deliveryFeeNum, serviceFee };
     };
 
     const handleSaveChanges = async () => {
@@ -279,7 +281,7 @@ export default function EditOrderScreen() {
         );
     }
 
-    const { newItemsTotal, newGrandTotal, totalItemsCount, deliveryFeeNum } = calculateTotals();
+    const { newItemsTotal, newGrandTotal, totalItemsCount, deliveryFeeNum, serviceFee } = calculateTotals();
     const categories = Array.from(new Set(catalogItems.map(i => i.category || 'Items')));
 
     return (
@@ -384,7 +386,7 @@ export default function EditOrderScreen() {
                     <View>
                         <Text style={styles.footerTotalLabel}>TOTAL ESTIMATE</Text>
                         <Text style={styles.footerTotalPrice}>LKR {Math.round(newGrandTotal)}</Text>
-                        <Text style={{ fontSize: 11, color: Colors.textSecondary, marginTop: 2 }}>Includes LKR {deliveryFeeNum} Delivery</Text>
+                        <Text style={{ fontSize: 11, color: Colors.textSecondary, marginTop: 2 }}>Includes LKR {deliveryFeeNum} Delivery & LKR {serviceFee} Service Fee</Text>
                     </View>
                     <View style={styles.itemBadge}>
                         <Text style={styles.itemBadgeText}>{totalItemsCount} ITEMS</Text>
