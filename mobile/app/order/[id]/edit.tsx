@@ -165,7 +165,10 @@ export default function EditOrderScreen() {
             if (qty > 0) {
                 const catalogItem = catalogItems.find(i => i.id.toString() === itemId.toString());
                 if (catalogItem) {
-                    newItemsTotal += (catalogItem.current_price * qty);
+                    const priceNum = parseFloat(catalogItem.current_price);
+                    if (!isNaN(priceNum)) {
+                        newItemsTotal += (priceNum * qty);
+                    }
                     totalItemsCount += qty;
                 } else {
                     // If item is not in catalog but was in old order, try to find its old price
@@ -181,8 +184,13 @@ export default function EditOrderScreen() {
             }
         });
 
+        let deliveryFeeNum = parseFloat(order.delivery_fee);
+        if (isNaN(deliveryFeeNum)) {
+            deliveryFeeNum = 0;
+        }
+
         // New grand total is simply the new items total + delivery fee
-        const newGrandTotal = newItemsTotal + parseFloat(order.delivery_fee || 0);
+        const newGrandTotal = newItemsTotal + deliveryFeeNum;
 
         return { newItemsTotal, oldItemsTotal: 0, newGrandTotal, totalItemsCount };
     };
@@ -332,7 +340,8 @@ export default function EditOrderScreen() {
                         <Text style={styles.catHeader}>{cat}</Text>
                         {catalogItems.filter(item => (item.category || 'Items') === cat).map(item => {
                             const count = basket[item.id] || 0;
-                            const unitPrice = Math.round(item.current_price);
+                            const priceNum = parseFloat(item.current_price);
+                            const unitPrice = isNaN(priceNum) ? 0 : Math.round(priceNum);
                             return (
                                 <View key={item.id} style={styles.itemRow}>
                                     <View style={styles.itemMain}>
