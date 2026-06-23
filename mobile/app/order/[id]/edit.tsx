@@ -279,7 +279,7 @@ export default function EditOrderScreen() {
         );
     }
 
-    const { newItemsTotal, newGrandTotal, totalItemsCount } = calculateTotals();
+    const { newItemsTotal, newGrandTotal, totalItemsCount, deliveryFeeNum } = calculateTotals();
     const categories = Array.from(new Set(catalogItems.map(i => i.category || 'Items')));
 
     return (
