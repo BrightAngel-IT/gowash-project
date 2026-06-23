@@ -17,14 +17,26 @@ const calculateDistance = (lat1, lon1, lat2, lon2) => {
 
 // Helper to parse legacy notes for old orders
 const parseLegacyNotes = (order) => {
-    if (order.itemsList && order.itemsList.length > 0) return order;
-    if (!order.notes || !order.notes.includes('[Items:')) return order;
+    let cleanNotes = order.notes || '';
+    
+    // Always clean notes to avoid displaying legacy tags
+    if (cleanNotes) {
+        cleanNotes = cleanNotes.replace(/\[Items:[\s\S]*?\]/g, '').replace(/\[Add-ons:[\s\S]*?\]/g, '').trim();
+    }
+
+    if (order.itemsList && order.itemsList.length > 0) {
+        order.notes = cleanNotes;
+        return order;
+    }
+
+    if (!order.notes || !order.notes.includes('[Items:')) {
+        order.notes = cleanNotes;
+        return order;
+    }
 
     let itemsList = [];
-    let cleanNotes = order.notes;
-
     try {
-        const match = cleanNotes.match(/\[Items:\s*(.+?)\]/);
+        const match = order.notes.match(/\[Items:\s*([\s\S]+?)\]/);
         if (match) {
             if (match[1].includes(':')) {
                 const services = match[1].split(' | ');
