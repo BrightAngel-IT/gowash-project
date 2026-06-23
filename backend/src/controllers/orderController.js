@@ -371,8 +371,16 @@ export const editOrder = async (req, res) => {
         }
         
         // Use the delivery fee from the frontend (which includes fixed base fee + any express fees)
-        let finalDeliveryFee = deliveryFee !== undefined ? deliveryFee : 125;
-        const totalPrice = (reqTotalPrice - (deliveryFee || 0)) + finalDeliveryFee;
+        let finalDeliveryFee = parseFloat(deliveryFee !== undefined ? deliveryFee : 125);
+        if (isNaN(finalDeliveryFee)) finalDeliveryFee = 0;
+
+        let reqTotalNum = parseFloat(reqTotalPrice);
+        if (isNaN(reqTotalNum)) reqTotalNum = 0;
+        
+        let incomingDeliveryFee = parseFloat(deliveryFee || 0);
+        if (isNaN(incomingDeliveryFee)) incomingDeliveryFee = 0;
+
+        const totalPrice = (reqTotalNum - incomingDeliveryFee) + finalDeliveryFee;
         
         // Delete existing items
         await db.query('DELETE FROM order_items WHERE order_id = $1', [orderId]);

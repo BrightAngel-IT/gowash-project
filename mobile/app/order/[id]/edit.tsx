@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator, Alert, TextInput } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator, Alert, TextInput, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter, Stack } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -249,13 +249,23 @@ export default function EditOrderScreen() {
 
             await api.put(`/orders/${id}`, updateData);
             
-            Alert.alert('Success', 'Order updated successfully!', [
-                { text: 'OK', onPress: () => router.back() }
-            ]);
+            if (Platform.OS === 'web') {
+                window.alert('Order updated successfully!');
+                router.back();
+            } else {
+                Alert.alert('Success', 'Order updated successfully!', [
+                    { text: 'OK', onPress: () => router.back() }
+                ]);
+            }
 
         } catch (error: any) {
             console.error('Failed to update order:', error);
-            Alert.alert('Update Failed', error.response?.data?.message || 'Something went wrong.');
+            const msg = error.response?.data?.message || 'Something went wrong.';
+            if (Platform.OS === 'web') {
+                window.alert('Update Failed: ' + msg);
+            } else {
+                Alert.alert('Update Failed', msg);
+            }
         } finally {
             setSaving(false);
         }
