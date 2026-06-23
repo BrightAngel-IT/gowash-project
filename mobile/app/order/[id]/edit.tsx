@@ -182,7 +182,7 @@ export default function EditOrderScreen() {
         });
 
         // New grand total is simply the new items total + delivery fee
-        const newGrandTotal = newItemsTotal + (deliveryFee || 0);
+        const newGrandTotal = newItemsTotal + parseFloat(order.delivery_fee || 0);
 
         return { newItemsTotal, oldItemsTotal: 0, newGrandTotal, totalItemsCount };
     };
