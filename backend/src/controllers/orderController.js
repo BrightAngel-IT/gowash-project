@@ -15,6 +15,34 @@ const calculateDistance = (lat1, lon1, lat2, lon2) => {
     return parseFloat(d.toFixed(1));
 };
 
+// Helper to send Expo Push Notifications
+const sendPushNotifications = async (tokens, title, body, data = {}) => {
+    if (!tokens || tokens.length === 0) return;
+    
+    const messages = tokens.map(token => ({
+        to: token,
+        sound: 'default',
+        title,
+        body,
+        data,
+    }));
+
+    try {
+        await fetch('https://exp.host/--/api/v2/push/send', {
+            method: 'POST',
+            headers: {
+                'Accept': 'application/json',
+                'Accept-encoding': 'gzip, deflate',
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(messages),
+        });
+        console.log(`📡 Sent push notifications to ${tokens.length} devices.`);
+    } catch (error) {
+        console.error('Error sending push notifications:', error);
+    }
+};
+
 // Helper to parse legacy notes for old orders
 const parseLegacyNotes = (order) => {
     let cleanNotes = order.notes || '';
@@ -287,6 +315,20 @@ export const updateOrderStatus = async (req, res) => {
                 if (io) {
                     io.emit('new_driver_job', updatedOrder);
                     console.log(`📡 Emitted new_driver_job for order #${updatedOrder.id} with status ${status}`);
+                }
+
+                // Send push notifications to online drivers
+                try {
+                    const onlineDrivers = await db.query("SELECT push_token FROM drivers WHERE status = 'online' AND push_token IS NOT NULL");
+                    const tokens = onlineDrivers.rows.map(row => row.push_token);
+                    
+                    if (tokens.length > 0) {
+                        const title = "New Job Available!";
+                        const body = `Order #${updatedOrder.id} at ${updatedOrder.laundryName} is ready for ${status === 'Confirmed' ? 'pickup' : 'delivery'}.`;
+                        await sendPushNotifications(tokens, title, body, { orderId: updatedOrder.id });
+                    }
+                } catch (e) {
+                    console.error("Failed to send push notifications to drivers:", e);
                 }
             }
 

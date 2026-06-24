@@ -44,6 +44,7 @@ export const driverApi = {
     getHistory: (driverId: string) => api.get(`/drivers/${driverId}/history`),
     getAvailableJobs: () => api.get('/drivers/jobs/available'),
     updateStatus: (driverId: string, status: string) => api.patch(`/drivers/${driverId}/status`, { status }),
+    updatePushToken: (driverId: string, push_token: string) => api.patch(`/drivers/${driverId}/push-token`, { push_token }),
     acceptJob: (driverId: string, orderId: string) => api.post(`/drivers/${driverId}/accept-job`, { orderId }),
     updateRideStatus: (driverId: string, assignmentId: string, status: string) =>
         api.patch(`/drivers/${driverId}/ride-assignments/${assignmentId}/status`, { status }),

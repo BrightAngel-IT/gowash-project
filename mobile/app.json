@@ -1,7 +1,6 @@
 {
   "expo": {
     "name": "mobile",
-    "owner": "lakshan_umayanga",
     "slug": "mobile",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -46,8 +45,8 @@
       "typedRoutes": true,
       "reactCompiler": true
     },
+    "owner": "lakshan_umayanga",
     "extra": {
-      "router": {},
       "eas": {
         "projectId": "8a719a91-1663-4620-8985-d27009cc104d"
       }

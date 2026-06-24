@@ -100,6 +100,23 @@ export const updateStatus = async (req, res) => {
     }
 };
 
+// Update driver push token
+export const updatePushToken = async (req, res) => {
+    const { driverId } = req.params;
+    const { push_token } = req.body;
+
+    try {
+        await db.query(
+            'UPDATE drivers SET push_token = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2',
+            [push_token, driverId]
+        );
+        res.json({ message: "Push token updated successfully" });
+    } catch (error) {
+        console.error('Error updating push token:', error);
+        res.status(500).json({ message: "Server error" });
+    }
+};
+
 // Accept a ride/job request
 export const acceptJob = async (req, res) => {
     const { driverId } = req.params;

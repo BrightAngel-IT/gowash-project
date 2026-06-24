@@ -4,7 +4,7 @@ import { getAllServices, getServiceById, createService, updateService, deleteSer
 import { createOrder, getUserOrders, getOrderById, updateOrderStatus, getOrderStats, editOrder } from '../controllers/orderController.js';
 import { getUserProfile, updateUserProfile, getAllUsers, getUserStats } from '../controllers/userController.js';
 import { generateOrdersCSV, generateRevenueReport, generateCustomerReport } from '../controllers/reportController.js';
-import { getDashboard, getAvailableJobs, updateStatus, acceptJob, getAllDrivers, getDriverProfile, getDriverHistory } from '../controllers/driverController.js';
+import { getDashboard, getAvailableJobs, updateStatus, acceptJob, getAllDrivers, getDriverProfile, getDriverHistory, updatePushToken } from '../controllers/driverController.js';
 import authRoutes from './authRoutes.js';
 import laundryRoutes from './laundryRoutes.js';
 
@@ -59,6 +59,7 @@ router.get('/drivers/:driverId/history', getDriverHistory);
 router.get('/drivers/jobs/available', getAvailableJobs);
 router.patch('/drivers/:driverId/status', updateStatus);
 router.post('/drivers/:driverId/accept-job', acceptJob);
+router.patch('/drivers/:driverId/push-token', updatePushToken);
 router.get('/admin/drivers', getAllDrivers);
 
 // Time Slot Pricing Routes
