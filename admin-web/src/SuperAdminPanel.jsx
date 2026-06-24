@@ -12,7 +12,10 @@ import {
     X,
     ExternalLink,
     Loader2,
-    CheckCircle2
+    CheckCircle2,
+    BarChart2,
+    DollarSign,
+    Package
 } from 'lucide-react';
 import './SuperAdmin.css';
 import { API_URL } from './config';
@@ -22,7 +25,9 @@ const SuperAdminPanel = () => {
     const [loading, setLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [statsModalOpen, setStatsModalOpen] = useState(false);
     const [currentLaundry, setCurrentLaundry] = useState(null);
+    const [selectedStatsLaundry, setSelectedStatsLaundry] = useState(null);
     const [formData, setFormData] = useState({
         name: '',
         address: '',
@@ -44,7 +49,7 @@ const SuperAdminPanel = () => {
     const fetchLaundries = async () => {
         try {
             setLoading(true);
-            const res = await axios.get(`${API_URL}/laundries`);
+            const res = await axios.get(`${API_URL}/laundries/sales-stats`);
             setLaundries(res.data);
         } catch (err) {
             console.error('Error fetching laundries:', err);
@@ -104,6 +109,16 @@ const SuperAdminPanel = () => {
     const handleCloseModal = () => {
         setIsModalOpen(false);
         setCurrentLaundry(null);
+    };
+
+    const handleOpenStatsModal = (laundry) => {
+        setSelectedStatsLaundry(laundry);
+        setStatsModalOpen(true);
+    };
+
+    const handleCloseStatsModal = () => {
+        setStatsModalOpen(false);
+        setSelectedStatsLaundry(null);
     };
 
     const handleInputChange = (e) => {
@@ -217,6 +232,9 @@ const SuperAdminPanel = () => {
                                 </div>
 
                                 <div className="card-actions">
+                                    <button className="action-btn view-stats" onClick={() => handleOpenStatsModal(laundry)}>
+                                        <BarChart2 size={16} /> View Stats
+                                    </button>
                                     <button className="action-btn edit" onClick={() => handleOpenModal(laundry)}>
                                         <Edit3 size={16} /> Edit
                                     </button>
@@ -391,6 +409,84 @@ const SuperAdminPanel = () => {
                                 </button>
                             </div>
                         </form>
+                    </div>
+                </div>
+            )}
+
+            {statsModalOpen && selectedStatsLaundry && (
+                <div className="modal-overlay">
+                    <div className="modal-content stats-modal">
+                        <button className="close-modal" onClick={handleCloseStatsModal}>
+                            <X size={24} />
+                        </button>
+                        <div className="modal-header">
+                            <h2>Performance Stats</h2>
+                            <p className="text-muted">{selectedStatsLaundry.name} - Sales & Orders Overview</p>
+                        </div>
+                        <div className="modal-body stats-body">
+                            <div className="stats-cards-grid">
+                                <div className="stat-card primary">
+                                    <div className="stat-icon"><DollarSign size={24} /></div>
+                                    <div className="stat-info">
+                                        <span className="stat-label">Total Income</span>
+                                        <span className="stat-value">LKR {Number(selectedStatsLaundry.total_income || 0).toFixed(2)}</span>
+                                    </div>
+                                </div>
+                                <div className="stat-card secondary">
+                                    <div className="stat-icon"><Package size={24} /></div>
+                                    <div className="stat-info">
+                                        <span className="stat-label">Total Orders</span>
+                                        <span className="stat-value">{selectedStatsLaundry.total_orders || 0}</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div className="stats-breakdown">
+                                <h3>Status Breakdown</h3>
+                                <div className="breakdown-list">
+                                    <div className="breakdown-item success">
+                                        <div className="bd-left">
+                                            <CheckCircle2 size={18} />
+                                            <span>Completed (Delivered)</span>
+                                        </div>
+                                        <div className="bd-right">
+                                            <span className="bd-count">{selectedStatsLaundry.completed_count || 0} Orders</span>
+                                            <span className="bd-amount">LKR {Number(selectedStatsLaundry.completed_amount || 0).toFixed(2)}</span>
+                                        </div>
+                                    </div>
+                                    <div className="breakdown-item warning">
+                                        <div className="bd-left">
+                                            <Loader2 size={18} />
+                                            <span>Processing (Washing/Ready)</span>
+                                        </div>
+                                        <div className="bd-right">
+                                            <span className="bd-count">{selectedStatsLaundry.processing_count || 0} Orders</span>
+                                            <span className="bd-amount">LKR {Number(selectedStatsLaundry.processing_amount || 0).toFixed(2)}</span>
+                                        </div>
+                                    </div>
+                                    <div className="breakdown-item info">
+                                        <div className="bd-left">
+                                            <Clock size={18} />
+                                            <span>Pending (Confirmed/Pickup)</span>
+                                        </div>
+                                        <div className="bd-right">
+                                            <span className="bd-count">{selectedStatsLaundry.pending_count || 0} Orders</span>
+                                            <span className="bd-amount">LKR {Number(selectedStatsLaundry.pending_amount || 0).toFixed(2)}</span>
+                                        </div>
+                                    </div>
+                                    <div className="breakdown-item danger">
+                                        <div className="bd-left">
+                                            <X size={18} />
+                                            <span>Cancelled</span>
+                                        </div>
+                                        <div className="bd-right">
+                                            <span className="bd-count">{selectedStatsLaundry.cancelled_count || 0} Orders</span>
+                                            <span className="bd-amount">LKR {Number(selectedStatsLaundry.cancelled_amount || 0).toFixed(2)}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             )}

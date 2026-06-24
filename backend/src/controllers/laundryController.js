@@ -64,3 +64,34 @@ export const deleteLaundry = async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 };
+
+export const getLaundriesWithSalesStats = async (req, res) => {
+    try {
+        const query = `
+            SELECT 
+                l.*,
+                COUNT(o.id) as total_orders,
+                COALESCE(SUM(o.total_price), 0) as total_income,
+                
+                COUNT(CASE WHEN o.status = 'Delivered' THEN 1 END) as completed_count,
+                COALESCE(SUM(CASE WHEN o.status = 'Delivered' THEN o.total_price ELSE 0 END), 0) as completed_amount,
+                
+                COUNT(CASE WHEN o.status IN ('Pending', 'Confirmed', 'Pickup') THEN 1 END) as pending_count,
+                COALESCE(SUM(CASE WHEN o.status IN ('Pending', 'Confirmed', 'Pickup') THEN o.total_price ELSE 0 END), 0) as pending_amount,
+                
+                COUNT(CASE WHEN o.status IN ('Washing', 'Drying', 'Ready') THEN 1 END) as processing_count,
+                COALESCE(SUM(CASE WHEN o.status IN ('Washing', 'Drying', 'Ready') THEN o.total_price ELSE 0 END), 0) as processing_amount,
+                
+                COUNT(CASE WHEN o.status = 'Cancelled' THEN 1 END) as cancelled_count,
+                COALESCE(SUM(CASE WHEN o.status = 'Cancelled' THEN o.total_price ELSE 0 END), 0) as cancelled_amount
+            FROM laundries l
+            LEFT JOIN orders o ON l.id = o.laundry_id
+            GROUP BY l.id
+            ORDER BY l.id DESC
+        `;
+        const result = await db.query(query);
+        res.json(result.rows);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
