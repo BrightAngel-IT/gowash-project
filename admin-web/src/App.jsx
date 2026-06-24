@@ -127,17 +127,19 @@ function App() {
         const fetchedOrders = ordersRes.data;
         setOrders(fetchedOrders);
 
-        // Check for new pending orders (for both admin and superadmin)
-        const pending = fetchedOrders.filter(o => o.status === 'Pending');
-        if (pending.length > 0) {
-          // Sort to get the latest by ID
-          const latest = [...pending].sort((a, b) => b.id - a.id)[0];
+        // Check for new pending orders (only for admin)
+        if (currentUser?.role === 'admin') {
+          const pending = fetchedOrders.filter(o => o.status === 'Pending');
+          if (pending.length > 0) {
+            // Sort to get the latest by ID
+            const latest = [...pending].sort((a, b) => b.id - a.id)[0];
 
-          const lastSeen = sessionStorage.getItem('last_seen_order');
-          if (!lastSeen || parseInt(lastSeen) < latest.id) {
-            setNewOrder(latest);
-            sessionStorage.setItem('last_seen_order', latest.id);
-            playNotification();
+            const lastSeen = sessionStorage.getItem('last_seen_order');
+            if (!lastSeen || parseInt(lastSeen) < latest.id) {
+              setNewOrder(latest);
+              sessionStorage.setItem('last_seen_order', latest.id);
+              playNotification();
+            }
           }
         }
       }
