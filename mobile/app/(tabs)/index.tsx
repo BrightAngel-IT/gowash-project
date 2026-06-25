@@ -95,13 +95,18 @@ export default function DashboardScreen() {
 
     return () => {
       clearInterval(interval);
-      if (sound) sound.unloadAsync();
       if (socketRef.current) {
         socketRef.current.disconnect();
         socketRef.current = null;
       }
     };
-  }, [user, sound]);
+  }, [user?.id]);
+
+  useEffect(() => {
+    return () => {
+      if (sound) sound.unloadAsync();
+    };
+  }, [sound]);
 
   const loadData = async () => {
     try {

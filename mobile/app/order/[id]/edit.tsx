@@ -6,6 +6,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { Colors, Typography } from '@/constants/theme';
 import api from '@/constants/api';
 import Animated, { FadeInRight } from 'react-native-reanimated';
+import * as Location from 'expo-location';
+import { MapView, Marker } from '@/components/MapComponent';
 
 const timeSlots = [
     '08:00 AM - 10:00 AM',
@@ -43,6 +45,27 @@ export default function EditOrderScreen() {
     const [pickupDate, setPickupDate] = useState(dates[0].full);
     const [pickupTime, setPickupTime] = useState(timeSlots[0]);
     const [customerCoords, setCustomerCoords] = useState<{lat: number, lng: number} | null>(null);
+    const [showMapModal, setShowMapModal] = useState(false);
+
+    const handleMapPress = async (e: any) => {
+        const { coordinate } = e.nativeEvent;
+        setCustomerCoords({ lat: coordinate.latitude, lng: coordinate.longitude });
+        try {
+            let reverseGeocode = await Location.reverseGeocodeAsync({
+                latitude: coordinate.latitude,
+                longitude: coordinate.longitude,
+            });
+
+            if (reverseGeocode.length > 0) {
+                const addr = reverseGeocode[0];
+                const fullAddress = `${addr.name || ''} ${addr.street || ''}, ${addr.city || ''}, ${addr.region || ''}, ${addr.postalCode || ''}`.trim();
+                const cleaned = fullAddress.split(',').map(s => s.trim()).filter(Boolean).join(', ');
+                setAddress(cleaned);
+            }
+        } catch (error) {
+            console.log('Map press reverse geocode error:', error);
+        }
+    };
 
     useEffect(() => {
         fetchOrderAndCatalog();
@@ -319,7 +342,20 @@ export default function EditOrderScreen() {
                         ))}
                     </View>
 
-                    <Text style={[styles.subLabel, { marginTop: 20 }]}>Delivery Address</Text>
+                    <Text style={[styles.subLabel, { marginTop: 20 }]}>Pickup/Delivery Location</Text>
+                    
+                    <TouchableOpacity style={styles.mapTriggerCard} onPress={() => setShowMapModal(true)}>
+                        <View style={styles.mapTriggerIcon}>
+                            <Ionicons name="map-outline" size={24} color={Colors.primary} />
+                        </View>
+                        <View style={{ flex: 1 }}>
+                            <Text style={styles.mapTriggerTitle}>Adjust Pin on Map</Text>
+                            <Text style={styles.mapTriggerSub} numberOfLines={1}>Tap here to open the map</Text>
+                        </View>
+                        <Ionicons name="chevron-forward" size={20} color={Colors.textSecondary} />
+                    </TouchableOpacity>
+
+                    <Text style={[styles.subLabel, { marginTop: 15 }]}>Address Details</Text>
                     <View style={styles.inputBox}>
                         <Ionicons name="location-outline" size={20} color={Colors.textSecondary} />
                         <TextInput style={styles.input} value={address} onChangeText={setAddress} multiline placeholder="Enter detailed address" />
@@ -401,6 +437,46 @@ export default function EditOrderScreen() {
                     {saving ? <ActivityIndicator color="#fff" /> : <Text style={styles.saveBtnText}>Save Changes</Text>}
                 </TouchableOpacity>
             </View>
+
+            {/* Map Selection Modal */}
+            <Modal visible={showMapModal} animationType="slide" transparent={false}>
+                <View style={styles.mapModalContainer}>
+                    <View style={styles.mapModalHeader}>
+                        <TouchableOpacity onPress={() => setShowMapModal(false)} style={styles.mapModalCloseBtn}>
+                            <Ionicons name="close" size={24} color={Colors.text} />
+                        </TouchableOpacity>
+                        <Text style={styles.mapModalTitle}>Select Location</Text>
+                        <View style={{ width: 40 }} />
+                    </View>
+                    <View style={styles.mapModalBody}>
+                        <MapView
+                            style={styles.fullMap}
+                            region={{
+                                latitude: customerCoords?.lat || 6.9271,
+                                longitude: customerCoords?.lng || 79.8612,
+                                latitudeDelta: 0.005,
+                                longitudeDelta: 0.005,
+                            }}
+                            onPress={handleMapPress}
+                        >
+                            {customerCoords?.lat && (
+                                <Marker 
+                                    coordinate={{ latitude: customerCoords.lat, longitude: customerCoords.lng }} 
+                                    pinColor={Colors.primary}
+                                />
+                            )}
+                        </MapView>
+                        <View style={styles.mapHintOverlay}>
+                            <Text style={styles.mapHintText}>Tap anywhere to move the pin</Text>
+                        </View>
+                    </View>
+                    <View style={styles.mapModalFooter}>
+                        <TouchableOpacity style={styles.mapModalConfirmBtn} onPress={() => setShowMapModal(false)}>
+                            <Text style={styles.mapModalConfirmText}>Confirm Location</Text>
+                        </TouchableOpacity>
+                    </View>
+                </View>
+            </Modal>
         </SafeAreaView>
     );
 }
@@ -447,5 +523,20 @@ const styles = StyleSheet.create({
     serviceCardText: { fontSize: 14, fontWeight: '600', color: Colors.text },
     timeText: { fontSize: 13, fontWeight: '600', color: Colors.text },
     inputBox: { flexDirection: 'row', alignItems: 'flex-start', backgroundColor: '#F8FAFC', padding: 14, borderRadius: 14, borderWidth: 1, borderColor: '#F1F5F9' },
-    input: { flex: 1, marginLeft: 10, fontSize: 14, color: Colors.text, minHeight: 40, textAlignVertical: 'top' }
+    input: { flex: 1, marginLeft: 10, fontSize: 14, color: Colors.text, minHeight: 40, textAlignVertical: 'top' },
+    mapTriggerCard: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#F8FAFC', padding: 16, borderRadius: 16, borderWidth: 1, borderColor: '#E2E8F0', marginBottom: 5 },
+    mapTriggerIcon: { width: 44, height: 44, borderRadius: 12, backgroundColor: '#EFF6FF', justifyContent: 'center', alignItems: 'center', marginRight: 15 },
+    mapTriggerTitle: { fontSize: 15, fontWeight: '700', color: Colors.text, marginBottom: 4 },
+    mapTriggerSub: { fontSize: 13, color: Colors.textSecondary },
+    mapModalContainer: { flex: 1, backgroundColor: '#fff' },
+    mapModalHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', padding: 20, paddingTop: 50, borderBottomWidth: 1, borderBottomColor: '#F1F5F9' },
+    mapModalCloseBtn: { width: 40, height: 40, borderRadius: 20, backgroundColor: '#F8FAFC', justifyContent: 'center', alignItems: 'center' },
+    mapModalTitle: { fontSize: 18, fontWeight: '800', color: Colors.text },
+    mapModalBody: { flex: 1, position: 'relative' },
+    fullMap: { flex: 1 },
+    mapHintOverlay: { position: 'absolute', bottom: 20, alignSelf: 'center', backgroundColor: 'rgba(0,0,0,0.7)', paddingHorizontal: 16, paddingVertical: 10, borderRadius: 20 },
+    mapHintText: { color: '#FFF', fontSize: 13, fontWeight: '600' },
+    mapModalFooter: { padding: 20, backgroundColor: '#fff', borderTopWidth: 1, borderTopColor: '#F1F5F9', paddingBottom: 40 },
+    mapModalConfirmBtn: { backgroundColor: Colors.primary, padding: 18, borderRadius: 16, alignItems: 'center' },
+    mapModalConfirmText: { color: '#fff', fontSize: 16, fontWeight: '700' },
 });
