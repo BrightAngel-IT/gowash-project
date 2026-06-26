@@ -621,70 +621,136 @@
     background: #16a34a;
     color: white;
 }
- / *   D r i l l   D o w n   S t y l i n g   * / 
- . c l i c k a b l e - s t a t   { 
-         c u r s o r :   p o i n t e r ; 
-         t r a n s i t i o n :   t r a n s f o r m   0 . 2 s ,   b o x - s h a d o w   0 . 2 s ,   b o r d e r - c o l o r   0 . 2 s ; 
- } 
- 
- . c l i c k a b l e - s t a t : h o v e r   { 
-         t r a n s f o r m :   t r a n s l a t e Y ( - 2 p x ) ; 
-         b o x - s h a d o w :   0   8 p x   1 6 p x   r g b a ( 0 ,   0 ,   0 ,   0 . 0 5 ) ; 
- } 
- 
- . a c t i v e - f i l t e r   { 
-         b o r d e r :   2 p x   s o l i d   v a r ( - - p r i m a r y ) ; 
-         b a c k g r o u n d :   # f 8 f a f c ; 
- } 
- 
- . o r d e r s - m o d a l   { 
-         m a x - w i d t h :   9 0 0 p x ; 
-         w i d t h :   9 0 v w ; 
- } 
- 
- . t a b l e - r e s p o n s i v e   { 
-         w i d t h :   1 0 0 % ; 
-         o v e r f l o w - x :   a u t o ; 
- } 
- 
- . o r d e r s - t a b l e   { 
-         w i d t h :   1 0 0 % ; 
-         b o r d e r - c o l l a p s e :   c o l l a p s e ; 
-         m a r g i n - t o p :   1 0 p x ; 
- } 
- 
- . o r d e r s - t a b l e   t h ,   . o r d e r s - t a b l e   t d   { 
-         p a d d i n g :   1 4 p x   1 6 p x ; 
-         t e x t - a l i g n :   l e f t ; 
-         b o r d e r - b o t t o m :   1 p x   s o l i d   # f 1 f 5 f 9 ; 
- } 
- 
- . o r d e r s - t a b l e   t h   { 
-         f o n t - w e i g h t :   7 0 0 ; 
-         c o l o r :   # 6 4 7 4 8 b ; 
-         t e x t - t r a n s f o r m :   u p p e r c a s e ; 
-         f o n t - s i z e :   1 3 p x ; 
-         b a c k g r o u n d :   # f 8 f a f c ; 
- } 
- 
- . o r d e r s - t a b l e   t b o d y   t r : h o v e r   { 
-         b a c k g r o u n d :   # f 8 f a f c ; 
- } 
- 
- . s t a t u s - b a d g e   { 
-         p a d d i n g :   6 p x   1 2 p x ; 
-         b o r d e r - r a d i u s :   1 2 p x ; 
-         f o n t - s i z e :   1 2 p x ; 
-         f o n t - w e i g h t :   7 0 0 ; 
-         t e x t - t r a n s f o r m :   u p p e r c a s e ; 
- } 
- 
- . s t a t u s - b a d g e . p e n d i n g   {   b a c k g r o u n d :   # f e f 3 c 7 ;   c o l o r :   # d 9 7 7 0 6 ;   } 
- . s t a t u s - b a d g e . c o n f i r m e d   {   b a c k g r o u n d :   # d 1 f a e 5 ;   c o l o r :   # 0 5 9 6 6 9 ;   } 
- . s t a t u s - b a d g e . p i c k u p   {   b a c k g r o u n d :   # d b e a f e ;   c o l o r :   # 2 5 6 3 e b ;   } 
- . s t a t u s - b a d g e . w a s h i n g   {   b a c k g r o u n d :   # e 0 e 7 f f ;   c o l o r :   # 4 3 3 8 c a ;   } 
- . s t a t u s - b a d g e . r e a d y   {   b a c k g r o u n d :   # e d e 9 f e ;   c o l o r :   # 7 c 3 a e d ;   } 
- . s t a t u s - b a d g e . d e l i v e r e d   {   b a c k g r o u n d :   # d c f c e 7 ;   c o l o r :   # 1 6 a 3 4 a ;   } 
- . s t a t u s - b a d g e . c a n c e l l e d   {   b a c k g r o u n d :   # f e e 2 e 2 ;   c o l o r :   # d c 2 6 2 6 ;   } 
-  
- 
+
+/* Drill Down Styling - Professional */
+.clickable-stat {
+    cursor: pointer !important;
+    transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.3s, border-color 0.3s;
+    position: relative;
+}
+
+.clickable-stat:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.08);
+}
+
+.clickable-stat::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    border-radius: 20px;
+    border: 2px solid transparent;
+    transition: border-color 0.3s;
+    pointer-events: none;
+}
+
+.clickable-stat:hover::after {
+    border-color: rgba(79, 172, 254, 0.3);
+}
+
+.active-filter::after {
+    border-color: var(--primary) !important;
+}
+
+.active-filter {
+    background: #f8fafc;
+}
+
+.orders-modal {
+    max-width: 1000px;
+    width: 95vw;
+    border-radius: 24px;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    background: white;
+}
+
+.orders-modal-body {
+    padding: 0 !important;
+}
+
+.table-responsive {
+    width: 100%;
+    overflow-x: auto;
+    padding: 24px 32px;
+}
+
+.orders-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0 8px;
+    margin-top: 10px;
+}
+
+.orders-table th {
+    font-weight: 700;
+    color: #64748b;
+    text-transform: uppercase;
+    font-size: 13px;
+    letter-spacing: 0.5px;
+    padding: 0 20px 12px;
+    border: none;
+    text-align: left;
+}
+
+.orders-table td {
+    padding: 16px 20px;
+    background: #fff;
+    border-top: 1px solid #f1f5f9;
+    border-bottom: 1px solid #f1f5f9;
+    vertical-align: middle;
+    font-size: 14px;
+    color: #334155;
+    transition: background-color 0.2s, transform 0.2s;
+    text-align: left;
+}
+
+.orders-table td:first-child {
+    border-left: 1px solid #f1f5f9;
+    border-top-left-radius: 12px;
+    border-bottom-left-radius: 12px;
+    font-weight: 700;
+    color: #0f172a;
+}
+
+.orders-table td:last-child {
+    border-right: 1px solid #f1f5f9;
+    border-top-right-radius: 12px;
+    border-bottom-right-radius: 12px;
+    font-weight: 700;
+}
+
+.orders-table tbody tr {
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.orders-table tbody tr:hover td {
+    background: #f8fafc;
+    border-color: #e2e8f0;
+}
+
+.orders-table tbody tr:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.06);
+}
+
+.status-badge {
+    padding: 6px 14px;
+    border-radius: 100px;
+    font-size: 12px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    display: inline-block;
+}
+
+.status-badge.pending { background: #fffbeb; color: #d97706; border: 1px solid #fde68a; }
+.status-badge.confirmed { background: #ecfdf5; color: #059669; border: 1px solid #a7f3d0; }
+.status-badge.pickup { background: #eff6ff; color: #2563eb; border: 1px solid #bfdbfe; }
+.status-badge.washing { background: #eef2ff; color: #4338ca; border: 1px solid #c7d2fe; }
+.status-badge.ready { background: #f5f3ff; color: #7c3aed; border: 1px solid #ddd6fe; }
+.status-badge.delivered { background: #f0fdf4; color: #16a34a; border: 1px solid #bbf7d0; }
+.status-badge.cancelled { background: #fef2f2; color: #dc2626; border: 1px solid #fecaca; }
