@@ -109,7 +109,7 @@ export default function OrdersScreen() {
                                 <Ionicons name="basket-outline" size={16} color={Colors.textSecondary} />
                                 <Text style={styles.footerText}>{item.items} Items</Text>
                             </View>
-                            <Text style={styles.price}>LKR {item.total_price}</Text>
+                            <Text style={styles.price}>LKR {Number(item.total_price).toLocaleString('en-US')}</Text>
                         </View>
 
                         {item.status === 'Active' || item.status === 'Washing' ? (

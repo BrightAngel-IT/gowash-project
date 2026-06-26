@@ -15,7 +15,8 @@
       "adaptiveIcon": {
         "backgroundColor": "#ffffff"
       },
-      "package": "com.brightaangel.mobiletuk"
+      "package": "com.brightaangel.mobiletuk",
+      "googleServicesFile": "./google-services.json"
     },
     "web": {
       "bundler": "metro"

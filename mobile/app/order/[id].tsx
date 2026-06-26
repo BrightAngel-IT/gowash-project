@@ -137,9 +137,9 @@ export default function OrderDetailsScreen() {
                             <View key={index} style={styles.itemRow}>
                                 <View style={styles.itemLeft}>
                                     <Text style={styles.itemName}>{item.item_name}</Text>
-                                    <Text style={styles.itemMeta}>Qty: {item.quantity} {item.price_per_unit !== '-' ? `x LKR ${item.price_per_unit}` : ''}</Text>
+                                    <Text style={styles.itemMeta}>Qty: {item.quantity} {item.price_per_unit !== '-' ? `x LKR ${Number(item.price_per_unit).toLocaleString('en-US')}` : ''}</Text>
                                 </View>
-                                <Text style={styles.itemTotal}>{item.total_price !== '-' ? `LKR ${item.total_price}` : ''}</Text>
+                                <Text style={styles.itemTotal}>{item.total_price !== '-' ? `LKR ${Number(item.total_price).toLocaleString('en-US')}` : ''}</Text>
                             </View>
                         ))
                     ) : (
@@ -152,11 +152,11 @@ export default function OrderDetailsScreen() {
                     <View style={styles.divider} />
                     <View style={styles.summaryRow}>
                         <Text style={styles.summaryLabel}>Delivery Fee</Text>
-                        <Text style={styles.summaryValue}>LKR {order.delivery_fee || 0}</Text>
+                        <Text style={styles.summaryValue}>LKR {Number(order.delivery_fee || 0).toLocaleString('en-US')}</Text>
                     </View>
                     <View style={[styles.summaryRow, { marginTop: 8 }]}>
                         <Text style={styles.grandTotalLabel}>Total Paid</Text>
-                        <Text style={styles.grandTotalValue}>LKR {order.total_price}</Text>
+                        <Text style={styles.grandTotalValue}>LKR {Number(order.total_price).toLocaleString('en-US')}</Text>
                     </View>
                 </Animated.View>
             </ScrollView>

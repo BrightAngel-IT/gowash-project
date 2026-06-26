@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "174736569358",
+    "project_id": "go-wash-a0676",
+    "storage_bucket": "go-wash-a0676.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:174736569358:android:0c363234d4e1a7ef60b85f",
+        "android_client_info": {
+          "package_name": "com.brightaangel.mobiletuk"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDdb-panrdMYaUz67ft8BjfR92nrbqhJSI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -403,7 +403,7 @@ export default function AdvancedScheduleScreen() {
                                             <Ionicons name={a.icon as any} size={20} color={selectedAddons.includes(a.id) ? Colors.primary : Colors.textSecondary} />
                                             <Text style={[styles.addonName, selectedAddons.includes(a.id) && styles.textPrimary]}>{a.name}</Text>
                                         </View>
-                                        <Text style={styles.addonPrice}>+ LKR {a.price}</Text>
+                                        <Text style={styles.addonPrice}>+ LKR {Number(a.price).toLocaleString('en-US')}</Text>
                                     </TouchableOpacity>
                                 ))}
                             </View>
@@ -453,7 +453,7 @@ export default function AdvancedScheduleScreen() {
                                                         <Text style={styles.itemName}>{item.name}</Text>
                                                         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                                                             <Text style={styles.itemPrice}>
-                                                                LKR {unitPrice} 
+                                                                LKR {Number(unitPrice).toLocaleString('en-US')} 
                                                                 <Text style={{ fontSize: 10, color: Colors.textSecondary }}> / {item.current_unit === 'kg' ? 'KG' : 'PC'}</Text>
                                                             </Text>
                                                         </View>
@@ -602,7 +602,7 @@ export default function AdvancedScheduleScreen() {
                                                     <Text style={styles.receiptItemName}>{it.name} x {it.qty} {it.unit === 'kg' ? 'KG' : ''}</Text>
                                                     {it.pieces && <Text style={styles.receiptItemPcs}>({it.pieces} pieces)</Text>}
                                                 </View>
-                                                <Text style={styles.receiptItemPrice}>LKR {it.sub}</Text>
+                                                <Text style={styles.receiptItemPrice}>LKR {Number(it.sub).toLocaleString('en-US')}</Text>
                                             </View>
                                         ))}
                                     </View>
@@ -616,7 +616,7 @@ export default function AdvancedScheduleScreen() {
                                             return (
                                                 <View key={id} style={styles.receiptItem}>
                                                     <Text style={styles.receiptItemName}>{a?.name}</Text>
-                                                    <Text style={styles.receiptItemPrice}>LKR {a?.price}</Text>
+                                                    <Text style={styles.receiptItemPrice}>LKR {Number(a?.price).toLocaleString('en-US')}</Text>
                                                 </View>
                                             );
                                         })}
@@ -624,10 +624,10 @@ export default function AdvancedScheduleScreen() {
                                 )}
 
                                 <View style={styles.receiptDivider} />
-                                <View style={styles.receiptTotalRow}><Text style={styles.receiptLabel}>Amount</Text><Text style={styles.receiptValue}>Rs. {itemsTotal + addonsTotal}</Text></View>
-                                <View style={styles.receiptTotalRow}><Text style={styles.receiptLabel}>Service Fee (Fixed)</Text><Text style={styles.receiptValue}>Rs. {serviceFee}</Text></View>
-                                <View style={styles.receiptTotalRow}><Text style={styles.receiptLabel}>Delivery Fee (Fixed)</Text><Text style={styles.receiptValue}>Rs. {deliveryFee}</Text></View>
-                                <View style={[styles.receiptTotalRow, { marginTop: 10 }]}><Text style={styles.receiptGrandLabel}>Total</Text><Text style={styles.receiptGrandValue}>Rs. {grandTotal}</Text></View>
+                                <View style={styles.receiptTotalRow}><Text style={styles.receiptLabel}>Amount</Text><Text style={styles.receiptValue}>Rs. {Number(itemsTotal + addonsTotal).toLocaleString('en-US')}</Text></View>
+                                <View style={styles.receiptTotalRow}><Text style={styles.receiptLabel}>Service Fee (Fixed)</Text><Text style={styles.receiptValue}>Rs. {Number(serviceFee).toLocaleString('en-US')}</Text></View>
+                                <View style={styles.receiptTotalRow}><Text style={styles.receiptLabel}>Delivery Fee (Fixed)</Text><Text style={styles.receiptValue}>Rs. {Number(deliveryFee).toLocaleString('en-US')}</Text></View>
+                                <View style={[styles.receiptTotalRow, { marginTop: 10 }]}><Text style={styles.receiptGrandLabel}>Total</Text><Text style={styles.receiptGrandValue}>Rs. {Number(grandTotal).toLocaleString('en-US')}</Text></View>
                             </View>
 
                             <View style={styles.logisticSummary}>
@@ -666,7 +666,7 @@ export default function AdvancedScheduleScreen() {
                 <View style={styles.footerPriceRow}>
                     <View>
                         <Text style={styles.footerTotalLabel}>ESTIMATED TOTAL</Text>
-                        <Text style={styles.footerTotalPrice}>LKR {currentStep === 3 ? grandTotal : (itemsTotal + addonsTotal + serviceFee)}.00</Text>
+                        <Text style={styles.footerTotalPrice}>LKR {Number(currentStep === 3 ? grandTotal : (itemsTotal + addonsTotal + serviceFee)).toLocaleString('en-US', {minimumFractionDigits: 2})}</Text>
                     </View>
                     <View style={styles.itemBadge}>
                         <Text style={styles.itemBadgeText}>{totalItemsCount} ITEMS</Text>

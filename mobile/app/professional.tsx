@@ -148,7 +148,7 @@ export default function ProfessionalDashboard() {
                         {item.itemsList.map((oi: any, idx: number) => (
                             <View key={idx} style={styles.itemBreakdownRow}>
                                 <Text style={styles.breakdownText}>• {oi.item_name} ({oi.quantity}) {oi.pieces ? `(${oi.pieces} pc)` : ''}</Text>
-                                <Text style={styles.breakdownSubtext}>LKR {oi.total_price}</Text>
+                                <Text style={styles.breakdownSubtext}>LKR {Number(oi.total_price).toLocaleString('en-US')}</Text>
                             </View>
                         ))}
                     </View>
@@ -306,7 +306,7 @@ export default function ProfessionalDashboard() {
                                 </View>
 
                                 <Text style={styles.popupPriceLabel}>BILLING TOTAL</Text>
-                                <Text style={styles.popupPrice}>LKR {newOrder?.total_price}.00</Text>
+                                <Text style={styles.popupPrice}>LKR {Number(newOrder?.total_price || 0).toLocaleString('en-US', {minimumFractionDigits: 2})}</Text>
                             </View>
 
                             <View style={styles.popupActions}>
