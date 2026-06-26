@@ -68,7 +68,10 @@ const SuperAdminPanel = () => {
     const stats = {
         total: laundries.length,
         active: laundries.filter(l => l.status === 'active').length,
-        inactive: laundries.filter(l => l.status === 'inactive').length
+        inactive: laundries.filter(l => l.status === 'inactive').length,
+        totalOrders: laundries.reduce((sum, l) => sum + (parseInt(l.total_orders) || 0), 0),
+        pendingOrders: laundries.reduce((sum, l) => sum + (parseInt(l.pending_count) || 0), 0),
+        finishedOrders: laundries.reduce((sum, l) => sum + (parseInt(l.completed_count) || 0), 0)
     };
 
     const handleOpenModal = (laundry = null) => {
@@ -192,6 +195,18 @@ const SuperAdminPanel = () => {
                 <div className="mini-stat">
                     <span className="label">Inactive</span>
                     <span className="value text-danger">{stats.inactive}</span>
+                </div>
+                <div className="mini-stat">
+                    <span className="label">Total Orders</span>
+                    <span className="value text-primary">{stats.totalOrders}</span>
+                </div>
+                <div className="mini-stat">
+                    <span className="label">Pending Orders</span>
+                    <span className="value text-warning">{stats.pendingOrders}</span>
+                </div>
+                <div className="mini-stat">
+                    <span className="label">Finished Orders</span>
+                    <span className="value text-info">{stats.finishedOrders}</span>
                 </div>
             </div>
 
