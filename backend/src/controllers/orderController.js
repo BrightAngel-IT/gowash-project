@@ -196,8 +196,32 @@ export const createOrder = async (req, res) => {
             [orderId]
         );
 
+        const createdOrder = newOrder.rows[0];
+
+        // 🔔 Notify Drivers immediately when customer places an order
+        const io = req.app.get('io');
+        if (io) {
+            io.emit('new_driver_job', createdOrder);
+            console.log(`📡 Emitted new_driver_job for newly created order #${createdOrder.id}`);
+        }
+
+        try {
+            const onlineDrivers = await db.query("SELECT push_token FROM drivers WHERE status = 'online' AND push_token IS NOT NULL");
+            const tokens = onlineDrivers.rows.map(row => row.push_token);
+            
+            if (tokens.length > 0) {
+                const title = "New Job Available!";
+                const body = `New order #${createdOrder.id} at ${createdOrder.laundryName} is ready for pickup.`;
+                await sendPushNotifications(tokens, title, body, { orderId: createdOrder.id });
+            } else {
+                console.log(`⚠️ No online drivers with push tokens found to notify for order #${createdOrder.id}`);
+            }
+        } catch (e) {
+            console.error("Failed to send push notifications to drivers on create:", e);
+        }
+
         console.log('✅ Order created successfully:', orderId);
-        res.status(201).json(newOrder.rows[0]);
+        res.status(201).json(createdOrder);
     } catch (error) {
         console.error('❌ Order insertion failed:', error);
         res.status(500).json({
