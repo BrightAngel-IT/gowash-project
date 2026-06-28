@@ -8,6 +8,7 @@ import { Colors } from '../../constants/Colors';
 import { Wallet, Navigation, Star, TrendingUp, Clock, Package, Store, AlertCircle, ChevronRight } from 'lucide-react-native';
 import { driverApi, SOCKET_URL } from '../../constants/api';
 import { useAuth } from '../../context/AuthContext';
+import { registerForPushNotificationsAsync } from '../../utils/pushNotifications';
 import io from 'socket.io-client';
 import Animated, { useSharedValue, useAnimatedStyle, withSpring, runOnJS } from 'react-native-reanimated';
 import { GestureDetector, Gesture, GestureHandlerRootView } from 'react-native-gesture-handler';
@@ -177,6 +178,15 @@ export default function DashboardScreen() {
 
     useEffect(() => {
         fetchDashboard();
+        
+        // Ensure push token is always sent to backend on dashboard load
+        registerForPushNotificationsAsync().then(token => {
+            if (token && driverId) {
+                driverApi.updatePushToken(driverId, token).catch(console.error);
+                console.log('✅ Push token updated in backend from dashboard:', token);
+            }
+        });
+
         socketRef.current = io(SOCKET_URL, {
             transports: ['websocket']
         });
