@@ -19,7 +19,15 @@
       "googleServicesFile": "./google-services.json"
     },
     "web": {
-      "bundler": "metro"
+      "bundler": "metro",
+      "output": "static",
+      "name": "Go Wash Driver",
+      "shortName": "Go Wash",
+      "themeColor": "#ffffff",
+      "backgroundColor": "#ffffff",
+      "display": "standalone",
+      "startUrl": "/",
+      "orientation": "portrait"
     },
     "plugins": [
       "expo-router"
