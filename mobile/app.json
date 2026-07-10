@@ -24,7 +24,15 @@
     },
     "web": {
       "output": "static",
-      "favicon": "./assets/images/favicon.png"
+      "favicon": "./assets/images/favicon.png",
+      "name": "Go Wash",
+      "shortName": "Go Wash",
+      "themeColor": "#E6F4FE",
+      "backgroundColor": "#ffffff",
+      "display": "standalone",
+      "scope": "/",
+      "startUrl": "/",
+      "orientation": "portrait"
     },
     "plugins": [
       "expo-router",
