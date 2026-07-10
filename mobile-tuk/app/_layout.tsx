@@ -1,4 +1,4 @@
-import { Stack, router } from 'expo-router';
+import { Stack, router, Head } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { ThemeProvider, DarkTheme, DefaultTheme } from '@react-navigation/native';
 import { useColorScheme, View, ActivityIndicator } from 'react-native';
@@ -37,6 +37,12 @@ function RootLayoutNav() {
 
     return (
         <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+            <Head>
+                <link rel="manifest" href="/manifest.json" />
+                <meta name="apple-mobile-web-app-capable" content="yes" />
+                <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+                <meta name="apple-mobile-web-app-title" content="Go Wash Driver" />
+            </Head>
             <Stack screenOptions={{
                 headerShown: false,
                 contentStyle: { backgroundColor: colorScheme === 'dark' ? '#121212' : '#FFFFFF' }
