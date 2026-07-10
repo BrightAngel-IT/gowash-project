@@ -1,4 +1,5 @@
-import { Stack, router, Head } from 'expo-router';
+import { Stack, router } from 'expo-router';
+import Head from 'expo-router/head';
 import { StatusBar } from 'expo-status-bar';
 import { ThemeProvider, DarkTheme, DefaultTheme } from '@react-navigation/native';
 import { useColorScheme, View, ActivityIndicator } from 'react-native';
