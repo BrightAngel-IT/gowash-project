@@ -280,25 +280,26 @@ export default function AdvancedScheduleScreen() {
         const serviceFee = itemsTotal > 0 ? 39 : 0; // Fixed Service Fee
         
         let deliveryFee = 0;
+        let priorityFee = 0;
         if (itemsTotal > 0) {
             // Fixed Delivery Fee
             deliveryFee = 125;
             
             if (deliverySpeed === 'Express') {
                 if (totalItemsCount < 5) {
-                    deliveryFee += 1000;
+                    priorityFee = 1000;
                 } else {
-                    deliveryFee += 1000 + ((totalItemsCount - 4) * 100);
+                    priorityFee = 1000 + ((totalItemsCount - 4) * 100);
                 }
             }
         }
 
-        const grandTotal = itemsTotal + addonsTotal + serviceFee + deliveryFee;
+        const grandTotal = itemsTotal + addonsTotal + serviceFee + deliveryFee + priorityFee;
 
-        return { itemsTotal, addonsTotal, serviceFee, deliveryFee, grandTotal, totalItemsCount, breakdown };
+        return { itemsTotal, addonsTotal, serviceFee, deliveryFee, priorityFee, grandTotal, totalItemsCount, breakdown };
     };
 
-    const { itemsTotal, addonsTotal, serviceFee, deliveryFee, grandTotal, totalItemsCount, breakdown } = calculateTotals();
+    const { itemsTotal, addonsTotal, serviceFee, deliveryFee, priorityFee, grandTotal, totalItemsCount, breakdown } = calculateTotals();
 
     const handleNext = () => {
         if (currentStep === 0 && Object.keys(basket).length === 0) {
@@ -348,7 +349,7 @@ export default function AdvancedScheduleScreen() {
                 customerName: user.name,
                 notes: `${notes} [Items: ${summary}] [Add-ons: ${addonsNames || 'None'}]`,
                 orderItems: orderItemsFormatted,
-                deliveryFee: deliveryFee,
+                deliveryFee: deliveryFee + priorityFee,
                 customerLat: customerCoords?.lat,
                 customerLng: customerCoords?.lng
             };
@@ -651,6 +652,9 @@ export default function AdvancedScheduleScreen() {
                                 <View style={styles.receiptTotalRow}><Text style={styles.receiptLabel}>Amount</Text><Text style={styles.receiptValue}>Rs. {Number(itemsTotal + addonsTotal).toLocaleString('en-US')}</Text></View>
                                 <View style={styles.receiptTotalRow}><Text style={styles.receiptLabel}>Service Fee (Fixed)</Text><Text style={styles.receiptValue}>Rs. {Number(serviceFee).toLocaleString('en-US')}</Text></View>
                                 <View style={styles.receiptTotalRow}><Text style={styles.receiptLabel}>Delivery Fee (Fixed)</Text><Text style={styles.receiptValue}>Rs. {Number(deliveryFee).toLocaleString('en-US')}</Text></View>
+                                {priorityFee > 0 && (
+                                    <View style={styles.receiptTotalRow}><Text style={styles.receiptLabel}>Priority Service Fee</Text><Text style={styles.receiptValue}>Rs. {Number(priorityFee).toLocaleString('en-US')}</Text></View>
+                                )}
                                 <View style={[styles.receiptTotalRow, { marginTop: 10 }]}><Text style={styles.receiptGrandLabel}>Total</Text><Text style={styles.receiptGrandValue}>Rs. {Number(grandTotal).toLocaleString('en-US')}</Text></View>
                             </View>
 
