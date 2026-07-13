@@ -285,7 +285,11 @@ export default function AdvancedScheduleScreen() {
             deliveryFee = 125;
             
             if (deliverySpeed === 'Express') {
-                deliveryFee += 300; // Priority Fee
+                if (totalItemsCount < 5) {
+                    deliveryFee += 1000;
+                } else {
+                    deliveryFee += 1000 + ((totalItemsCount - 4) * 100);
+                }
             }
         }
 
@@ -503,7 +507,16 @@ export default function AdvancedScheduleScreen() {
                         <Text style={styles.subLabel}>Choose Pickup Date</Text>
                         <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.dateList}>
                             {dates.map((d, i) => (
-                                <TouchableOpacity key={i} style={[styles.dateCard, selectedDate === d.full && styles.dateCardActive]} onPress={() => setSelectedDate(d.full)}>
+                                <TouchableOpacity 
+                                    key={i} 
+                                    style={[styles.dateCard, selectedDate === d.full && styles.dateCardActive]} 
+                                    onPress={() => {
+                                        setSelectedDate(d.full);
+                                        if (deliveryDate < d.full) {
+                                            setDeliveryDate(d.full);
+                                        }
+                                    }}
+                                >
                                     <Text style={[styles.dateDay, selectedDate === d.full && styles.textWhite]}>{d.day}</Text>
                                     <Text style={[styles.dateNum, selectedDate === d.full && styles.textWhite]}>{d.date}</Text>
                                 </TouchableOpacity>
@@ -533,12 +546,23 @@ export default function AdvancedScheduleScreen() {
 
                         <Text style={[styles.subLabel, { marginTop: 20 }]}>Choose Delivery Date</Text>
                         <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.dateList}>
-                            {dates.map((d, i) => (
-                                <TouchableOpacity key={i} style={[styles.dateCard, deliveryDate === d.full && styles.dateCardActive]} onPress={() => setDeliveryDate(d.full)}>
+                            {dates.map((d, i) => {
+                                const isBeforePickup = d.full < selectedDate;
+                                return (
+                                <TouchableOpacity 
+                                    key={i} 
+                                    style={[
+                                        styles.dateCard, 
+                                        deliveryDate === d.full && styles.dateCardActive,
+                                        isBeforePickup && { opacity: 0.3 }
+                                    ]} 
+                                    disabled={isBeforePickup}
+                                    onPress={() => setDeliveryDate(d.full)}
+                                >
                                     <Text style={[styles.dateDay, deliveryDate === d.full && styles.textWhite]}>{d.day}</Text>
                                     <Text style={[styles.dateNum, deliveryDate === d.full && styles.textWhite]}>{d.date}</Text>
                                 </TouchableOpacity>
-                            ))}
+                            )})}
                         </ScrollView>
 
                         <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 20, marginBottom: 8 }}>
