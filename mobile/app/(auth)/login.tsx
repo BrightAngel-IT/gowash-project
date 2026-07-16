@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, KeyboardAvoidingView, Platform, Dimensions, ScrollView, Modal, Pressable } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, KeyboardAvoidingView, Platform, Dimensions, ScrollView } from 'react-native';
+import { GoogleSignin, isErrorWithCode, statusCodes } from '@react-native-google-signin/google-signin';
+import { useEffect } from 'react';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import Animated, { FadeInUp } from 'react-native-reanimated';
@@ -14,66 +16,56 @@ export default function LoginScreen() {
     const [password, setPassword] = useState('');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
-    const [showGooglePicker, setShowGooglePicker] = useState(false);
+    useEffect(() => {
+        GoogleSignin.configure({
+            webClientId: process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID || '',
+            scopes: ['profile', 'email'],
+        });
+    }, []);
 
-    const handleGoogleSignIn = async (userEmail: string, userName: string) => {
-        setShowGooglePicker(false);
+    const handleGoogleLogin = async () => {
         setLoading(true);
         setError('');
         try {
-            const backendResponse = await api.post('/auth/google', {
-                email: userEmail,
-                name: userName,
-                googleId: `google-sim-${userEmail}`,
-                role: 'customer'
-            });
+            await GoogleSignin.hasPlayServices();
+            const response = await GoogleSignin.signIn();
+            const userInfo = response.data?.user;
+            
+            if (userInfo) {
+                const backendResponse = await api.post('/auth/google', {
+                    email: userInfo.email,
+                    name: userInfo.name || 'Google User',
+                    googleId: userInfo.id,
+                    role: 'customer'
+                });
 
-            if (backendResponse.data.token) {
-                await saveToken(backendResponse.data.token);
-                await saveUser(backendResponse.data.user);
-                router.replace('/(tabs)');
-            }
-        } catch (err: any) {
-            setError(err.response?.data?.message || 'Google authentication failed.');
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const handleLogin = async () => {
-        if (!email || !password) {
-            setError('Please fill in all fields');
-            return;
-        }
-
-        setLoading(true);
-        setError('');
-
-        try {
-            const response = await api.post('/auth/login', { email, password });
-            const user = response.data.user;
-
-            if (response.data.token) {
-                await saveToken(response.data.token);
-                await saveUser(user);
-
-                if (user.role === 'customer') {
+                if (backendResponse.data.token) {
+                    await saveToken(backendResponse.data.token);
+                    await saveUser(backendResponse.data.user);
                     router.replace('/(tabs)');
-                } else if (user.role === 'agent') {
-                    router.replace('/professional');
-                } else {
-                    setError('Access Denied: Admins must use the web portal.');
                 }
             }
-        } catch (err: any) {
-            setError(err.response?.data?.message || 'Connection failed. Please try again.');
+        } catch (error: any) {
+            if (isErrorWithCode(error)) {
+                switch (error.code) {
+                  case statusCodes.SIGN_IN_CANCELLED:
+                    // user cancelled the login flow
+                    break;
+                  case statusCodes.IN_PROGRESS:
+                    // operation (eg. sign in) already in progress
+                    break;
+                  case statusCodes.PLAY_SERVICES_NOT_AVAILABLE:
+                    setError('Play services not available or outdated.');
+                    break;
+                  default:
+                    setError(error.message || 'Google authentication failed.');
+                }
+            } else {
+                setError('Google authentication failed.');
+            }
         } finally {
             setLoading(false);
         }
-    };
-
-    const handleGoogleLogin = () => {
-        setShowGooglePicker(true);
     };
 
     return (
@@ -81,66 +73,7 @@ export default function LoginScreen() {
             behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
             style={styles.container}
         >
-            <Modal
-                transparent
-                visible={showGooglePicker}
-                animationType="fade"
-                onRequestClose={() => setShowGooglePicker(false)}
-            >
-                <Pressable 
-                    style={styles.modalOverlay} 
-                    onPress={() => setShowGooglePicker(false)}
-                >
-                    <View style={styles.pickerContainer}>
-                        <View style={styles.pickerHeader}>
-                             <View style={styles.googleIconCircle}>
-                                <Text style={styles.googleG}>G</Text>
-                             </View>
-                            <Text style={styles.pickerTitle}>Choose an account</Text>
-                            <Text style={styles.pickerSubtitle}>to continue to GoWash</Text>
-                        </View>
-                        
-                        <View style={styles.accountList}>
-                            <TouchableOpacity 
-                                style={styles.accountItem}
-                                onPress={() => handleGoogleSignIn('lakshanumayanha6789@gmail.com', 'Lakshan Umayanha')}
-                            >
-                                <View style={[styles.avatarCircle, { backgroundColor: '#FFB300' }]}>
-                                    <Text style={styles.avatarText}>L</Text>
-                                </View>
-                                <View style={styles.accountInfo}>
-                                    <Text style={styles.accountName}>Lakshan Umayanha</Text>
-                                    <Text style={styles.accountEmail}>lakshanumayanha6789@gmail.com</Text>
-                                </View>
-                            </TouchableOpacity>
 
-                            <TouchableOpacity 
-                                style={styles.accountItem}
-                                onPress={() => handleGoogleSignIn('customer.demo@gmail.com', 'Demo Customer')}
-                            >
-                                <View style={[styles.avatarCircle, { backgroundColor: '#4285F4' }]}>
-                                    <Text style={styles.avatarText}>D</Text>
-                                </View>
-                                <View style={styles.accountInfo}>
-                                    <Text style={styles.accountName}>Demo Customer</Text>
-                                    <Text style={styles.accountEmail}>customer.demo@gmail.com</Text>
-                                </View>
-                            </TouchableOpacity>
-                        </View>
-
-                        <TouchableOpacity style={styles.addAccountBtn}>
-                            <Ionicons name="person-add-outline" size={18} color="#5F6368" />
-                            <Text style={styles.addAccountText}>Use another account</Text>
-                        </TouchableOpacity>
-
-                        <View style={styles.pickerFooter}>
-                            <Text style={styles.footerInfo}>
-                                To continue, Google will share your name, email address, profile picture and language preference with GoWash.
-                            </Text>
-                        </View>
-                    </View>
-                </Pressable>
-            </Modal>
             <LinearGradient
                 colors={['#4c669f', '#3b5998', '#192f6a']}
                 style={styles.background}
@@ -329,107 +262,5 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
         fontSize: 14,
     },
-    modalOverlay: {
-        flex: 1,
-        backgroundColor: 'rgba(0,0,0,0.4)',
-        justifyContent: 'center',
-        alignItems: 'center',
-        padding: 24,
-    },
-    pickerContainer: {
-        backgroundColor: '#FFFFFF',
-        width: '100%',
-        borderRadius: 20,
-        padding: 24,
-        elevation: 10,
-    },
-    pickerHeader: {
-        alignItems: 'center',
-        marginBottom: 20,
-    },
-    googleIconCircle: {
-        width: 48,
-        height: 48,
-        borderRadius: 24,
-        backgroundColor: '#f8f9fa',
-        justifyContent: 'center',
-        alignItems: 'center',
-        marginBottom: 12,
-        borderWidth: 1,
-        borderColor: '#e0e0e0',
-    },
-    googleG: {
-        fontSize: 24,
-        fontWeight: '900',
-        color: '#4285F4',
-    },
-    pickerTitle: {
-        fontSize: 20,
-        fontWeight: '600',
-        color: '#202124',
-        textAlign: 'center',
-    },
-    pickerSubtitle: {
-        fontSize: 14,
-        color: '#5F6368',
-        marginTop: 4,
-        textAlign: 'center',
-    },
-    accountList: {
-        marginVertical: 16,
-    },
-    accountItem: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        paddingVertical: 12,
-        borderBottomWidth: 1,
-        borderBottomColor: '#f1f3f4',
-    },
-    avatarCircle: {
-        width: 40,
-        height: 40,
-        borderRadius: 20,
-        justifyContent: 'center',
-        alignItems: 'center',
-        marginRight: 16,
-    },
-    avatarText: {
-        color: '#FFFFFF',
-        fontSize: 18,
-        fontWeight: 'bold',
-    },
-    accountInfo: {
-        flex: 1,
-    },
-    accountName: {
-        fontSize: 14,
-        fontWeight: '600',
-        color: '#3C4043',
-    },
-    accountEmail: {
-        fontSize: 12,
-        color: '#70757A',
-    },
-    addAccountBtn: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        paddingVertical: 12,
-        gap: 12,
-    },
-    addAccountText: {
-        fontSize: 14,
-        color: '#3C4043',
-        fontWeight: '500',
-    },
-    pickerFooter: {
-        marginTop: 20,
-        borderTopWidth: 1,
-        borderTopColor: '#f1f3f4',
-        paddingTop: 16,
-    },
-    footerInfo: {
-        fontSize: 11,
-        color: '#5F6368',
-        lineHeight: 16,
-    }
+
 });

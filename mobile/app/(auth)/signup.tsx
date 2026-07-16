@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, KeyboardAvoidingView, Platform, Dimensions, ScrollView } from 'react-native';
+import { GoogleSignin, isErrorWithCode, statusCodes } from '@react-native-google-signin/google-signin';
+import { useEffect } from 'react';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import Animated, { FadeInUp } from 'react-native-reanimated';
 import { Ionicons } from '@expo/vector-icons';
-import api from '@/constants/api';
+import api, { saveToken, saveUser } from '@/constants/api';
 
 const { width, height } = Dimensions.get('window');
 
@@ -17,6 +19,56 @@ export default function SignupScreen() {
 
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
+
+    useEffect(() => {
+        GoogleSignin.configure({
+            webClientId: process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID || '',
+            scopes: ['profile', 'email'],
+        });
+    }, []);
+
+    const handleGoogleSignup = async () => {
+        setLoading(true);
+        setError('');
+        try {
+            await GoogleSignin.hasPlayServices();
+            const response = await GoogleSignin.signIn();
+            const userInfo = response.data?.user;
+            
+            if (userInfo) {
+                const backendResponse = await api.post('/auth/google', {
+                    email: userInfo.email,
+                    name: userInfo.name || 'Google User',
+                    googleId: userInfo.id,
+                    role: 'customer'
+                });
+
+                if (backendResponse.data.token) {
+                    await saveToken(backendResponse.data.token);
+                    await saveUser(backendResponse.data.user);
+                    router.replace('/(tabs)');
+                }
+            }
+        } catch (error: any) {
+            if (isErrorWithCode(error)) {
+                switch (error.code) {
+                  case statusCodes.SIGN_IN_CANCELLED:
+                    break;
+                  case statusCodes.IN_PROGRESS:
+                    break;
+                  case statusCodes.PLAY_SERVICES_NOT_AVAILABLE:
+                    setError('Play services not available or outdated.');
+                    break;
+                  default:
+                    setError(error.message || 'Google authentication failed.');
+                }
+            } else {
+                setError('Google authentication failed.');
+            }
+        } finally {
+            setLoading(false);
+        }
+    };
 
     const handleSignup = async () => {
         if (!name || !email || !phone || !password) {
@@ -111,6 +163,15 @@ export default function SignupScreen() {
                         <Text style={styles.buttonTextPrimary}>Sign Up</Text>
                     </TouchableOpacity>
 
+                    <TouchableOpacity 
+                        style={styles.buttonGoogle} 
+                        onPress={handleGoogleSignup} 
+                        disabled={loading}
+                    >
+                        <Ionicons name="logo-google" size={20} color="#EA4335" style={{ marginRight: 10 }} />
+                        <Text style={styles.buttonTextGoogle}>Sign Up with Google</Text>
+                    </TouchableOpacity>
+
                     <View style={styles.footer}>
                         <Text style={styles.footerText}>Already have an account? </Text>
                         <TouchableOpacity onPress={() => router.push('/(auth)/login')}>
@@ -197,6 +258,20 @@ const styles = StyleSheet.create({
         color: '#192f6a',
         fontSize: 18,
         fontWeight: 'bold',
+    },
+    buttonGoogle: {
+        flexDirection: 'row',
+        backgroundColor: '#fff',
+        paddingVertical: 18,
+        borderRadius: 30,
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginBottom: 30,
+    },
+    buttonTextGoogle: {
+        color: '#333',
+        fontSize: 16,
+        fontWeight: '600',
     },
     footer: {
         flexDirection: 'row',

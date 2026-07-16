@@ -44,7 +44,7 @@ export const driverLogin = async (req, res) => {
         }
 
         const { password: _, ...safeUser } = user;
-
+ 
         return res.json({
             token: `driver-jwt-token-${driver.id}`,
             driver: {
