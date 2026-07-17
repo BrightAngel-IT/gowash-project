@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, KeyboardAvoidingView, Platform, Dimensions, ScrollView } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, KeyboardAvoidingView, Platform, Dimensions, ScrollView, Alert } from 'react-native';
 import { GoogleSignin, isErrorWithCode, statusCodes } from '@react-native-google-signin/google-signin';
 import { useEffect } from 'react';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -22,6 +22,34 @@ export default function LoginScreen() {
             scopes: ['profile', 'email'],
         });
     }, []);
+
+    const handleLogin = async () => {
+        if (!email.trim() || !password.trim()) {
+            Alert.alert('Missing Fields', 'Please enter your email and password.');
+            return;
+        }
+
+        setLoading(true);
+        setError('');
+        try {
+            const response = await api.post('/auth/login', {
+                email: email.trim(),
+                password: password.trim(),
+                role: 'customer'
+            });
+
+            if (response.data.token) {
+                await saveToken(response.data.token);
+                await saveUser(response.data.user);
+                router.replace('/(tabs)');
+            }
+        } catch (error: any) {
+            const msg = error.response?.data?.message || 'Login failed. Please try again.';
+            Alert.alert('Login Failed', msg);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     const handleGoogleLogin = async () => {
         setLoading(true);

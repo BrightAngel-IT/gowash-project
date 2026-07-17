@@ -12,7 +12,20 @@
           "package_name": "com.brightaangel.mobile"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "174736569358-vgk0sfeprppovvo13cti8u6bojkhqn2l.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.brightaangel.mobile",
+            "certificate_hash": "c51b679ad47a1ecee3a9a0f95c3173a352284744"
+          }
+        },
+        {
+          "client_id": "174736569358-r5645f3rp7khssafti0150aupicoqqpi.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyDdb-panrdMYaUz67ft8BjfR92nrbqhJSI"
@@ -20,7 +33,12 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "174736569358-r5645f3rp7khssafti0150aupicoqqpi.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         }
       }
     },
@@ -31,7 +49,12 @@
           "package_name": "com.brightaangel.mobiletuk"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "174736569358-r5645f3rp7khssafti0150aupicoqqpi.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyDdb-panrdMYaUz67ft8BjfR92nrbqhJSI"
@@ -39,7 +62,12 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "174736569358-r5645f3rp7khssafti0150aupicoqqpi.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         }
       }
     }
