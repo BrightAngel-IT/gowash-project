@@ -12,8 +12,6 @@ import { registerForPushNotificationsAsync } from '../../utils/pushNotifications
 import io from 'socket.io-client';
 import Animated, { useSharedValue, useAnimatedStyle, withSpring, runOnJS } from 'react-native-reanimated';
 import { GestureDetector, Gesture, GestureHandlerRootView } from 'react-native-gesture-handler';
-import notifee, { EventType } from '@notifee/react-native';
-import messaging from '@react-native-firebase/messaging';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const SLIDE_WIDTH = SCREEN_WIDTH - 80;
@@ -234,28 +232,37 @@ export default function DashboardScreen() {
         });
 
         // Add Notification Listeners for Background/Killed state
-        const unsubscribeForegroundEvent = notifee.onForegroundEvent(({ type, detail }) => {
-            if (type === EventType.PRESS && detail.notification?.data?.orderId) {
-                console.log('Notification tapped for order:', detail.notification.data.orderId);
-                checkAndSetJobFromNotification(Number(detail.notification.data.orderId));
-            }
-        });
+        let unsubscribeForegroundEvent = () => {};
+        let unsubscribeMessaging = () => {};
 
-        notifee.getInitialNotification().then(initialNotification => {
-            if (initialNotification && initialNotification.notification.data?.orderId) {
-                console.log('App opened from notification for order:', initialNotification.notification.data.orderId);
-                checkAndSetJobFromNotification(Number(initialNotification.notification.data.orderId));
-            }
-        });
+        if (Platform.OS !== 'web') {
+            const notifee = require('@notifee/react-native').default;
+            const { EventType } = require('@notifee/react-native');
+            const messaging = require('@react-native-firebase/messaging').default;
 
-        // Also handle foreground Firebase messages if needed (though Socket.IO already does this)
-        const unsubscribeMessaging = messaging().onMessage(async remoteMessage => {
-            console.log('FCM Message in foreground!', remoteMessage);
-            // Socket will usually show the modal, but if we need fallback:
-            if (remoteMessage.data?.orderId) {
-                 checkAndSetJobFromNotification(Number(remoteMessage.data.orderId));
-            }
-        });
+            unsubscribeForegroundEvent = notifee.onForegroundEvent(({ type, detail }: any) => {
+                if (type === EventType.PRESS && detail.notification?.data?.orderId) {
+                    console.log('Notification tapped for order:', detail.notification.data.orderId);
+                    checkAndSetJobFromNotification(Number(detail.notification.data.orderId));
+                }
+            });
+
+            notifee.getInitialNotification().then((initialNotification: any) => {
+                if (initialNotification && initialNotification.notification.data?.orderId) {
+                    console.log('App opened from notification for order:', initialNotification.notification.data.orderId);
+                    checkAndSetJobFromNotification(Number(initialNotification.notification.data.orderId));
+                }
+            });
+
+            // Also handle foreground Firebase messages if needed (though Socket.IO already does this)
+            unsubscribeMessaging = messaging().onMessage(async (remoteMessage: any) => {
+                console.log('FCM Message in foreground!', remoteMessage);
+                // Socket will usually show the modal, but if we need fallback:
+                if (remoteMessage.data?.orderId) {
+                     checkAndSetJobFromNotification(Number(remoteMessage.data.orderId));
+                }
+            });
+        }
 
         return () => {
             if (socketRef.current) socketRef.current.disconnect();

@@ -7,50 +7,49 @@ import { useEffect } from 'react';
 import { AuthProvider, useAuth } from '../context/AuthContext';
 import { registerForPushNotificationsAsync } from '../utils/pushNotifications';
 import { driverApi } from '../constants/api';
-import messaging from '@react-native-firebase/messaging';
-import notifee, { AndroidImportance, AndroidCategory, AndroidVisibility, EventType } from '@notifee/react-native';
+import { Platform } from 'react-native';
 
-messaging().setBackgroundMessageHandler(async remoteMessage => {
-    console.log('Message handled in the background!', remoteMessage);
-    const { data } = remoteMessage;
-    
-    // Create the channel
-    const channelId = await notifee.createChannel({
-        id: 'new_job_channel',
-        name: 'New Delivery Requests',
-        importance: AndroidImportance.HIGH,
-        sound: 'ringtone',
-        vibration: true,
-    });
+if (Platform.OS !== 'web') {
+    const messaging = require('@react-native-firebase/messaging').default;
+    const notifee = require('@notifee/react-native').default;
+    const { AndroidImportance, AndroidCategory, AndroidVisibility, EventType } = require('@notifee/react-native');
 
-    // Display the full-screen notification
-    await notifee.displayNotification({
-        title: 'New Delivery Request!',
-        body: data?.body || 'You have a new job ready for pickup.',
-        data: data || {},
-        android: {
-            channelId,
+    messaging().setBackgroundMessageHandler(async (remoteMessage: any) => {
+        console.log('Message handled in the background!', remoteMessage);
+        const { data } = remoteMessage;
+        
+        const channelId = await notifee.createChannel({
+            id: 'new_job_channel',
+            name: 'New Delivery Requests',
             importance: AndroidImportance.HIGH,
-            category: AndroidCategory.CALL,
-            visibility: AndroidVisibility.PUBLIC,
-            pressAction: {
-                id: 'default',
-                launchActivity: 'default',
-            },
-            fullScreenAction: {
-                id: 'default',
-                launchActivity: 'default',
-            },
-        },
-    });
-});
+            sound: 'ringtone',
+            vibration: true,
+        });
 
-notifee.onBackgroundEvent(async ({ type, detail }) => {
-    const { notification } = detail;
-    if (type === EventType.PRESS) {
-        console.log('User pressed notification in background', notification);
-    }
-});
+        await notifee.displayNotification({
+            title: 'New Delivery Request!',
+            body: data?.body || 'You have a new job ready for pickup.',
+            data: data || {},
+            android: {
+                channelId,
+                importance: AndroidImportance.HIGH,
+                category: AndroidCategory.CALL,
+                visibility: AndroidVisibility.PUBLIC,
+                pressAction: { id: 'default', launchActivity: 'default' },
+                fullScreenAction: { id: 'default', launchActivity: 'default' },
+            },
+        });
+    });
+
+    notifee.onBackgroundEvent(async ({ type, detail }: any) => {
+        const { notification } = detail;
+        if (type === EventType.PRESS) {
+            console.log('User pressed notification in background', notification);
+        }
+    });
+}
+
+
 
 function RootLayoutNav() {
     const colorScheme = useColorScheme();

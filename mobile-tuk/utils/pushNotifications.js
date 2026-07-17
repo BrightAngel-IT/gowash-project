@@ -1,6 +1,5 @@
 import * as Device from 'expo-device';
 import * as Notifications from 'expo-notifications';
-import messaging from '@react-native-firebase/messaging';
 import { Platform } from 'react-native';
 
 export async function registerForPushNotificationsAsync() {
@@ -15,7 +14,8 @@ export async function registerForPushNotificationsAsync() {
     });
   }
 
-  if (Device.isDevice) {
+  if (Device.isDevice && Platform.OS !== 'web') {
+    const messaging = require('@react-native-firebase/messaging').default;
     const authStatus = await messaging().requestPermission();
     const enabled =
       authStatus === messaging.AuthorizationStatus.AUTHORIZED ||
@@ -34,7 +34,7 @@ export async function registerForPushNotificationsAsync() {
       token = null;
     }
   } else {
-    console.log('Must use physical device for Push Notifications');
+    console.log('Must use physical device for Push Notifications, and not Web');
   }
 
   return token;
