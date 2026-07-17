@@ -29,3 +29,4 @@ export const getMessaging = () => {
     if (!firebaseApp) return null;
     return admin.messaging();
 };
+
