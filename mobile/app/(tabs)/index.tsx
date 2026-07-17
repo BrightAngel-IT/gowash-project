@@ -623,6 +623,7 @@ const styles = StyleSheet.create({
   },
   serviceCardVertical: {
     width: 110,
+    height: 160,
     backgroundColor: '#fff',
     padding: 16,
     borderRadius: 20,

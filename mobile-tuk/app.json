@@ -9,7 +9,14 @@
     "scheme": "mobile-tuk",
     "userInterfaceStyle": "automatic",
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.brightaangel.mobiletuk",
+      "infoPlist": {
+        "UIBackgroundModes": [
+          "location",
+          "remote-notification"
+        ]
+      }
     },
     "android": {
       "adaptiveIcon": {

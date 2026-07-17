@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, KeyboardAvoidingView, Platform, Dimensions, ScrollView, Alert } from 'react-native';
 import { GoogleSignin, isErrorWithCode, statusCodes } from '@react-native-google-signin/google-signin';
+import * as AppleAuthentication from 'expo-apple-authentication';
 import { useEffect } from 'react';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
@@ -96,6 +97,41 @@ export default function LoginScreen() {
         }
     };
 
+    const handleAppleLogin = async () => {
+        setLoading(true);
+        setError('');
+        try {
+            const credential = await AppleAuthentication.signInAsync({
+                requestedScopes: [
+                    AppleAuthentication.AppleAuthenticationScope.FULL_NAME,
+                    AppleAuthentication.AppleAuthenticationScope.EMAIL,
+                ],
+            });
+
+            const backendResponse = await api.post('/auth/apple', {
+                email: credential.email,
+                name: credential.fullName?.givenName ? `${credential.fullName.givenName} ${credential.fullName.familyName || ''}`.trim() : 'Apple User',
+                appleId: credential.user,
+                role: 'customer'
+            });
+
+            if (backendResponse.data.token) {
+                await saveToken(backendResponse.data.token);
+                await saveUser(backendResponse.data.user);
+                router.replace('/(tabs)');
+            }
+        } catch (e: any) {
+            if (e.code === 'ERR_REQUEST_CANCELED') {
+                // user cancelled Apple Sign-in
+            } else {
+                setError('Apple authentication failed.');
+                Alert.alert('Login Failed', 'Apple authentication failed.');
+            }
+        } finally {
+            setLoading(false);
+        }
+    };
+
     return (
         <KeyboardAvoidingView
             behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
@@ -162,6 +198,16 @@ export default function LoginScreen() {
                             <Ionicons name="logo-google" size={20} color="#EA4335" style={{ marginRight: 10 }} />
                             <Text style={styles.buttonTextGoogle}>Continue with Google</Text>
                         </TouchableOpacity>
+
+                        {Platform.OS === 'ios' && (
+                            <AppleAuthentication.AppleAuthenticationButton
+                                buttonType={AppleAuthentication.AppleAuthenticationButtonType.SIGN_IN}
+                                buttonStyle={AppleAuthentication.AppleAuthenticationButtonStyle.WHITE}
+                                cornerRadius={30}
+                                style={styles.buttonApple}
+                                onPress={handleAppleLogin}
+                            />
+                        )}
 
                         <View style={styles.footer}>
                             <Text style={styles.footerText}>Don't have an account? </Text>
@@ -276,6 +322,11 @@ const styles = StyleSheet.create({
         color: '#333',
         fontSize: 16,
         fontWeight: '600',
+    },
+    buttonApple: {
+        width: '100%',
+        height: 56,
+        marginBottom: 30,
     },
     footer: {
         flexDirection: 'row',
