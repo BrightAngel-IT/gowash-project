@@ -12,6 +12,7 @@ import { registerForPushNotificationsAsync } from '../../utils/pushNotifications
 import io from 'socket.io-client';
 import Animated, { useSharedValue, useAnimatedStyle, withSpring, runOnJS } from 'react-native-reanimated';
 import { GestureDetector, Gesture, GestureHandlerRootView } from 'react-native-gesture-handler';
+import * as Notifications from 'expo-notifications';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const SLIDE_WIDTH = SCREEN_WIDTH - 80;
@@ -176,6 +177,22 @@ export default function DashboardScreen() {
         isOnlineRef.current = isOnline;
     }, [isOnline]);
 
+    const checkAndSetJobFromNotification = async (orderId: number) => {
+        try {
+            const res = await driverApi.getAvailableJobs();
+            const jobs = res.data;
+            const targetJob = jobs.find((j: any) => j.id === orderId);
+            if (targetJob) {
+                setNewJob(targetJob);
+                setIsJobTaken(false);
+            } else {
+                setIsJobTaken(true);
+            }
+        } catch (e) {
+            console.error('Failed to fetch job for notification', e);
+        }
+    };
+
     useEffect(() => {
         fetchDashboard();
         
@@ -215,8 +232,28 @@ export default function DashboardScreen() {
             });
         });
 
+        // Add Notification Listeners for Background/Killed state
+        const responseListener = Notifications.addNotificationResponseReceivedListener(response => {
+            const data = response.notification.request.content.data;
+            if (data && data.orderId) {
+                console.log('Notification tapped for order:', data.orderId);
+                checkAndSetJobFromNotification(data.orderId);
+            }
+        });
+
+        Notifications.getLastNotificationResponseAsync().then(response => {
+            if (response && response.notification.request.content.data) {
+                const data = response.notification.request.content.data;
+                if (data.orderId) {
+                     console.log('App opened from notification for order:', data.orderId);
+                     checkAndSetJobFromNotification(data.orderId);
+                }
+            }
+        });
+
         return () => {
             if (socketRef.current) socketRef.current.disconnect();
+            Notifications.removeNotificationSubscription(responseListener);
         };
     }, []);
 
