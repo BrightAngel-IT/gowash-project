@@ -1,4 +1,5 @@
 import db from '../config/database.js';
+import { getMessaging } from '../config/firebase.js';
 
 // Helper to calculate distance
 const calculateDistance = (lat1, lon1, lat2, lon2) => {
@@ -15,31 +16,29 @@ const calculateDistance = (lat1, lon1, lat2, lon2) => {
     return parseFloat(d.toFixed(1));
 };
 
-// Helper to send Expo Push Notifications
+// Helper to send Firebase Data-Only Notifications (for Notifee)
 const sendPushNotifications = async (tokens, title, body, data = {}) => {
     if (!tokens || tokens.length === 0) return;
     
-    const messages = tokens.map(token => ({
-        to: token,
-        sound: 'default',
-        title,
-        body,
-        data,
-        priority: 'high',
-        channelId: 'default',
-    }));
+    const messaging = getMessaging();
+    if (!messaging) {
+        console.log('⚠️ Firebase Messaging is not initialized. Cannot send push notifications.');
+        return;
+    }
+
+    const payload = {
+        data: {
+            title: title || 'New Delivery Request!',
+            body: body || 'You have a new job ready for pickup.',
+            orderId: data.orderId ? data.orderId.toString() : '',
+            type: 'NEW_JOB',
+        },
+        tokens: tokens,
+    };
 
     try {
-        await fetch('https://exp.host/--/api/v2/push/send', {
-            method: 'POST',
-            headers: {
-                'Accept': 'application/json',
-                'Accept-encoding': 'gzip, deflate',
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(messages),
-        });
-        console.log(`📡 Sent push notifications to ${tokens.length} devices.`);
+        const response = await messaging.sendEachForMulticast(payload);
+        console.log(`📡 Sent push notifications to ${response.successCount} devices. Failed: ${response.failureCount}`);
     } catch (error) {
         console.error('Error sending push notifications:', error);
     }

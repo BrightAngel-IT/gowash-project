@@ -1,0 +1,31 @@
+import admin from 'firebase-admin';
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// Path to the service account key
+const serviceAccountPath = path.join(__dirname, 'fcm-key.json');
+
+let firebaseApp = null;
+
+try {
+    if (fs.existsSync(serviceAccountPath)) {
+        const serviceAccount = JSON.parse(fs.readFileSync(serviceAccountPath, 'utf8'));
+        firebaseApp = admin.initializeApp({
+            credential: admin.credential.cert(serviceAccount)
+        });
+        console.log('🔥 Firebase Admin initialized successfully.');
+    } else {
+        console.warn('⚠️ Firebase service account key not found at:', serviceAccountPath);
+    }
+} catch (error) {
+    console.error('❌ Error initializing Firebase Admin:', error);
+}
+
+export const getMessaging = () => {
+    if (!firebaseApp) return null;
+    return admin.messaging();
+};
