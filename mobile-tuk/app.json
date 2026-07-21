@@ -50,8 +50,7 @@
       "expo-router",
       "expo-notifications",
       "@react-native-firebase/app",
-      "@react-native-firebase/messaging",
-      "@notifee/react-native"
+      "@react-native-firebase/messaging"
     ],
     "experiments": {
       "typedRoutes": true
