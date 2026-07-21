@@ -16,12 +16,22 @@ export async function registerForPushNotificationsAsync() {
 
   if (Device.isDevice && Platform.OS !== 'web') {
     const messaging = require('@react-native-firebase/messaging').default;
+    const { PermissionsAndroid } = require('react-native');
+
+    if (Platform.OS === 'android' && Platform.Version >= 33) {
+      const granted = await PermissionsAndroid.request(PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS);
+      if (granted !== PermissionsAndroid.RESULTS.GRANTED) {
+        console.log('Notification permission denied by user');
+        return null;
+      }
+    }
+
     const authStatus = await messaging().requestPermission();
     const enabled =
       authStatus === messaging.AuthorizationStatus.AUTHORIZED ||
       authStatus === messaging.AuthorizationStatus.PROVISIONAL;
 
-    if (!enabled) {
+    if (!enabled && Platform.OS === 'ios') {
       console.log('Failed to get push token for push notification!');
       return null;
     }
