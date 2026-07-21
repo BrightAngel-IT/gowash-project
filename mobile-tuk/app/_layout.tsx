@@ -68,6 +68,42 @@ function RootLayoutNav() {
                     driverApi.updatePushToken(driver.id, token).catch(console.error);
                 }
             });
+            
+            // Handle FOREGROUND push notifications
+            if (Platform.OS !== 'web') {
+                const messaging = require('@react-native-firebase/messaging').default;
+                const notifee = require('@notifee/react-native').default;
+                const { AndroidImportance, AndroidCategory, AndroidVisibility } = require('@notifee/react-native');
+                
+                const unsubscribe = messaging().onMessage(async (remoteMessage: any) => {
+                    console.log('Message handled in the FOREGROUND!', remoteMessage);
+                    const { data } = remoteMessage;
+                    
+                    const channelId = await notifee.createChannel({
+                        id: 'new_job_channel',
+                        name: 'New Delivery Requests',
+                        importance: AndroidImportance.HIGH,
+                        sound: 'ringtone',
+                        vibration: true,
+                    });
+
+                    await notifee.displayNotification({
+                        title: data?.title || 'New Delivery Request!',
+                        body: data?.body || 'You have a new job ready for pickup.',
+                        data: data || {},
+                        android: {
+                            channelId,
+                            importance: AndroidImportance.HIGH,
+                            category: AndroidCategory.CALL,
+                            visibility: AndroidVisibility.PUBLIC,
+                            pressAction: { id: 'default', launchActivity: 'default' },
+                            fullScreenAction: { id: 'default', launchActivity: 'default' },
+                        },
+                    });
+                });
+                
+                return unsubscribe;
+            }
         }
     }, [driver, isLoading]);
 
