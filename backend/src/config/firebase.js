@@ -10,6 +10,7 @@ const __dirname = path.dirname(__filename);
 const serviceAccountPath = path.join(__dirname, 'fcm-key.json');
 
 let firebaseApp = null;
+export let firebaseError = null;
 
 try {
     if (fs.existsSync(serviceAccountPath)) {
@@ -19,9 +20,11 @@ try {
         });
         console.log('🔥 Firebase Admin initialized successfully.');
     } else {
-        console.warn('⚠️ Firebase service account key not found at:', serviceAccountPath);
+        firebaseError = 'Firebase service account key not found at: ' + serviceAccountPath;
+        console.warn('⚠️ ' + firebaseError);
     }
 } catch (error) {
+    firebaseError = error.message || error.toString();
     console.error('❌ Error initializing Firebase Admin:', error);
 }
 

@@ -20,7 +20,7 @@ router.get('/health', (req, res) => {
 });
 
 import db from '../config/database.js';
-import { getMessaging } from '../config/firebase.js';
+import { getMessaging, firebaseError } from '../config/firebase.js';
 
 router.get('/debug/drivers', async (req, res) => {
     try {
@@ -28,6 +28,7 @@ router.get('/debug/drivers', async (req, res) => {
         const firebaseReady = getMessaging() !== null;
         res.json({
             firebaseInitialized: firebaseReady,
+            firebaseError: firebaseError,
             drivers: result.rows
         });
     } catch (e) {
