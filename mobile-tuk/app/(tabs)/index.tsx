@@ -12,44 +12,9 @@ import { registerForPushNotificationsAsync } from '../../utils/pushNotifications
 import io from 'socket.io-client';
 import Animated, { useSharedValue, useAnimatedStyle, withSpring, runOnJS } from 'react-native-reanimated';
 import { GestureDetector, Gesture, GestureHandlerRootView } from 'react-native-gesture-handler';
+import ActiveJobOverlay from '../../components/ActiveJobOverlay';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
-const SLIDE_WIDTH = SCREEN_WIDTH - 80;
-const BUTTON_WIDTH = 64;
-
-function SwipeSlider({ onSwipeComplete, theme, text = "Slide to Start Trip" }: { onSwipeComplete: () => void, theme: any, text?: string }) {
-    const translateX = useSharedValue(0);
-
-    const gesture = Gesture.Pan()
-        .onUpdate((event) => {
-            if (event.translationX > 0 && event.translationX < SLIDE_WIDTH - BUTTON_WIDTH) {
-                translateX.value = event.translationX;
-            }
-        })
-        .onEnd(() => {
-            if (translateX.value > (SLIDE_WIDTH - BUTTON_WIDTH) * 0.7) {
-                translateX.value = withSpring(SLIDE_WIDTH - BUTTON_WIDTH);
-                runOnJS(onSwipeComplete)();
-            } else {
-                translateX.value = withSpring(0);
-            }
-        });
-
-    const animatedStyle = useAnimatedStyle(() => ({
-        transform: [{ translateX: translateX.value }],
-    }));
-
-    return (
-        <View style={[styles.sliderContainer, { backgroundColor: theme.background }]}>
-            <Text style={[styles.sliderText, { color: theme.icon }]}>{text}</Text>
-            <GestureDetector gesture={gesture}>
-                <Animated.View style={[styles.sliderButton, animatedStyle, { backgroundColor: theme.tint }]}>
-                    <ChevronRight color="#fff" size={24} />
-                </Animated.View>
-            </GestureDetector>
-        </View>
-    );
-}
 
 export default function DashboardScreen() {
     const colorScheme = (useColorScheme() ?? 'dark') as 'light' | 'dark';
@@ -433,142 +398,15 @@ export default function DashboardScreen() {
                         </View>
                     </View>
 
-                    {isOnline && stats.activeOrdersCount > 0 && stats.activeOrders?.[0] && (() => {
-                        const activeOrder = stats.activeOrders[0];
-                        const isPickup = activeOrder.order_status === 'Pickup' || activeOrder.order_status === 'Pending';
-                        const rideStatus = activeOrder.status;
-
-                        return (
-                            <View style={[styles.activeOrderCard, { backgroundColor: theme.card, borderColor: theme.tint }]}>
-                                <View style={styles.activeHeader}>
-                                    <View style={[styles.activeBadge, { backgroundColor: isPickup ? 'rgba(255, 179, 0, 0.1)' : 'rgba(16, 185, 129, 0.1)' }]}>
-                                        <View style={[styles.pulseDot, { backgroundColor: isPickup ? '#FFB300' : '#10B981' }]} />
-                                        <Text style={[styles.activeBadgeText, { color: isPickup ? '#FFB300' : '#10B981' }]}>
-                                            {isPickup ? 'PICKUP' : 'DELIVERY'}
-                                        </Text>
-                                    </View>
-                                    <Text style={[styles.orderId, { color: theme.icon }]}>#GW-{activeOrder.order_id}</Text>
-                                </View>
-
-                                <View style={styles.orderLocation}>
-                                    <View style={styles.locationPoint}>
-                                        <View style={[styles.dot, { backgroundColor: theme.tint }]} />
-                                        <View style={[styles.line, { backgroundColor: theme.border }]} />
-                                        <View style={[styles.dot, { backgroundColor: theme.success }]} />
-                                    </View>
-                                    <View style={styles.locationDetails}>
-                                        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-                                            <View style={{ flex: 1 }}>
-                                                <Text style={[styles.locationLabel, { color: theme.icon }]}>From</Text>
-                                                <Text style={[styles.locationText, { color: theme.text }]} numberOfLines={1}>
-                                                    {isPickup ? activeOrder.pickup_address : activeOrder.laundry_name}
-                                                </Text>
-                                            </View>
-                                            {(() => {
-                                                const destLat = isPickup ? (activeOrder.customer_lat || 6.9271) : (activeOrder.laundry_lat || 6.9147);
-                                                const destLng = isPickup ? (activeOrder.customer_lng || 79.8612) : (activeOrder.laundry_lng || 79.8778);
-                                                const dist = calculateDistance(
-                                                    driverLocation?.coords.latitude || 6.9271,
-                                                    driverLocation?.coords.longitude || 79.8612,
-                                                    destLat,
-                                                    destLng
-                                                );
-                                                return (
-                                                    <View style={{ alignItems: 'flex-end' }}>
-                                                        <Text style={[styles.miniCardValue, { fontSize: 14, marginTop: 0, color: theme.tint }]}>{dist} km</Text>
-                                                        <Text style={[styles.miniCardLabel, { fontSize: 10, marginTop: 0 }]}>{Math.round(dist * 5)} mins</Text>
-                                                    </View>
-                                                );
-                                            })()}
-                                        </View>
-                                        <View style={{ marginTop: 12 }}>
-                                            <Text style={[styles.locationLabel, { color: theme.icon }]}>To</Text>
-                                            <Text style={[styles.locationText, { color: theme.text }]} numberOfLines={1}>
-                                                {isPickup ? activeOrder.laundry_name : activeOrder.pickup_address}
-                                            </Text>
-                                        </View>
-                                    </View>
-                                </View>
-
-                                 <View style={[styles.actionRowCard, { flexDirection: 'column', gap: 12 }]}>
-                                    <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', width: '100%', marginBottom: 8 }}>
-                                        <Text style={{ color: theme.text, fontSize: 16, fontWeight: 'bold' }}>
-                                            {rideStatus === 'assigned' ? (isPickup ? 'Heading to Customer' : 'Heading to Laundry') : 
-                                             rideStatus === 'arrived' ? (isPickup ? 'At Customer. Collect Items.' : 'At Laundry. Collect Items.') :
-                                             rideStatus === 'picked_up' ? (isPickup ? 'Heading to Laundry' : 'Heading to Customer') : ''}
-                                        </Text>
-                                        <TouchableOpacity 
-                                            style={[styles.miniButton, { backgroundColor: theme.background, width: 'auto', paddingHorizontal: 16 }]}
-                                            onPress={() => {
-                                                const headingToLaundry = isPickup ? (rideStatus === 'picked_up') : (rideStatus !== 'picked_up');
-                                                if (headingToLaundry) {
-                                                    openInGoogleMaps(
-                                                        activeOrder.laundry_address || activeOrder.laundry_name,
-                                                        activeOrder.laundry_lat,
-                                                        activeOrder.laundry_lng
-                                                    );
-                                                } else {
-                                                    openInGoogleMaps(
-                                                        activeOrder.pickup_address,
-                                                        activeOrder.customer_lat,
-                                                        activeOrder.customer_lng
-                                                    );
-                                                }
-                                            }}
-                                        >
-                                            <Navigation size={18} color={theme.tint} style={{ marginRight: 6 }}/>
-                                            <Text style={[styles.miniButtonText, { color: theme.text, marginTop: 0 }]}>Map</Text>
-                                        </TouchableOpacity>
-                                    </View>
-
-                                    {rideStatus === 'assigned' && (
-                                        <SwipeSlider 
-                                            theme={theme} 
-                                            text="Slide when Arrived" 
-                                            onSwipeComplete={() => handleUpdateAssignmentStatus(activeOrder.id, 'arrived')} 
-                                        />
-                                    )}
-                                    {rideStatus === 'arrived' && (
-                                        <SwipeSlider 
-                                            theme={theme} 
-                                            text="Slide to Start Trip" 
-                                            onSwipeComplete={() => {
-                                                handleUpdateAssignmentStatus(activeOrder.id, 'picked_up');
-                                                setTimeout(() => {
-                                                    if (isPickup) {
-                                                        // Navigate Customer -> Laundry
-                                                        openInGoogleMaps(
-                                                            activeOrder.laundry_address || activeOrder.laundry_name,
-                                                            activeOrder.laundry_lat,
-                                                            activeOrder.laundry_lng,
-                                                            activeOrder.customer_lat,
-                                                            activeOrder.customer_lng
-                                                        );
-                                                    } else {
-                                                        // Navigate Laundry -> Customer
-                                                        openInGoogleMaps(
-                                                            activeOrder.pickup_address,
-                                                            activeOrder.customer_lat,
-                                                            activeOrder.customer_lng,
-                                                            activeOrder.laundry_lat,
-                                                            activeOrder.laundry_lng
-                                                        );
-                                                    }
-                                                }, 500);
-                                            }} 
-                                        />
-                                    )}
-                                    {rideStatus === 'picked_up' && (
-                                        <SwipeSlider 
-                                            theme={theme} 
-                                            text={isPickup ? "Slide to Complete Dropoff" : "Slide to Complete Delivery"} 
-                                            onSwipeComplete={() => handleUpdateAssignmentStatus(activeOrder.id, 'delivered')} 
-                                        />
-                                    )}
-                                </View>
-                            </View>
-                        );
-                    })()}
+                    <ActiveJobOverlay 
+                        visible={isOnline && stats.activeOrdersCount > 0 && !!stats.activeOrders?.[0]} 
+                        activeOrder={stats.activeOrders?.[0]} 
+                        theme={theme} 
+                        driverLocation={driverLocation} 
+                        calculateDistance={(lat1, lon1, lat2, lon2) => calculateDistance(lat1, lon1, lat2, lon2)} 
+                        openInGoogleMaps={openInGoogleMaps} 
+                        handleUpdateAssignmentStatus={handleUpdateAssignmentStatus} 
+                    />
 
                     <View style={styles.sectionHeader}>
                         <Text style={[styles.sectionTitle, { color: theme.text }]}>Recent Jobs</Text>
