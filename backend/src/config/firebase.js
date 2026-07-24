@@ -1,4 +1,5 @@
-import admin from 'firebase-admin';
+import { initializeApp, cert } from 'firebase-admin/app';
+import { getMessaging as getAdminMessaging } from 'firebase-admin/messaging';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -15,8 +16,8 @@ export let firebaseError = null;
 try {
     if (fs.existsSync(serviceAccountPath)) {
         const serviceAccount = JSON.parse(fs.readFileSync(serviceAccountPath, 'utf8'));
-        firebaseApp = admin.initializeApp({
-            credential: admin.credential.cert(serviceAccount)
+        firebaseApp = initializeApp({
+            credential: cert(serviceAccount)
         });
         console.log('🔥 Firebase Admin initialized successfully.');
     } else {
@@ -30,6 +31,6 @@ try {
 
 export const getMessaging = () => {
     if (!firebaseApp) return null;
-    return admin.messaging();
+    return getAdminMessaging(firebaseApp);
 };
 
