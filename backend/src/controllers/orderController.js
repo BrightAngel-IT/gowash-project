@@ -16,7 +16,7 @@ const calculateDistance = (lat1, lon1, lat2, lon2) => {
     return parseFloat(d.toFixed(1));
 };
 
-// Helper to send Firebase Data-Only Notifications (for Notifee)
+// Helper to send Firebase Push Notifications
 const sendPushNotifications = async (tokens, title, body, data = {}) => {
     if (!tokens || tokens.length === 0) return;
     
@@ -27,11 +27,23 @@ const sendPushNotifications = async (tokens, title, body, data = {}) => {
     }
 
     const payload = {
-        data: {
+        notification: {
             title: title || 'New Delivery Request!',
             body: body || 'You have a new job ready for pickup.',
+        },
+        data: {
             orderId: data.orderId ? data.orderId.toString() : '',
             type: 'NEW_JOB',
+            distance: data.distance ? data.distance.toString() : '0',
+            price: data.price ? data.price.toString() : '0',
+            pickup: data.pickup || ''
+        },
+        android: {
+            priority: 'high',
+            notification: {
+                sound: 'ringtone',
+                channelId: 'new_job_channel'
+            }
         },
         tokens: tokens,
     };
@@ -205,13 +217,33 @@ export const createOrder = async (req, res) => {
         }
 
         try {
-            const onlineDrivers = await db.query("SELECT push_token FROM drivers WHERE status = 'online' AND push_token IS NOT NULL");
-            const tokens = onlineDrivers.rows.map(row => row.push_token);
+            const onlineDrivers = await db.query("SELECT push_token, lat, lng FROM drivers WHERE status = 'online' AND push_token IS NOT NULL");
             
-            if (tokens.length > 0) {
-                const title = "New Job Available!";
-                const body = `New order #${createdOrder.id} at ${createdOrder.laundryName} is ready for pickup.`;
-                await sendPushNotifications(tokens, title, body, { orderId: createdOrder.id });
+            if (onlineDrivers.rows.length > 0) {
+                for (const driver of onlineDrivers.rows) {
+                    if (!driver.push_token) continue;
+                    
+                    const title = "New Job Available!";
+                    
+                    // Format Earnings
+                    const earnings = (createdOrder.delivery_fee * 0.8).toFixed(2); // Example: driver gets 80% of delivery fee
+                    
+                    // Distance calculation
+                    const pickupLat = createdOrder.laundry_lat;
+                    const pickupLng = createdOrder.laundry_lng;
+                    const distance = calculateDistance(driver.lat, driver.lng, pickupLat, pickupLng);
+                    
+                    const pickupLoc = createdOrder.laundryName;
+                    
+                    const body = `Distance: ${distance}km | Earn: LKR ${earnings}\nPickup at: ${pickupLoc}`;
+                    
+                    await sendPushNotifications([driver.push_token], title, body, { 
+                        orderId: createdOrder.id,
+                        distance: distance,
+                        price: earnings,
+                        pickup: pickupLoc
+                    });
+                }
             } else {
                 console.log(`⚠️ No online drivers with push tokens found to notify for order #${createdOrder.id}`);
             }
