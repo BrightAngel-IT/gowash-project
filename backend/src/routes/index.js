@@ -20,10 +20,16 @@ router.get('/health', (req, res) => {
 });
 
 import db from '../config/database.js';
+import { getMessaging } from '../config/firebase.js';
+
 router.get('/debug/drivers', async (req, res) => {
     try {
         const result = await db.query('SELECT id, status, push_token FROM drivers');
-        res.json(result.rows);
+        const firebaseReady = getMessaging() !== null;
+        res.json({
+            firebaseInitialized: firebaseReady,
+            drivers: result.rows
+        });
     } catch (e) {
         res.status(500).json({ error: e.message });
     }
