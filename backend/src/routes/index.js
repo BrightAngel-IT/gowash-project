@@ -22,7 +22,7 @@ router.get('/health', (req, res) => {
 import db from '../config/database.js';
 router.get('/debug/drivers', async (req, res) => {
     try {
-        const result = await db.query('SELECT id, name, status, push_token FROM drivers');
+        const result = await db.query('SELECT id, status, push_token FROM drivers');
         res.json(result.rows);
     } catch (e) {
         res.status(500).json({ error: e.message });
