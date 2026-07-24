@@ -603,30 +603,6 @@ export default function DashboardScreen() {
 }
 
 const styles = StyleSheet.create({
-    sliderContainer: {
-        height: 54,
-        borderRadius: 27,
-        justifyContent: 'center',
-        alignItems: 'center',
-        position: 'relative',
-        paddingHorizontal: 5,
-        borderWidth: 1,
-        borderColor: 'rgba(0,0,0,0.05)',
-    },
-    sliderButton: {
-        width: BUTTON_WIDTH,
-        height: 44,
-        borderRadius: 22,
-        justifyContent: 'center',
-        alignItems: 'center',
-        position: 'absolute',
-        left: 5,
-    },
-    sliderText: {
-        fontSize: 14,
-        fontWeight: 'bold',
-        opacity: 0.6,
-    },
     container: {
         flex: 1,
         paddingTop: 60,
