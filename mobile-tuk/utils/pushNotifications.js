@@ -41,6 +41,8 @@ export async function registerForPushNotificationsAsync() {
       console.log('FCM Token generated:', token);
     } catch (e) {
       console.log('Error generating push token', e);
+      const { Alert } = require('react-native');
+      Alert.alert('FCM Token Error', e.message || 'Unknown error');
       token = null;
     }
   } else {

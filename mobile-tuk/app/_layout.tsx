@@ -27,7 +27,16 @@ function RootLayoutNav() {
             // Register for push notifications when driver logs in
             registerForPushNotificationsAsync().then(token => {
                 if (token && driver.id) {
-                    driverApi.updatePushToken(driver.id, token).catch(console.error);
+                    driverApi.updatePushToken(driver.id, token)
+                        .then(() => {
+                            console.log("Token updated successfully");
+                        })
+                        .catch(err => {
+                            console.error("Token update failed", err);
+                            Alert.alert('Error', 'Failed to save push token to server');
+                        });
+                } else {
+                    Alert.alert('Push Token Failed', 'Token is null or missing driver ID');
                 }
             });
             
