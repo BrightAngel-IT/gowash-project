@@ -350,7 +350,7 @@ export const updateOrderStatus = async (req, res) => {
     }
 
     try {
-        await db.query('UPDATE orders SET status = $1 WHERE id = $2', [status, req.params.id]);
+        await db.query('UPDATE orders SET status = $1, updated_at = NOW() WHERE id = $2', [status, req.params.id]);
 
         const result = await db.query(
             `SELECT o.*, s.name as "serviceName", s.color as "serviceColor", 
