@@ -79,33 +79,7 @@ io.on('connection', (socket) => {
   });
 });
 
-// Background Job: Notify online drivers about pending jobs every 30 seconds
-setInterval(async () => {
-  try {
-    const jobsRes = await db.query(`
-      SELECT o.*, u.name as customer_name, s.name as service_name
-      FROM orders o
-      JOIN users u ON o.user_id = u.id
-      JOIN services s ON o.service_id = s.id
-      WHERE o.status IN ('Pending', 'Ready')
-      AND o.created_at >= NOW() - INTERVAL '6 hours'
-      AND o.id NOT IN (SELECT order_id FROM ride_assignments WHERE status NOT IN ('delivered', 'cancelled'))
-      ORDER BY o.created_at DESC
-    `);
-    
-    if (jobsRes.rows.length > 0) {
-      const driversRes = await db.query("SELECT id, push_token FROM drivers WHERE status = 'online'");
-      const onlineDrivers = driversRes.rows;
-      
-      jobsRes.rows.forEach(job => {
-        // Emit Socket Event
-        io.emit('new_driver_job', job);
-      });
-    }
-  } catch (error) {
-    console.error('Error in background job loop:', error);
-  }
-}, 30000); // 30 seconds
+// Removed polling loop as per user request to only notify at the exact moment of creation/update
 
 server.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
