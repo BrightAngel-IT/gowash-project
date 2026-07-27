@@ -101,7 +101,11 @@ export default function DashboardScreen() {
             Alert.alert("Success", `Status updated to ${status.replace('_', ' ')}`);
         } catch (error) {
             console.error('Error updating assignment status:', error);
-            Alert.alert("Error", "Failed to update status. Please try again.");
+            if (Platform.OS === 'web') {
+                window.alert("Error: Failed to update status. Please try again.");
+            } else {
+                Alert.alert("Error", "Failed to update status. Please try again.");
+            }
         }
     };
 
