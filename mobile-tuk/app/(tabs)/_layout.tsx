@@ -39,6 +39,7 @@ export default function TabLayout() {
                 name="active-trip"
                 options={{
                     title: 'Active Trip',
+                    href: null,
                     tabBarIcon: ({ color }) => <Navigation size={24} color={color} />,
                 }}
             />

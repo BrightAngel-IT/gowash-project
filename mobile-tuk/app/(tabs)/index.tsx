@@ -388,6 +388,22 @@ export default function DashboardScreen() {
                         </View>
                     </View>
 
+                    {isOnline && stats?.activeOrdersCount > 0 && !!stats?.activeOrders?.[0] && (
+                        <TouchableOpacity 
+                            style={[styles.earningsCard, { backgroundColor: theme.tint, padding: 15, marginBottom: 20 }]} 
+                            onPress={() => router.push('/(tabs)/active-trip' as any)}
+                        >
+                            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                                <Navigation size={24} color="#fff" />
+                                <View style={{ marginLeft: 15 }}>
+                                    <Text style={{ color: '#fff', fontSize: 16, fontWeight: 'bold' }}>Active Trip in Progress</Text>
+                                    <Text style={{ color: '#fff', opacity: 0.8 }}>Tap to view details</Text>
+                                </View>
+                            </View>
+                            <ChevronRight size={24} color="#fff" />
+                        </TouchableOpacity>
+                    )}
+
                     <View style={styles.sectionHeader}>
                         <Text style={[styles.sectionTitle, { color: theme.text }]}>Recent Jobs</Text>
                         <TouchableOpacity onPress={() => router.push('/history')}>

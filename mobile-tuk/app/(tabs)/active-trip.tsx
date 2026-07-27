@@ -7,7 +7,7 @@ import { Colors } from '../../constants/Colors';
 import { useColorScheme } from 'react-native';
 import SwipeSlider from '../../components/SwipeSlider';
 import * as Location from 'expo-location';
-import { useFocusEffect } from 'expo-router';
+import { useFocusEffect, router } from 'expo-router';
 
 const { height, width } = Dimensions.get('window');
 
@@ -87,7 +87,11 @@ export default function ActiveTrip() {
     const handleUpdateAssignmentStatus = async (assignmentId: number, status: string) => {
         try {
             await driverApi.updateRideStatus(driverId, assignmentId.toString(), status);
-            fetchActiveTrip(); // Refresh to get updated status
+            if (status === 'delivered') {
+                router.replace('/(tabs)');
+            } else {
+                fetchActiveTrip(); // Refresh to get updated status
+            }
         } catch (error) {
             console.error('Error updating status:', error);
         }
