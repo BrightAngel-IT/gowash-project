@@ -25,6 +25,7 @@ export default function DashboardScreen() {
     const [data, setData] = useState<any>(null);
     const [newJob, setNewJob] = useState<any>(null);
     const [isJobTaken, setIsJobTaken] = useState(false);
+    const [showActiveJobOverlay, setShowActiveJobOverlay] = useState(true);
     const { driver } = useAuth();
     const driverId = driver?.id ?? '1';
     const socketRef = useRef<any>(null);
@@ -402,14 +403,31 @@ export default function DashboardScreen() {
                         </View>
                     </View>
 
+                    {isOnline && stats.activeOrdersCount > 0 && !!stats.activeOrders?.[0] && !showActiveJobOverlay && (
+                        <TouchableOpacity 
+                            style={[styles.earningsCard, { backgroundColor: theme.tint, padding: 15, marginBottom: 20 }]} 
+                            onPress={() => setShowActiveJobOverlay(true)}
+                        >
+                            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                                <Navigation size={24} color="#fff" />
+                                <View style={{ marginLeft: 15 }}>
+                                    <Text style={{ color: '#fff', fontSize: 16, fontWeight: 'bold' }}>Active Trip in Progress</Text>
+                                    <Text style={{ color: '#fff', opacity: 0.8 }}>Tap to view details</Text>
+                                </View>
+                            </View>
+                            <ChevronRight size={24} color="#fff" />
+                        </TouchableOpacity>
+                    )}
+
                     <ActiveJobOverlay 
-                        visible={isOnline && stats.activeOrdersCount > 0 && !!stats.activeOrders?.[0]} 
+                        visible={showActiveJobOverlay && isOnline && stats.activeOrdersCount > 0 && !!stats.activeOrders?.[0]} 
                         activeOrder={stats.activeOrders?.[0]} 
                         theme={theme} 
                         driverLocation={driverLocation} 
                         calculateDistance={(lat1, lon1, lat2, lon2) => calculateDistance(lat1, lon1, lat2, lon2)} 
                         openInGoogleMaps={openInGoogleMaps} 
                         handleUpdateAssignmentStatus={handleUpdateAssignmentStatus} 
+                        onMinimize={() => setShowActiveJobOverlay(false)}
                     />
 
                     <View style={styles.sectionHeader}>

@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Modal, Dimensions } from 'react-native';
-import { Navigation, Clock, Package, MapPin } from 'lucide-react-native';
+import { Navigation, Clock, Package, MapPin, ChevronDown } from 'lucide-react-native';
 import SwipeSlider from './SwipeSlider'; // We will move SwipeSlider to components folder too
 
 const { height, width } = Dimensions.get('window');
@@ -13,6 +13,7 @@ interface ActiveJobOverlayProps {
     calculateDistance: (lat1: number, lon1: number, lat2: number, lon2: number) => string;
     openInGoogleMaps: (label: string, lat: number, lng: number, destLat?: number, destLng?: number) => void;
     handleUpdateAssignmentStatus: (orderId: number, status: string) => void;
+    onMinimize: () => void;
 }
 
 export default function ActiveJobOverlay({
@@ -22,7 +23,8 @@ export default function ActiveJobOverlay({
     driverLocation,
     calculateDistance,
     openInGoogleMaps,
-    handleUpdateAssignmentStatus
+    handleUpdateAssignmentStatus,
+    onMinimize
 }: ActiveJobOverlayProps) {
     if (!visible || !activeOrder) return null;
 
@@ -61,7 +63,12 @@ export default function ActiveJobOverlay({
         <Modal visible={visible} transparent={true} animationType="slide">
             <View style={[styles.container, { backgroundColor: theme.background }]}>
                 <View style={[styles.header, { backgroundColor: theme.card }]}>
-                    <Text style={[styles.headerTitle, { color: theme.text }]}>Active Trip</Text>
+                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                        <TouchableOpacity onPress={onMinimize} style={{ padding: 8, marginRight: 8, backgroundColor: theme.background, borderRadius: 20 }}>
+                            <ChevronDown size={24} color={theme.text} />
+                        </TouchableOpacity>
+                        <Text style={[styles.headerTitle, { color: theme.text }]}>Active Trip</Text>
+                    </View>
                     <Text style={[styles.orderId, { color: theme.icon }]}>#GW-{activeOrder.order_id}</Text>
                 </View>
 
