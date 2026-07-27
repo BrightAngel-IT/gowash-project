@@ -13,6 +13,7 @@ import io from 'socket.io-client';
 import Animated, { useSharedValue, useAnimatedStyle, withSpring, runOnJS } from 'react-native-reanimated';
 import { GestureDetector, Gesture, GestureHandlerRootView } from 'react-native-gesture-handler';
 import ActiveJobOverlay from '../../components/ActiveJobOverlay';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -146,6 +147,20 @@ export default function DashboardScreen() {
             setRefreshing(false);
         }
     };
+
+    useEffect(() => {
+        const loadDeclinedJobs = async () => {
+            try {
+                const saved = await AsyncStorage.getItem('declinedJobs');
+                if (saved) {
+                    declinedJobsRef.current = JSON.parse(saved);
+                }
+            } catch (e) {
+                console.error('Error loading declined jobs', e);
+            }
+        };
+        loadDeclinedJobs();
+    }, []);
 
 
 
@@ -556,8 +571,13 @@ export default function DashboardScreen() {
                                 <View style={styles.modalActions}>
                                     <TouchableOpacity
                                         style={[styles.actionButton, styles.declineButton]}
-                                        onPress={() => {
-                                            if (newJob?.id) declinedJobsRef.current.push(newJob.id);
+                                        onPress={async () => {
+                                            if (newJob?.id) {
+                                                declinedJobsRef.current.push(newJob.id);
+                                                try {
+                                                    await AsyncStorage.setItem('declinedJobs', JSON.stringify(declinedJobsRef.current));
+                                                } catch(e) {}
+                                            }
                                             setNewJob(null);
                                         }}
                                     >

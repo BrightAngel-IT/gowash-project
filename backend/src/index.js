@@ -99,35 +99,6 @@ setInterval(async () => {
       jobsRes.rows.forEach(job => {
         // Emit Socket Event
         io.emit('new_driver_job', job);
-        
-        // Send Push Notifications
-        onlineDrivers.forEach(driver => {
-          if (driver.push_token) {
-            const message = {
-              token: driver.push_token,
-              data: {
-                type: 'new_job',
-                orderId: job.id.toString(),
-                pickup_address: job.address || '',
-                price: (job.delivery_fee || 350).toString()
-              },
-              notification: {
-                title: 'New Delivery Request',
-                body: `New request at ${job.address || 'location'} for LKR ${job.delivery_fee || 350}`,
-              },
-              android: {
-                priority: 'high',
-                notification: {
-                  sound: 'default'
-                }
-              }
-            };
-            const messaging = getMessaging();
-            if (messaging) {
-              messaging.send(message).catch(err => console.error(`FCM error for driver ${driver.id}:`, err));
-            }
-          }
-        });
       });
     }
   } catch (error) {
