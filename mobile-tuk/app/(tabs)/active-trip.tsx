@@ -8,6 +8,7 @@ import { useColorScheme } from 'react-native';
 import SwipeSlider from '../../components/SwipeSlider';
 import * as Location from 'expo-location';
 import { useFocusEffect, router } from 'expo-router';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 const { height, width } = Dimensions.get('window');
 
@@ -143,7 +144,8 @@ export default function ActiveTrip() {
         : (isPickup ? 'Deliver to Laundry' : 'Deliver to Customer');
 
     return (
-        <View style={[styles.container, { backgroundColor: theme.background }]}>
+        <GestureHandlerRootView style={{ flex: 1 }}>
+            <View style={[styles.container, { backgroundColor: theme.background }]}>
             <View style={[styles.header, { backgroundColor: theme.card }]}>
                 <Text style={[styles.headerTitle, { color: theme.text }]}>Active Trip</Text>
                 <Text style={[styles.orderId, { color: theme.icon }]}>#GW-{activeOrder.order_id}</Text>
@@ -211,6 +213,7 @@ export default function ActiveTrip() {
                 </View>
             </View>
         </View>
+        </GestureHandlerRootView>
     );
 }
 

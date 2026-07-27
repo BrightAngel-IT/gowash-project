@@ -88,6 +88,7 @@ setInterval(async () => {
       JOIN users u ON o.user_id = u.id
       JOIN services s ON o.service_id = s.id
       WHERE o.status IN ('Pending', 'Ready')
+      AND o.created_at >= NOW() - INTERVAL '6 hours'
       AND o.id NOT IN (SELECT order_id FROM ride_assignments WHERE status NOT IN ('delivered', 'cancelled'))
       ORDER BY o.created_at DESC
     `);
