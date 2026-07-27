@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Dimensions, ActivityIndicator, Linking, Platform } from 'react-native';
 import { Navigation, Clock, Package, MapPin, Search } from 'lucide-react-native';
 import { useAuth } from '../../context/AuthContext';
-import { driverApi } from '../../services/api';
+import { driverApi } from '../../constants/api';
 import { Colors } from '../../constants/Colors';
 import { useColorScheme } from 'react-native';
 import SwipeSlider from '../../components/SwipeSlider';
@@ -23,7 +23,7 @@ export default function ActiveTrip() {
 
     const fetchActiveTrip = async () => {
         try {
-            const res = await driverApi.getDashboardStats(driverId);
+            const res = await driverApi.getDashboard(driverId);
             if (res.data?.stats?.activeOrders && res.data.stats.activeOrders.length > 0) {
                 setActiveOrder(res.data.stats.activeOrders[0]);
             } else {
@@ -84,9 +84,9 @@ export default function ActiveTrip() {
         });
     };
 
-    const handleUpdateAssignmentStatus = async (orderId: number, status: string) => {
+    const handleUpdateAssignmentStatus = async (assignmentId: number, status: string) => {
         try {
-            await driverApi.updateRideAssignmentStatus(orderId, status);
+            await driverApi.updateRideStatus(driverId, assignmentId.toString(), status);
             fetchActiveTrip(); // Refresh to get updated status
         } catch (error) {
             console.error('Error updating status:', error);

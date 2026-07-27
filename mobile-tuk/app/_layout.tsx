@@ -2,7 +2,7 @@ import { Stack, router } from 'expo-router';
 import Head from 'expo-router/head';
 import { StatusBar } from 'expo-status-bar';
 import { ThemeProvider, DarkTheme, DefaultTheme } from '@react-navigation/native';
-import { useColorScheme, View, ActivityIndicator } from 'react-native';
+import { useColorScheme, View, ActivityIndicator, Alert } from 'react-native';
 import { useEffect } from 'react';
 import { AuthProvider, useAuth } from '../context/AuthContext';
 import { registerForPushNotificationsAsync } from '../utils/pushNotifications';

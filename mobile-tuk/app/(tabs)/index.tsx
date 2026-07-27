@@ -147,11 +147,7 @@ export default function DashboardScreen() {
         }
     };
 
-    const isOnlineRef = useRef(isOnline);
 
-    useEffect(() => {
-        isOnlineRef.current = isOnline;
-    }, [isOnline]);
 
     const checkAndSetJobFromNotification = async (orderId: number) => {
         try {
@@ -266,7 +262,7 @@ export default function DashboardScreen() {
         try {
             await driverApi.acceptJob(driverId, newJob.id);
             setNewJob(null);
-            router.push('/active-trip');
+            router.push('/(tabs)/active-trip' as any);
         } catch (error) {
             console.error(error);
             Alert.alert("Error", "Failed to accept job. It might appear to be taken.");
