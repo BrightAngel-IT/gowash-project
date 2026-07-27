@@ -29,6 +29,13 @@ export default function DashboardScreen() {
     const { driver } = useAuth();
     const driverId = driver?.id ?? '1';
     const socketRef = useRef<any>(null);
+    const declinedJobsRef = useRef<number[]>([]);
+    const isOnlineRef = useRef(isOnline);
+    
+    useEffect(() => {
+        isOnlineRef.current = isOnline;
+    }, [isOnline]);
+
     const [driverLocation, setDriverLocation] = useState<Location.LocationObject | null>(null);
 
     const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number) => {
@@ -183,7 +190,7 @@ export default function DashboardScreen() {
 
         socketRef.current.on('new_driver_job', (job: any) => {
             console.log('New job received:', job);
-            if (isOnlineRef.current) {
+            if (isOnlineRef.current && !declinedJobsRef.current.includes(job.id)) {
                 setNewJob(job);
                 setIsJobTaken(false);
             }
@@ -258,26 +265,8 @@ export default function DashboardScreen() {
 
         try {
             await driverApi.acceptJob(driverId, newJob.id);
-            const isDelivery = newJob.status === 'Ready';
-            const pickupAddress = isDelivery ? (newJob.laundry_address || newJob.laundryName) : newJob.address;
-            
-            // The destination for the FIRST leg is the pickup address (where the driver needs to go now)
-            const destLat = isDelivery ? newJob.laundry_lat : newJob.customer_lat;
-            const destLng = isDelivery ? newJob.laundry_lng : newJob.customer_lng;
-
             setNewJob(null);
-            
-            Alert.alert(
-                "Success", 
-                "You have accepted the job! Navigating to the pickup location...",
-                [
-                    { text: "Later", style: "cancel" },
-                    { text: "Open Maps", onPress: () => openInGoogleMaps(pickupAddress, destLat, destLng) }
-                ]
-            );
-
-            openInGoogleMaps(pickupAddress, destLat, destLng);
-            fetchDashboard();
+            router.push('/active-trip');
         } catch (error) {
             console.error(error);
             Alert.alert("Error", "Failed to accept job. It might appear to be taken.");
@@ -402,33 +391,6 @@ export default function DashboardScreen() {
                             <Text style={[styles.miniCardLabel, { color: theme.icon }]}>Travelled</Text>
                         </View>
                     </View>
-
-                    {isOnline && stats.activeOrdersCount > 0 && !!stats.activeOrders?.[0] && !showActiveJobOverlay && (
-                        <TouchableOpacity 
-                            style={[styles.earningsCard, { backgroundColor: theme.tint, padding: 15, marginBottom: 20 }]} 
-                            onPress={() => setShowActiveJobOverlay(true)}
-                        >
-                            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                                <Navigation size={24} color="#fff" />
-                                <View style={{ marginLeft: 15 }}>
-                                    <Text style={{ color: '#fff', fontSize: 16, fontWeight: 'bold' }}>Active Trip in Progress</Text>
-                                    <Text style={{ color: '#fff', opacity: 0.8 }}>Tap to view details</Text>
-                                </View>
-                            </View>
-                            <ChevronRight size={24} color="#fff" />
-                        </TouchableOpacity>
-                    )}
-
-                    <ActiveJobOverlay 
-                        visible={showActiveJobOverlay && isOnline && stats.activeOrdersCount > 0 && !!stats.activeOrders?.[0]} 
-                        activeOrder={stats.activeOrders?.[0]} 
-                        theme={theme} 
-                        driverLocation={driverLocation} 
-                        calculateDistance={(lat1, lon1, lat2, lon2) => calculateDistance(lat1, lon1, lat2, lon2)} 
-                        openInGoogleMaps={openInGoogleMaps} 
-                        handleUpdateAssignmentStatus={handleUpdateAssignmentStatus} 
-                        onMinimize={() => setShowActiveJobOverlay(false)}
-                    />
 
                     <View style={styles.sectionHeader}>
                         <Text style={[styles.sectionTitle, { color: theme.text }]}>Recent Jobs</Text>
@@ -582,7 +544,10 @@ export default function DashboardScreen() {
                                 <View style={styles.modalActions}>
                                     <TouchableOpacity
                                         style={[styles.actionButton, styles.declineButton]}
-                                        onPress={() => setNewJob(null)}
+                                        onPress={() => {
+                                            if (newJob?.id) declinedJobsRef.current.push(newJob.id);
+                                            setNewJob(null);
+                                        }}
                                     >
                                         <Text style={styles.declineText}>Decline</Text>
                                     </TouchableOpacity>

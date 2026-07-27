@@ -2,6 +2,8 @@ import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import routes from './routes/index.js';
+import db from './config/database.js';
+import { getMessaging } from './config/firebase.js';
 
 import http from 'http';
 import { Server } from 'socket.io';
@@ -76,6 +78,62 @@ io.on('connection', (socket) => {
     console.log('User disconnected:', socket.id);
   });
 });
+
+// Background Job: Notify online drivers about pending jobs every 30 seconds
+setInterval(async () => {
+  try {
+    const jobsRes = await db.query(`
+      SELECT o.*, u.name as customer_name, s.name as service_name
+      FROM orders o
+      JOIN users u ON o.user_id = u.id
+      JOIN services s ON o.service_id = s.id
+      WHERE o.status IN ('Pending', 'Ready')
+      AND o.id NOT IN (SELECT order_id FROM ride_assignments WHERE status NOT IN ('delivered', 'cancelled'))
+      ORDER BY o.created_at DESC
+    `);
+    
+    if (jobsRes.rows.length > 0) {
+      const driversRes = await db.query("SELECT id, push_token FROM drivers WHERE status = 'online'");
+      const onlineDrivers = driversRes.rows;
+      
+      jobsRes.rows.forEach(job => {
+        // Emit Socket Event
+        io.emit('new_driver_job', job);
+        
+        // Send Push Notifications
+        onlineDrivers.forEach(driver => {
+          if (driver.push_token) {
+            const message = {
+              token: driver.push_token,
+              data: {
+                type: 'new_job',
+                orderId: job.id.toString(),
+                pickup_address: job.address || '',
+                price: (job.delivery_fee || 350).toString()
+              },
+              notification: {
+                title: 'New Delivery Request',
+                body: `New request at ${job.address || 'location'} for LKR ${job.delivery_fee || 350}`,
+              },
+              android: {
+                priority: 'high',
+                notification: {
+                  sound: 'default'
+                }
+              }
+            };
+            const messaging = getMessaging();
+            if (messaging) {
+              messaging.send(message).catch(err => console.error(`FCM error for driver ${driver.id}:`, err));
+            }
+          }
+        });
+      });
+    }
+  } catch (error) {
+    console.error('Error in background job loop:', error);
+  }
+}, 30000); // 30 seconds
 
 server.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
