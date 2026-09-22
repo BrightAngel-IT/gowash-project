@@ -4,7 +4,7 @@ import { getAllServices, getServiceById, createService, updateService, deleteSer
 import { createOrder, getUserOrders, getOrderById, updateOrderStatus, getOrderStats, editOrder } from '../controllers/orderController.js';
 import { getUserProfile, updateUserProfile, getAllUsers, getUserStats } from '../controllers/userController.js';
 import { generateOrdersCSV, generateRevenueReport, generateCustomerReport } from '../controllers/reportController.js';
-import { getDashboard, getAvailableJobs, updateStatus, acceptJob, getAllDrivers, getDriverProfile, getDriverHistory, updatePushToken, updateRideStatus } from '../controllers/driverController.js';
+import { getDashboard, getAvailableJobs, updateStatus, acceptJob, getAllDrivers, getDriverProfile, getDriverHistory, updatePushToken, updateRideStatus, createPayout, getPayoutHistory } from '../controllers/driverController.js';
 import authRoutes from './authRoutes.js';
 import laundryRoutes from './laundryRoutes.js';
 
@@ -79,7 +79,8 @@ router.post('/drivers/:driverId/accept-job', acceptJob);
 router.patch('/drivers/:driverId/push-token', updatePushToken);
 router.patch('/drivers/:driverId/ride-assignments/:assignmentId/status', updateRideStatus);
 router.get('/admin/drivers', getAllDrivers);
-
+router.post('/drivers/:driverId/payout', createPayout);
+router.get('/drivers/:driverId/payouts', getPayoutHistory);
 // Time Slot Pricing Routes
 router.get('/time-slots', getTimeSlots);
 router.post('/time-slots', createTimeSlot);

@@ -10,6 +10,7 @@ export default function ProfileScreen() {
     const theme = Colors[colorScheme];
     const { driver, logout } = useAuth();
     const [fullProfile, setFullProfile] = useState<any>(null);
+    const [payoutHistory, setPayoutHistory] = useState<any[]>([]);
     const [loading, setLoading] = useState(false);
     const [activeSection, setActiveSection] = useState<string | null>(null);
 
@@ -24,6 +25,13 @@ export default function ProfileScreen() {
         try {
             const response = await driverApi.getProfile(driver!.id);
             setFullProfile(response.data);
+
+            try {
+                const historyRes = await driverApi.getPayoutHistory(driver!.id);
+                setPayoutHistory(historyRes.data);
+            } catch (err) {
+                console.error("Error fetching payout history", err);
+            }
         } catch (error) {
             console.error('Error fetching full profile:', error);
         } finally {
@@ -109,10 +117,38 @@ export default function ProfileScreen() {
                 title = "Bank & Payouts";
                 content = (
                     <View style={styles.modalContent}>
+                        <View style={{ backgroundColor: theme.tint, padding: 20, borderRadius: 16, marginBottom: 20 }}>
+                            <Text style={{ color: '#fff', fontSize: 14, opacity: 0.9 }}>Current Wallet Balance</Text>
+                            <Text style={{ color: '#fff', fontSize: 32, fontWeight: 'bold', marginTop: 4 }}>
+                                LKR {parseFloat(profileData.wallet_balance || 0).toLocaleString()}
+                            </Text>
+                            <Text style={{ color: '#fff', fontSize: 12, marginTop: 8, opacity: 0.8 }}>
+                                Total Lifetime Earnings: LKR {parseFloat(profileData.total_earnings || 0).toLocaleString()}
+                            </Text>
+                        </View>
                         <DetailItem label="Bank Name" value={profileData.bank_name || 'Not provided'} icon={<Landmark size={18} color={theme.icon} />} />
                         <DetailItem label="Branch" value={profileData.branch_name || 'Not provided'} icon={<Search size={18} color={theme.icon} />} />
                         <DetailItem label="Account Holder" value={profileData.account_holder_name || 'Not provided'} icon={<User size={18} color={theme.icon} />} />
                         <DetailItem label="Account Number" value={profileData.account_number || 'Not provided'} icon={<CreditCard size={18} color={theme.icon} />} />
+                        
+                        <View style={{ marginTop: 24 }}>
+                            <Text style={{ fontSize: 18, fontWeight: 'bold', color: theme.text, marginBottom: 12 }}>Recent Payouts</Text>
+                            {payoutHistory.length === 0 ? (
+                                <Text style={{ color: theme.icon }}>No payouts yet.</Text>
+                            ) : (
+                                payoutHistory.map((p) => (
+                                    <View key={p.id} style={{ flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: theme.card }}>
+                                        <View>
+                                            <Text style={{ color: theme.text, fontWeight: 'bold' }}>LKR {parseFloat(p.amount).toLocaleString()}</Text>
+                                            <Text style={{ color: theme.icon, fontSize: 12, marginTop: 4 }}>{new Date(p.created_at).toLocaleDateString()}</Text>
+                                        </View>
+                                        <View style={{ backgroundColor: 'rgba(76, 175, 80, 0.1)', paddingHorizontal: 8, paddingVertical: 4, borderRadius: 8, alignSelf: 'center' }}>
+                                            <Text style={{ color: '#4CAF50', fontSize: 12, fontWeight: 'bold' }}>Settled</Text>
+                                        </View>
+                                    </View>
+                                ))
+                            )}
+                        </View>
                     </View>
                 );
                 break;

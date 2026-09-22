@@ -11,6 +11,24 @@ function Drivers() {
     const [loading, setLoading] = useState(true);
     const [selectedDriver, setSelectedDriver] = useState(null);
     const [filter, setFilter] = useState('All');
+    const [payoutHistory, setPayoutHistory] = useState([]);
+
+    useEffect(() => {
+        if (selectedDriver) {
+            fetchPayoutHistory(selectedDriver.id);
+        } else {
+            setPayoutHistory([]);
+        }
+    }, [selectedDriver]);
+
+    const fetchPayoutHistory = async (driverId) => {
+        try {
+            const res = await axios.get(`${API_URL}/drivers/${driverId}/payouts`);
+            setPayoutHistory(res.data);
+        } catch (error) {
+            console.error("Error fetching payout history:", error);
+        }
+    };
 
     useEffect(() => {
         fetchDrivers();
@@ -36,6 +54,22 @@ function Drivers() {
             }
         } catch (error) {
             alert("Failed to update status");
+        }
+    };
+
+    const handlePayout = async (driver) => {
+        const amount = prompt(`Enter amount to pay ${driver.name} (Max: LKR ${parseFloat(driver.wallet_balance || 0)}):`, driver.wallet_balance);
+        if (amount && parseFloat(amount) > 0) {
+            try {
+                await axios.post(`${API_URL}/drivers/${driver.id}/payout`, {
+                    amount: parseFloat(amount),
+                    notes: 'Admin manual settlement'
+                });
+                alert('Payout successful!');
+                fetchDrivers();
+            } catch (error) {
+                alert(error.response?.data?.message || 'Payout failed');
+            }
         }
     };
 
@@ -107,6 +141,7 @@ function Drivers() {
                                 <th>Contact</th>
                                 <th>Vehicle</th>
                                 <th>Status</th>
+                                <th>Wallet</th>
                                 <th>Actions</th>
                             </tr>
                         </thead>
@@ -141,6 +176,22 @@ function Drivers() {
                                         <span className={`status-badge ${getStatusColor(driver.status)}`}>
                                             {driver.status === 'pending_approval' ? 'Pending' : driver.status}
                                         </span>
+                                    </td>
+                                    <td>
+                                        <div className="wallet-info">
+                                            <p className="wallet-balance" style={{ fontWeight: 'bold', color: driver.wallet_balance > 0 ? 'green' : 'black' }}>
+                                                LKR {parseFloat(driver.wallet_balance || 0).toLocaleString()}
+                                            </p>
+                                            {driver.wallet_balance > 0 && (
+                                                <button
+                                                    className="payout-btn"
+                                                    onClick={() => handlePayout(driver)}
+                                                    style={{ marginTop: 5, padding: '4px 8px', fontSize: 12, backgroundColor: '#FFB300', color: '#fff', border: 'none', borderRadius: 4, cursor: 'pointer' }}
+                                                >
+                                                    Settle
+                                                </button>
+                                            )}
+                                        </div>
                                     </td>
                                     <td>
                                         <button
@@ -234,6 +285,32 @@ function Drivers() {
                                     <DocumentCard title="Vehicle Back" url={selectedDriver.vehicle_back_image_url} />
                                     <DocumentCard title="Vehicle Book" url={selectedDriver.vehicle_book_image_url} />
                                 </div>
+                            </div>
+
+                            <div className="documents-section" style={{ marginTop: 30 }}>
+                                <h4>Payout History</h4>
+                                {payoutHistory.length === 0 ? (
+                                    <p style={{ marginTop: 10, color: '#666' }}>No payouts recorded yet.</p>
+                                ) : (
+                                    <table className="drivers-table" style={{ marginTop: 10 }}>
+                                        <thead>
+                                            <tr>
+                                                <th>Date</th>
+                                                <th>Amount</th>
+                                                <th>Notes</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {payoutHistory.map(p => (
+                                                <tr key={p.id}>
+                                                    <td>{new Date(p.created_at).toLocaleString()}</td>
+                                                    <td style={{ color: 'green', fontWeight: 'bold' }}>LKR {parseFloat(p.amount).toLocaleString()}</td>
+                                                    <td>{p.notes}</td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                )}
                             </div>
                         </div>
                     </div>

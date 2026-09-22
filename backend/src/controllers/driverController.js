@@ -49,7 +49,8 @@ export const getDashboard = async (req, res) => {
             ridesCompleted: parseInt(ridesRes.rows[0].count || 0),
             rating: parseFloat(driver.rating || 5.0),
             activeOrdersCount: activeOrdersRes.rows.length,
-            activeOrders: activeOrdersRes.rows
+            activeOrders: activeOrdersRes.rows,
+            walletBalance: parseFloat(driver.wallet_balance || 0)
         };
 
         res.json({
@@ -231,6 +232,18 @@ export const updateRideStatus = async (req, res) => {
 
         await db.query(updateAssignQuery, [status, assignmentId]);
 
+        // If delivered, add delivery fee to driver's wallet balance
+        if (status === 'delivered') {
+            const orderDetailRes = await db.query('SELECT delivery_fee FROM orders WHERE id = $1', [orderId]);
+            if (orderDetailRes.rows.length > 0) {
+                const deliveryFee = orderDetailRes.rows[0].delivery_fee || 0;
+                await db.query(
+                    'UPDATE drivers SET wallet_balance = COALESCE(wallet_balance, 0) + $1, total_earnings = COALESCE(total_earnings, 0) + $1 WHERE id = $2',
+                    [deliveryFee, driverId]
+                );
+            }
+        }
+
         // 3. Update order status based on ride status
         let nextOrderStatus = null;
         if (status === 'picked_up') {
@@ -347,6 +360,68 @@ export const getAllDrivers = async (req, res) => {
         res.json(drivers.rows);
     } catch (error) {
         console.error('Error fetching all drivers:', error);
+        res.status(500).json({ message: "Server error" });
+    }
+};
+
+// Create a payout for a driver
+export const createPayout = async (req, res) => {
+    const { driverId } = req.params;
+    const { amount, notes } = req.body;
+
+    if (!amount || amount <= 0) {
+        return res.status(400).json({ message: "Invalid amount" });
+    }
+
+    try {
+        await db.query('BEGIN');
+
+        // Check current balance
+        const driverRes = await db.query('SELECT wallet_balance FROM drivers WHERE id = $1', [driverId]);
+        if (driverRes.rows.length === 0) {
+            await db.query('ROLLBACK');
+            return res.status(404).json({ message: "Driver not found" });
+        }
+
+        const currentBalance = parseFloat(driverRes.rows[0].wallet_balance || 0);
+        if (amount > currentBalance) {
+            await db.query('ROLLBACK');
+            return res.status(400).json({ message: "Payout amount exceeds wallet balance" });
+        }
+
+        // Insert payout record
+        await db.query(
+            'INSERT INTO driver_payouts (driver_id, amount, notes) VALUES ($1, $2, $3)',
+            [driverId, amount, notes || 'Payout settlement']
+        );
+
+        // Deduct from wallet_balance
+        await db.query(
+            'UPDATE drivers SET wallet_balance = wallet_balance - $1 WHERE id = $2',
+            [amount, driverId]
+        );
+
+        await db.query('COMMIT');
+        res.json({ message: "Payout settled successfully" });
+    } catch (error) {
+        await db.query('ROLLBACK');
+        console.error('Error creating payout:', error);
+        res.status(500).json({ message: "Server error" });
+    }
+};
+
+// Get driver payout history
+export const getPayoutHistory = async (req, res) => {
+    const { driverId } = req.params;
+    try {
+        const historyRes = await db.query(`
+            SELECT * FROM driver_payouts 
+            WHERE driver_id = $1 
+            ORDER BY created_at DESC
+        `, [driverId]);
+        res.json(historyRes.rows);
+    } catch (error) {
+        console.error('Error fetching payout history:', error);
         res.status(500).json({ message: "Server error" });
     }
 };

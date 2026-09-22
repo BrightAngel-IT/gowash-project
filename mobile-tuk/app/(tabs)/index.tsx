@@ -370,8 +370,14 @@ export default function DashboardScreen() {
                         style={styles.earningsCard}
                     >
                         <View style={styles.earningsInfo}>
-                            <Text style={styles.earningsLabel}>Daily Earnings</Text>
-                            <Text style={styles.earningsAmount}>LKR {stats.todayEarnings?.toLocaleString()}</Text>
+                            <View style={{ marginBottom: 16 }}>
+                                <Text style={styles.earningsLabel}>Wallet Balance</Text>
+                                <Text style={styles.earningsAmount}>LKR {stats.walletBalance?.toLocaleString() || '0'}</Text>
+                            </View>
+                            <View>
+                                <Text style={styles.earningsLabel}>Daily Earnings</Text>
+                                <Text style={[styles.earningsAmount, { fontSize: 20 }]}>LKR {stats.todayEarnings?.toLocaleString()}</Text>
+                            </View>
                         </View>
                         <View style={styles.earningsStats}>
                             <View style={styles.statItem}>

@@ -41,6 +41,7 @@ export const getToken = async () => {
 export const driverApi = {
     getDashboard: (driverId: string) => api.get(`/drivers/${driverId}/dashboard`),
     getProfile: (driverId: string) => api.get(`/drivers/${driverId}/profile`),
+    getPayoutHistory: (driverId: string) => api.get(`/drivers/${driverId}/payouts`),
     getHistory: (driverId: string) => api.get(`/drivers/${driverId}/history`),
     getAvailableJobs: () => api.get('/drivers/jobs/available'),
     updateStatus: (driverId: string, status: string) => api.patch(`/drivers/${driverId}/status`, { status }),
