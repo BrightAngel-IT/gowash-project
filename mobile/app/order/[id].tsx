@@ -69,12 +69,12 @@ export default function OrderDetailsScreen() {
             const match = cleanNotes.match(/\[Items:\s*(.+?)\]/);
             if (match) {
                 const services = match[1].split(' | ');
-                services.forEach(srv => {
+                services.forEach((srv: string) => {
                     const parts = srv.split(': ');
                     if (parts.length === 2) {
                         const srvName = parts[0];
                         const srvItems = parts[1];
-                        srvItems.split(', ').forEach(itemStr => {
+                        srvItems.split(', ').forEach((itemStr: string) => {
                             const [nameAndQty, pcs] = itemStr.split(' (');
                             const [name, qty] = nameAndQty.split('x');
                             itemsList.push({

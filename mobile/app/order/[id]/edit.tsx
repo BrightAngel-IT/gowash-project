@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator, Alert, TextInput, Platform } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator, Alert, TextInput, Platform, Modal } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter, Stack } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -128,7 +128,7 @@ export default function EditOrderScreen() {
             if (initialItemsList && initialItemsList.length > 0) {
                 initialItemsList.forEach((item: any) => {
                     const slugFromName = item.item_name ? item.item_name.toLowerCase().replace(/\s+/g, '_') : '';
-                    const match = items.find(c => 
+                    const match = items.find((c: any) => 
                         c.id.toString() === item.item_id.toString() ||
                         c.name.toLowerCase().replace(/\s+/g, '_') === slugFromName ||
                         c.name.toLowerCase().replace(/\s+/g, '_') === item.item_id

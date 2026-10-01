@@ -11,9 +11,22 @@
       "distribution": "internal",
       "android": {
         "buildType": "apk"
+      },
+      "ios": {
+        "simulator": true
       }
     },
-    "production": {}
+    "preview-device": {
+      "distribution": "internal",
+      "ios": {
+        "simulator": false
+      }
+    },
+    "production": {
+      "ios": {
+        "simulator": false
+      }
+    }
   },
   "submit": {
     "production": {}

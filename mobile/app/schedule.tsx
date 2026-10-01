@@ -172,6 +172,22 @@ export default function AdvancedScheduleScreen() {
     const handleFetchLocation = async () => {
         try {
             setIsLocating(true);
+            const userAgreed = await new Promise((resolve) => {
+                Alert.alert(
+                    'Use Your Location',
+                    'GoWash needs to access your location to find the exact pickup spot for your laundry.',
+                    [
+                        { text: 'Not Now', onPress: () => resolve(false), style: 'cancel' },
+                        { text: 'Allow', onPress: () => resolve(true) }
+                    ]
+                );
+            });
+
+            if (!userAgreed) {
+                setIsLocating(false);
+                return;
+            }
+
             let { status } = await Location.requestForegroundPermissionsAsync();
             if (status !== 'granted') {
                 Alert.alert('Permission Denied', 'Please allow location access to fetch your current address.');
@@ -911,8 +927,8 @@ const styles = StyleSheet.create({
         color: Colors.primary,
     },
     receiptItemPcs: { fontSize: 11, color: Colors.textSecondary, fontWeight: '600', fontStyle: 'italic' },
-    mapContainer: { height: 180, width: '100%', borderRadius: 20, overflow: 'hidden', borderWidth: 1, borderColor: '#F1F5F9', marginBottom: 5 },
-    map: { width: '100%', height: '100%' },
+    mapContainerSmall: { height: 180, width: '100%', borderRadius: 20, overflow: 'hidden', borderWidth: 1, borderColor: '#F1F5F9', marginBottom: 5 },
+    mapSmall: { width: '100%', height: '100%' },
     mapHintOverlay: { position: 'absolute', bottom: 20, alignSelf: 'center', backgroundColor: 'rgba(0,0,0,0.7)', paddingHorizontal: 16, paddingVertical: 10, borderRadius: 20 },
     mapHintText: { color: '#FFF', fontSize: 13, fontWeight: '600' },
     mapTriggerCard: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#F8FAFC', padding: 16, borderRadius: 16, borderWidth: 1, borderColor: '#E2E8F0', marginBottom: 5 },

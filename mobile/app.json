@@ -1,17 +1,24 @@
 {
   "expo": {
-    "name": "mobile",
-    "slug": "mobile",
+    "name": "Go Wash",
+    "slug": "go-wash",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "mobile",
+    "scheme": "gowash",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.brightaangel.mobile",
-      "usesAppleSignIn": true
+      "bundleIdentifier": "com.brightaangel.gowash",
+      "usesAppleSignIn": true,
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "Go Wash needs your location to find nearby drivers and set pickup/delivery addresses.",
+        "NSLocationAlwaysAndWhenInUseUsageDescription": "Go Wash needs your location to show live pickup status and delivery updates.",
+        "NSCameraUsageDescription": "Go Wash needs access to the camera to allow uploading photos.",
+        "NSPhotoLibraryUsageDescription": "Go Wash needs access to photo library for profile and order pictures.",
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -22,7 +29,7 @@
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
-      "package": "com.brightaangel.mobile",
+      "package": "com.brightaangel.gowash",
       "googleServicesFile": "./google-services.json"
     },
     "web": {
@@ -38,6 +45,14 @@
       "orientation": "portrait"
     },
     "plugins": [
+      [
+        "expo-build-properties",
+        {
+          "ios": {
+            "useFrameworks": "static"
+          }
+        }
+      ],
       "expo-router",
       "expo-notifications",
       "expo-apple-authentication",
@@ -59,10 +74,11 @@
       "typedRoutes": true,
       "reactCompiler": true
     },
-    "owner": "lakshan_umayanga",
+    "owner": "bright-aangel",
     "extra": {
+      "router": {},
       "eas": {
-        "projectId": "8a719a91-1663-4620-8985-d27009cc104d"
+        "projectId": "e9425891-19fe-4065-a556-01d1562b83dd"
       }
     }
   }

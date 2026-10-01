@@ -1,6 +1,6 @@
 
 import React, { useRef, useEffect, useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, Image, TouchableOpacity, Dimensions, Animated as RNAnimated, Platform, Modal, Alert } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Image, TouchableOpacity, Dimensions, Animated as RNAnimated, Platform, Modal, Alert, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
@@ -108,17 +108,22 @@ export default function DashboardScreen() {
     };
   }, [sound]);
 
+  const [isLoading, setIsLoading] = useState(true);
+
   const loadData = async () => {
     try {
+      setIsLoading(true);
       const userData = await getUser();
       setUser(userData);
-      fetchServices();
-      fetchLaundries();
+      await Promise.all([fetchServices(), fetchLaundries()]);
       if (userData) {
         pollOrderStatus(userData.id);
       }
     } catch (error) {
       console.error('Error loading dashboard data:', error);
+      Alert.alert('Connection Error', 'Failed to load dashboard data. Please try again.');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -195,7 +200,14 @@ export default function DashboardScreen() {
       />
 
       <SafeAreaView style={{ flex: 1 }}>
-        <View style={styles.header}>
+        {isLoading ? (
+          <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+            <ActivityIndicator size="large" color={Colors.primary} />
+            <Text style={{ marginTop: 10, color: Colors.text, fontWeight: '500' }}>Loading your dashboard...</Text>
+          </View>
+        ) : (
+          <>
+            <View style={styles.header}>
           <View>
             <Text style={styles.greeting}>Hey there,</Text>
             <Text style={styles.username}>{user?.name || 'Friend'} 👋</Text>
@@ -467,6 +479,8 @@ export default function DashboardScreen() {
             </Animated.View>
           </View>
         </Modal>
+          </>
+        )}
       </SafeAreaView>
     </View>
   );

@@ -1,7 +1,7 @@
 import * as Device from 'expo-device';
 import * as Notifications from 'expo-notifications';
 import Constants from 'expo-constants';
-import { Platform } from 'react-native';
+import { Platform, Alert } from 'react-native';
 
 // Set up how notifications should be handled when the app is in the foreground
 Notifications.setNotificationHandler({
@@ -29,6 +29,19 @@ export async function registerForPushNotificationsAsync() {
     let finalStatus = existingStatus;
     
     if (existingStatus !== 'granted') {
+      const userAgreed = await new Promise((resolve) => {
+        Alert.alert(
+          'Allow Notifications',
+          'GoWash needs to send you notifications to keep you updated on your laundry order status.',
+          [
+            { text: 'Not Now', onPress: () => resolve(false), style: 'cancel' },
+            { text: 'Allow', onPress: () => resolve(true) }
+          ]
+        );
+      });
+
+      if (!userAgreed) return null;
+
       const { status } = await Notifications.requestPermissionsAsync();
       finalStatus = status;
     }
