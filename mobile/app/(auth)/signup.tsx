@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, KeyboardAvoidingView, Platform, Dimensions, ScrollView } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, KeyboardAvoidingView, Platform, Dimensions, ScrollView, Alert, ActivityIndicator } from 'react-native';
 import { GoogleSignin, isErrorWithCode, statusCodes } from '@react-native-google-signin/google-signin';
 import { useEffect } from 'react';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -71,8 +71,9 @@ export default function SignupScreen() {
     };
 
     const handleSignup = async () => {
-        if (!name || !email || !phone || !password) {
+        if (!name.trim() || !email.trim() || !phone.trim() || !password.trim()) {
             setError('Please fill in all fields');
+            Alert.alert('Missing Fields', 'Please fill in all fields.');
             return;
         }
 
@@ -80,12 +81,21 @@ export default function SignupScreen() {
         setError('');
 
         try {
-            await api.post('/auth/register', { name, email, phone, password });
+            await api.post('/auth/register', {
+                name: name.trim(),
+                email: email.trim().toLowerCase(),
+                phone: phone.trim(),
+                password: password.trim(),
+            });
             // After successful signup, redirect to login
-            alert('Registration successful! Please login.');
+            Alert.alert('Success', 'Registration successful! Please login.');
             router.push('/(auth)/login');
         } catch (err: any) {
-            setError(err.response?.data?.message || 'Registration failed. Please try again.');
+            const msg = err.response?.data?.message
+                || (err.message === 'Network Error' ? 'Cannot reach server. Check your internet connection.' : err.message)
+                || 'Registration failed. Please try again.';
+            setError(msg);
+            Alert.alert('Registration Failed', msg);
         } finally {
             setLoading(false);
         }
@@ -101,7 +111,7 @@ export default function SignupScreen() {
                 style={styles.background}
             />
 
-            <ScrollView contentContainerStyle={styles.contentContainer}>
+            <ScrollView contentContainerStyle={styles.contentContainer} keyboardShouldPersistTaps="handled">
                 <Animated.View entering={FadeInUp.delay(200).duration(1000)} style={styles.header}>
                     <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
                         <Ionicons name="arrow-back" size={24} color="white" />
@@ -119,6 +129,8 @@ export default function SignupScreen() {
                             placeholderTextColor="rgba(255,255,255,0.7)"
                             value={name}
                             onChangeText={setName}
+                            textContentType="name"
+                            autoCorrect={false}
                         />
                     </View>
 
@@ -131,6 +143,8 @@ export default function SignupScreen() {
                             value={email}
                             onChangeText={setEmail}
                             autoCapitalize="none"
+                            autoCorrect={false}
+                            textContentType="emailAddress"
                             keyboardType="email-address"
                         />
                     </View>
@@ -144,6 +158,7 @@ export default function SignupScreen() {
                             value={phone}
                             onChangeText={setPhone}
                             keyboardType="phone-pad"
+                            textContentType="telephoneNumber"
                         />
                     </View>
 
@@ -156,11 +171,18 @@ export default function SignupScreen() {
                             value={password}
                             onChangeText={setPassword}
                             secureTextEntry
+                            autoCapitalize="none"
+                            autoCorrect={false}
+                            textContentType="oneTimeCode"
                         />
                     </View>
 
-                    <TouchableOpacity style={styles.buttonPrimary} onPress={handleSignup}>
-                        <Text style={styles.buttonTextPrimary}>Sign Up</Text>
+                    <TouchableOpacity style={styles.buttonPrimary} onPress={handleSignup} disabled={loading}>
+                        {loading ? (
+                            <ActivityIndicator color="#3b5998" />
+                        ) : (
+                            <Text style={styles.buttonTextPrimary}>Sign Up</Text>
+                        )}
                     </TouchableOpacity>
 
                     <TouchableOpacity 

@@ -1,5 +1,13 @@
 import db from '../config/database.js';
 
+// Ensure the apple_id column exists (production DB may not have been migrated)
+let appleColumnReady = false;
+const ensureAppleColumn = async () => {
+    if (appleColumnReady) return;
+    await db.query('ALTER TABLE users ADD COLUMN IF NOT EXISTS apple_id VARCHAR(255)');
+    appleColumnReady = true;
+};
+
 export const appleLogin = async (req, res) => {
     const { email, name, appleId, role = 'customer' } = req.body;
 
@@ -8,6 +16,8 @@ export const appleLogin = async (req, res) => {
     }
 
     try {
+        await ensureAppleColumn();
+
         // 1. Check if user already exists by apple_id
         let userRes = await db.query('SELECT * FROM users WHERE apple_id = $1', [appleId]);
         
@@ -59,6 +69,6 @@ export const appleLogin = async (req, res) => {
         });
     } catch (error) {
         console.error('Apple login error:', error);
-        res.status(500).json({ message: 'Server error' });
+        res.status(500).json({ message: `Server error: ${error.message}` });
     }
 };

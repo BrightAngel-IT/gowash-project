@@ -1,12 +1,13 @@
 import db from '../config/database.js';
 
 export const login = async (req, res) => {
-    const { email, password } = req.body;
+    const { password } = req.body;
+    const email = (req.body.email || '').trim().toLowerCase();
 
     try {
         // 1. Check users table
         const userRes = await db.query(
-            'SELECT * FROM users WHERE email = $1 AND password = $2',
+            'SELECT * FROM users WHERE LOWER(TRIM(email)) = $1 AND password = $2',
             [email, password]
         );
 

@@ -124,8 +124,9 @@ export default function LoginScreen() {
             if (e.code === 'ERR_REQUEST_CANCELED') {
                 // user cancelled Apple Sign-in
             } else {
-                setError('Apple authentication failed.');
-                Alert.alert('Login Failed', 'Apple authentication failed.');
+                const msg = e.response?.data?.message || e.message || 'Apple authentication failed.';
+                setError(msg);
+                Alert.alert('Login Failed', msg);
             }
         } finally {
             setLoading(false);
