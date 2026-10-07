@@ -5,7 +5,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import api from '@/constants/api';
 import { Colors, Typography } from '@/constants/theme';
-import Animated, { FadeInDown } from 'react-native-reanimated';
+
 import { LinearGradient } from 'expo-linear-gradient';
 
 export default function ServicesScreen() {
@@ -42,7 +42,7 @@ export default function ServicesScreen() {
         <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
           <View style={styles.grid}>
             {services.map((service, index) => (
-              <Animated.View key={service.id} entering={FadeInDown.delay(index * 50).duration(400)} style={styles.gridItemWrapper}>
+              <View key={service.id} style={styles.gridItemWrapper}>
                 <TouchableOpacity 
                   style={styles.serviceCard} 
                   onPress={() => router.push('/(tabs)/explore')}
@@ -62,7 +62,7 @@ export default function ServicesScreen() {
                      <Ionicons name="chevron-forward" size={16} color={Colors.textSecondary} />
                   </View>
                 </TouchableOpacity>
-              </Animated.View>
+              </View>
             ))}
           </View>
         </ScrollView>

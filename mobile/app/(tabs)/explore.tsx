@@ -6,7 +6,7 @@ import { useRouter } from 'expo-router';
 import { Colors, Typography, Spacing, BorderRadius } from '@/constants/theme';
 import api from '@/constants/api';
 import { LinearGradient } from 'expo-linear-gradient';
-import Animated, { FadeInDown } from 'react-native-reanimated';
+
 import { Image } from 'expo-image';
 
 export default function ExploreLaundriesScreen() {
@@ -30,7 +30,7 @@ export default function ExploreLaundriesScreen() {
   };
 
   const renderLaundryItem = ({ item, index }: { item: any, index: number }) => (
-    <Animated.View entering={FadeInDown.delay(index * 100).springify()}>
+    <View>
       <TouchableOpacity
         style={styles.laundryCard}
         onPress={() => router.push({ pathname: '/schedule', params: { laundryId: item.id, laundryName: item.name } })}
@@ -60,7 +60,7 @@ export default function ExploreLaundriesScreen() {
           </View>
         </View>
       </TouchableOpacity>
-    </Animated.View>
+    </View>
   );
 
   return (
