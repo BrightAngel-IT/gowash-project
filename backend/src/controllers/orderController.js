@@ -45,6 +45,13 @@ const sendPushNotifications = async (tokens, title, body, data = {}) => {
                 channelId: 'new_job_channel'
             }
         },
+        apns: {
+            payload: {
+                aps: {
+                    sound: 'default'
+                }
+            }
+        },
         tokens: tokens,
     };
 
