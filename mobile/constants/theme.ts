@@ -20,20 +20,20 @@ export const Colors = {
 };
 
 export const DarkColors = {
-  primary: '#5d80d1',
-  secondary: '#4b72c9',
+  primary: '#5C7CFA',
+  secondary: '#3b5998',
   accent: '#FF6B6B',
-  background: '#121212',
-  card: '#1E1E1E',
-  text: '#F7F9FC',
-  textSecondary: '#A0A0A5',
-  border: '#333333',
+  background: '#0B132B',
+  card: '#1C2541',
+  text: '#FFFFFF',
+  textSecondary: '#8E9EBB',
+  border: '#2A3B61',
   success: '#4CD964',
   warning: '#FFCC00',
   error: '#FF3B30',
   gradients: {
-    primary: ['#192f6a', '#3b5998', '#4c669f'] as const,
-    card: ['#1E1E1E', '#2C2C2C'] as const,
+    primary: ['#3b5998', '#4c669f', '#5C7CFA'] as const,
+    card: ['#1C2541', '#111936'] as const,
     accent: ['#FF8E53', '#FF6B6B'] as const,
   }
 };
