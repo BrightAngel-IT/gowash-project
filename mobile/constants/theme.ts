@@ -21,19 +21,19 @@ export const Colors = {
 
 export const DarkColors = {
   primary: '#5C7CFA',
-  secondary: '#3b5998',
+  secondary: '#4b72c9',
   accent: '#FF6B6B',
-  background: '#0B132B',
-  card: '#1C2541',
+  background: '#121212',
+  card: '#1E1E1E',
   text: '#FFFFFF',
-  textSecondary: '#8E9EBB',
-  border: '#2A3B61',
-  success: '#4CD964',
-  warning: '#FFCC00',
-  error: '#FF3B30',
+  textSecondary: '#A0A0A5',
+  border: '#2C2C2C',
+  success: '#32D74B',
+  warning: '#FFD60A',
+  error: '#FF453A',
   gradients: {
-    primary: ['#3b5998', '#4c669f', '#5C7CFA'] as const,
-    card: ['#1C2541', '#111936'] as const,
+    primary: ['#4b72c9', '#5C7CFA', '#748ffc'] as const,
+    card: ['#2A2A2A', '#1E1E1E'] as const,
     accent: ['#FF8E53', '#FF6B6B'] as const,
   }
 };

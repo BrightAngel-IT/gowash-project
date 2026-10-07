@@ -403,7 +403,7 @@ export default function AdvancedScheduleScreen() {
                                             onPress={() => toggleService(s.id)}
                                         >
                                             <LinearGradient
-                                                colors={isSelected ? [s.color, s.color + 'CC'] : ['#FFFFFF', Colors.card]}
+                                                colors={isSelected ? [s.color, s.color + 'CC'] : Colors.gradients.card}
                                                 style={styles.serviceGradient}
                                             >
                                                 <Ionicons name={s.icon as any} size={32} color={isSelected ? '#fff' : s.color} />
