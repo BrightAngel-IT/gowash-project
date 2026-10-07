@@ -1,13 +1,17 @@
 import React, { useState, useEffect } from 'react';
+import { useThemeColors } from '@/hooks/useThemeColors';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter, Stack } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { Colors, Typography } from '@/constants/theme';
+import { Typography } from '@/constants/theme';
 import api from '@/constants/api';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 
 export default function OrderDetailsScreen() {
+  const Colors = useThemeColors();
+  const styles = createStyles(Colors);
+
     const { id } = useLocalSearchParams();
     const router = useRouter();
     const [order, setOrder] = useState<any>(null);
@@ -176,14 +180,14 @@ export default function OrderDetailsScreen() {
     );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (Colors: any) => StyleSheet.create({
     container: { flex: 1, backgroundColor: '#F7F9FC' },
     center: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#F7F9FC' },
-    header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', padding: 20, backgroundColor: '#fff', borderBottomWidth: 1, borderBottomColor: '#F1F5F9' },
+    header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', padding: 20, backgroundColor: Colors.card, borderBottomWidth: 1, borderBottomColor: '#F1F5F9' },
     backIconBtn: { padding: 8, marginLeft: -8 },
     title: { ...Typography.h2, color: Colors.text },
     scrollContent: { padding: 20, paddingBottom: 100 },
-    card: { backgroundColor: '#fff', borderRadius: 16, padding: 20, marginBottom: 16, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.05, shadowRadius: 8, elevation: 2 },
+    card: { backgroundColor: Colors.card, borderRadius: 16, padding: 20, marginBottom: 16, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.05, shadowRadius: 8, elevation: 2 },
     rowBetween: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
     sectionTitle: { fontSize: 16, fontWeight: '700', color: Colors.text },
     statusBadge: { paddingHorizontal: 10, paddingVertical: 4, borderRadius: 8 },
@@ -202,7 +206,7 @@ const styles = StyleSheet.create({
     summaryValue: { fontSize: 14, fontWeight: '600', color: Colors.text },
     grandTotalLabel: { fontSize: 16, fontWeight: '700', color: Colors.text },
     grandTotalValue: { fontSize: 18, fontWeight: '800', color: Colors.primary },
-    footer: { position: 'absolute', bottom: 0, left: 0, right: 0, padding: 20, backgroundColor: '#fff', borderTopWidth: 1, borderTopColor: '#F1F5F9' },
+    footer: { position: 'absolute', bottom: 0, left: 0, right: 0, padding: 20, backgroundColor: Colors.card, borderTopWidth: 1, borderTopColor: '#F1F5F9' },
     editBtn: { backgroundColor: Colors.primary, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', padding: 16, borderRadius: 12 },
     editBtnText: { color: '#fff', fontSize: 16, fontWeight: '700', marginLeft: 8 },
     errorText: { fontSize: 16, color: Colors.text, marginBottom: 16 },

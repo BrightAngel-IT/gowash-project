@@ -1,9 +1,10 @@
 import React, { useEffect, useState, useRef } from 'react';
+import { useThemeColors } from '@/hooks/useThemeColors';
 import { View, Text, StyleSheet, FlatList, TouchableOpacity, Alert, ActivityIndicator, Modal, Platform, Vibration, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { Colors, Typography, Spacing } from '@/constants/theme';
+import { Typography, Spacing } from '@/constants/theme';
 import api, { getUser, logout } from '@/constants/api';
 import Animated, { FadeInDown, BounceIn } from 'react-native-reanimated';
 import { Audio } from 'expo-av';
@@ -11,6 +12,9 @@ import * as Speech from 'expo-speech';
 import { LinearGradient } from 'expo-linear-gradient';
 
 export default function ProfessionalDashboard() {
+  const Colors = useThemeColors();
+  const styles = createStyles(Colors);
+
     const router = useRouter();
     const [orders, setOrders] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
@@ -339,7 +343,7 @@ export default function ProfessionalDashboard() {
     );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (Colors: any) => StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: '#F3F4F6',
@@ -350,7 +354,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         padding: 24,
         paddingTop: 10,
-        backgroundColor: '#fff',
+        backgroundColor: Colors.card,
         borderBottomLeftRadius: 30,
         borderBottomRightRadius: 30,
         elevation: 10,
@@ -389,7 +393,7 @@ const styles = StyleSheet.create({
     },
     statCard: {
         flex: 1,
-        backgroundColor: '#fff',
+        backgroundColor: Colors.card,
         padding: 20,
         borderRadius: 24,
         alignItems: 'center',
@@ -423,7 +427,7 @@ const styles = StyleSheet.create({
         paddingBottom: 40,
     },
     orderCard: {
-        backgroundColor: '#fff',
+        backgroundColor: Colors.card,
         borderRadius: 28,
         padding: 20,
         marginBottom: 20,
@@ -480,7 +484,7 @@ const styles = StyleSheet.create({
         fontWeight: '500',
     },
     itemBreakdownBox: {
-        backgroundColor: '#fff',
+        backgroundColor: Colors.card,
         borderRadius: 14,
         padding: 12,
         marginVertical: 4,
@@ -562,7 +566,7 @@ const styles = StyleSheet.create({
         padding: 24,
     },
     notificationPopup: {
-        backgroundColor: '#fff',
+        backgroundColor: Colors.card,
         width: '100%',
         borderRadius: 40,
         overflow: 'hidden',
@@ -602,7 +606,7 @@ const styles = StyleSheet.create({
         padding: 30,
         alignItems: 'center',
         marginTop: -30,
-        backgroundColor: '#fff',
+        backgroundColor: Colors.card,
         borderTopLeftRadius: 40,
         borderTopRightRadius: 40,
     },

@@ -19,6 +19,25 @@ export const Colors = {
   }
 };
 
+export const DarkColors = {
+  primary: '#5d80d1',
+  secondary: '#4b72c9',
+  accent: '#FF6B6B',
+  background: '#121212',
+  card: '#1E1E1E',
+  text: '#F7F9FC',
+  textSecondary: '#A0A0A5',
+  border: '#333333',
+  success: '#4CD964',
+  warning: '#FFCC00',
+  error: '#FF3B30',
+  gradients: {
+    primary: ['#192f6a', '#3b5998', '#4c669f'] as const,
+    card: ['#1E1E1E', '#2C2C2C'] as const,
+    accent: ['#FF8E53', '#FF6B6B'] as const,
+  }
+};
+
 export const Spacing = {
   xs: 4,
   s: 8,

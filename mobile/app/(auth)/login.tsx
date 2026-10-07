@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useThemeColors } from '@/hooks/useThemeColors';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, KeyboardAvoidingView, Platform, Dimensions, ScrollView, Alert } from 'react-native';
 import { GoogleSignin, isErrorWithCode, statusCodes } from '@react-native-google-signin/google-signin';
 import * as AppleAuthentication from 'expo-apple-authentication';
@@ -12,6 +13,9 @@ import api, { saveToken, saveUser } from '@/constants/api';
 const { width, height } = Dimensions.get('window');
 
 export default function LoginScreen() {
+  const Colors = useThemeColors();
+  const styles = createStyles(Colors);
+
     const router = useRouter();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
@@ -223,7 +227,7 @@ export default function LoginScreen() {
     );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (Colors: any) => StyleSheet.create({
     container: {
         flex: 1,
     },
@@ -294,7 +298,7 @@ const styles = StyleSheet.create({
         fontSize: 14,
     },
     buttonPrimary: {
-        backgroundColor: '#fff',
+        backgroundColor: Colors.card,
         paddingVertical: 18,
         borderRadius: 30,
         alignItems: 'center',
@@ -312,7 +316,7 @@ const styles = StyleSheet.create({
     },
     buttonGoogle: {
         flexDirection: 'row',
-        backgroundColor: '#fff',
+        backgroundColor: Colors.card,
         paddingVertical: 18,
         borderRadius: 30,
         alignItems: 'center',

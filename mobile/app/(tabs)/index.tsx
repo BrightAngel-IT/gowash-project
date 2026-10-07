@@ -1,5 +1,6 @@
 
 import React, { useRef, useEffect, useState } from 'react';
+import { useThemeColors } from '@/hooks/useThemeColors';
 import { View, Text, StyleSheet, ScrollView, Image, TouchableOpacity, Dimensions, Animated as RNAnimated, Platform, Modal, Alert, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -8,7 +9,7 @@ import * as Linking from 'expo-linking';
 import { LinearGradient } from 'expo-linear-gradient';
 import Animated, { FadeInDown, FadeInRight, FadeOutUp, BounceIn } from 'react-native-reanimated';
 import { BlurView } from 'expo-blur';
-import { Colors, Spacing, BorderRadius, Typography } from '@/constants/theme';
+import { Spacing, BorderRadius, Typography } from '@/constants/theme';
 import { useIsFocused } from '@react-navigation/native';
 import { Audio } from 'expo-av';
 import io from 'socket.io-client';
@@ -18,6 +19,9 @@ import api, { getUser, SOCKET_URL } from '@/constants/api';
 const { width } = Dimensions.get('window');
 
 export default function DashboardScreen() {
+  const Colors = useThemeColors();
+  const styles = createStyles(Colors);
+
   const router = useRouter();
   const isFocused = useIsFocused();
   const scrollY = useRef(new RNAnimated.Value(0)).current;
@@ -329,7 +333,7 @@ export default function DashboardScreen() {
                         styles.progressBarFill,
                         {
                           width: activeOrder.status === 'Washing' ? '40%' : activeOrder.status === 'Ready' ? '100%' : '20%',
-                          backgroundColor: '#fff'
+                          backgroundColor: Colors.card
                         }
                       ]}
                     />
@@ -486,7 +490,7 @@ export default function DashboardScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (Colors: any) => StyleSheet.create({
   container: {
     flex: 1,
   },
@@ -511,7 +515,7 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 14,
-    backgroundColor: '#fff',
+    backgroundColor: Colors.card,
     justifyContent: 'center',
     alignItems: 'center',
     shadowColor: "#000",
@@ -573,7 +577,7 @@ const styles = StyleSheet.create({
     lineHeight: 20,
   },
   bannerButton: {
-    backgroundColor: '#fff',
+    backgroundColor: Colors.card,
     paddingVertical: 10,
     paddingHorizontal: 20,
     borderRadius: 12,
@@ -596,7 +600,7 @@ const styles = StyleSheet.create({
   searchContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#fff',
+    backgroundColor: Colors.card,
     paddingHorizontal: 16,
     paddingVertical: 14,
     borderRadius: 16,
@@ -638,7 +642,7 @@ const styles = StyleSheet.create({
   serviceCardVertical: {
     width: 110,
     height: 160,
-    backgroundColor: '#fff',
+    backgroundColor: Colors.card,
     padding: 16,
     borderRadius: 20,
     alignItems: 'center',
@@ -670,7 +674,7 @@ const styles = StyleSheet.create({
   },
   laundryQuickCard: {
     width: 160,
-    backgroundColor: '#fff',
+    backgroundColor: Colors.card,
     borderRadius: 24,
     overflow: 'hidden',
     shadowColor: "#000",
@@ -711,7 +715,7 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   orderCardHeader: {
-    backgroundColor: '#fff',
+    backgroundColor: Colors.card,
     borderTopLeftRadius: 19,
     borderTopRightRadius: 19,
     borderBottomLeftRadius: 24,
@@ -777,7 +781,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#fff',
+    backgroundColor: Colors.card,
     margin: 4,
     marginTop: 0,
     paddingVertical: 12,
@@ -842,7 +846,7 @@ const styles = StyleSheet.create({
     padding: 30,
   },
   statusUpdatePopup: {
-    backgroundColor: '#fff',
+    backgroundColor: Colors.card,
     width: '100%',
     borderRadius: 30,
     overflow: 'hidden',
@@ -911,7 +915,7 @@ const styles = StyleSheet.create({
     fontWeight: '800',
   },
   driverModalContent: {
-    backgroundColor: '#fff',
+    backgroundColor: Colors.card,
     borderRadius: 30,
     padding: 0,
     width: '100%',

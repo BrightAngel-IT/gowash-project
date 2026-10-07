@@ -1,13 +1,17 @@
 import React from 'react';
+import { useThemeColors } from '@/hooks/useThemeColors';
 import { View, Text, StyleSheet, Image, TouchableOpacity, ScrollView, Switch, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { Colors, Typography, Spacing } from '@/constants/theme';
+import { Typography, Spacing } from '@/constants/theme';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 import { getUser, logout as apiLogout } from '@/constants/api';
 
 export default function ProfileScreen() {
+  const Colors = useThemeColors();
+  const styles = createStyles(Colors);
+
     const router = useRouter();
     const [user, setUser] = React.useState<any>(null);
     const [stats, setStats] = React.useState({ orders: 0, spent: 0 });
@@ -152,7 +156,7 @@ export default function ProfileScreen() {
     );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (Colors: any) => StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: '#F7F9FC',
@@ -163,7 +167,7 @@ const styles = StyleSheet.create({
     header: {
         alignItems: 'center',
         padding: 30,
-        backgroundColor: '#fff',
+        backgroundColor: Colors.card,
         borderBottomLeftRadius: 32,
         borderBottomRightRadius: 32,
         marginBottom: 24,
@@ -243,7 +247,7 @@ const styles = StyleSheet.create({
         letterSpacing: 1,
     },
     sectionContent: {
-        backgroundColor: '#fff',
+        backgroundColor: Colors.card,
         borderRadius: 20,
         paddingHorizontal: 20,
         shadowColor: Colors.text,

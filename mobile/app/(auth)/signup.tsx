@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useThemeColors } from '@/hooks/useThemeColors';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, KeyboardAvoidingView, Platform, Dimensions, ScrollView, Alert, ActivityIndicator } from 'react-native';
 import { GoogleSignin, isErrorWithCode, statusCodes } from '@react-native-google-signin/google-signin';
 import { useEffect } from 'react';
@@ -11,6 +12,9 @@ import api, { saveToken, saveUser } from '@/constants/api';
 const { width, height } = Dimensions.get('window');
 
 export default function SignupScreen() {
+  const Colors = useThemeColors();
+  const styles = createStyles(Colors);
+
     const router = useRouter();
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
@@ -206,7 +210,7 @@ export default function SignupScreen() {
     );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (Colors: any) => StyleSheet.create({
     container: {
         flex: 1,
     },
@@ -264,7 +268,7 @@ const styles = StyleSheet.create({
         height: '100%',
     },
     buttonPrimary: {
-        backgroundColor: '#fff',
+        backgroundColor: Colors.card,
         paddingVertical: 18,
         borderRadius: 30,
         alignItems: 'center',
@@ -283,7 +287,7 @@ const styles = StyleSheet.create({
     },
     buttonGoogle: {
         flexDirection: 'row',
-        backgroundColor: '#fff',
+        backgroundColor: Colors.card,
         paddingVertical: 18,
         borderRadius: 30,
         alignItems: 'center',

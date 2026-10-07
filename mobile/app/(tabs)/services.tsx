@@ -1,14 +1,18 @@
 import React, { useEffect, useState } from 'react';
+import { useThemeColors } from '@/hooks/useThemeColors';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import api from '@/constants/api';
-import { Colors, Typography } from '@/constants/theme';
+import { Typography } from '@/constants/theme';
 
 import { LinearGradient } from 'expo-linear-gradient';
 
 export default function ServicesScreen() {
+  const Colors = useThemeColors();
+  const styles = createStyles(Colors);
+
   const router = useRouter();
   const [services, setServices] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -71,7 +75,7 @@ export default function ServicesScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (Colors: any) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#F7F9FC',
@@ -79,7 +83,7 @@ const styles = StyleSheet.create({
   header: {
     padding: 24,
     paddingBottom: 16,
-    backgroundColor: '#fff',
+    backgroundColor: Colors.card,
   },
   title: {
     ...Typography.h1,
@@ -104,7 +108,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   serviceCard: {
-    backgroundColor: '#fff',
+    backgroundColor: Colors.card,
     borderRadius: 20,
     padding: 20,
     alignItems: 'center',

@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
+import { useThemeColors } from '@/hooks/useThemeColors';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator, Alert, TextInput, Platform, Modal } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter, Stack } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { Colors, Typography } from '@/constants/theme';
+import { Typography } from '@/constants/theme';
 import api from '@/constants/api';
 import Animated, { FadeInRight } from 'react-native-reanimated';
 import * as Location from 'expo-location';
@@ -27,6 +28,9 @@ const dates = Array.from({ length: 7 }, (_, i) => {
 });
 
 export default function EditOrderScreen() {
+  const Colors = useThemeColors();
+  const styles = createStyles(Colors);
+
     const { id } = useLocalSearchParams();
     const router = useRouter();
     const [order, setOrder] = useState<any>(null);
@@ -481,24 +485,24 @@ export default function EditOrderScreen() {
     );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (Colors: any) => StyleSheet.create({
     container: { flex: 1, backgroundColor: '#F7F9FC' },
     center: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#F7F9FC' },
-    header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', padding: 20, backgroundColor: '#fff', borderBottomWidth: 1, borderBottomColor: '#F1F5F9' },
+    header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', padding: 20, backgroundColor: Colors.card, borderBottomWidth: 1, borderBottomColor: '#F1F5F9' },
     backBtn: { padding: 8, marginLeft: -8 },
     title: { ...Typography.h3, color: Colors.text },
     scrollContent: { padding: 20, paddingBottom: 120 },
     catGroup: { marginBottom: 24 },
     catHeader: { fontSize: 13, fontWeight: '900', color: Colors.textSecondary, textTransform: 'uppercase', marginBottom: 12, marginLeft: 4 },
-    itemRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 16, backgroundColor: '#fff', borderRadius: 16, marginBottom: 10, shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.05, shadowRadius: 4, elevation: 2 },
+    itemRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 16, backgroundColor: Colors.card, borderRadius: 16, marginBottom: 10, shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.05, shadowRadius: 4, elevation: 2 },
     itemMain: { flexDirection: 'row', alignItems: 'center', flex: 1 },
     itemIconCircle: { width: 40, height: 40, borderRadius: 10, backgroundColor: '#F0F4FF', justifyContent: 'center', alignItems: 'center', marginRight: 12 },
     itemName: { fontSize: 16, fontWeight: '700', color: Colors.text },
     itemPrice: { fontSize: 13, color: Colors.textSecondary, fontWeight: '600', marginTop: 2 },
     stepper: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#F8FAFC', padding: 4, borderRadius: 10 },
-    stepBtn: { width: 32, height: 32, borderRadius: 8, backgroundColor: '#fff', justifyContent: 'center', alignItems: 'center', shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.1, shadowRadius: 2, elevation: 1 },
+    stepBtn: { width: 32, height: 32, borderRadius: 8, backgroundColor: Colors.card, justifyContent: 'center', alignItems: 'center', shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.1, shadowRadius: 2, elevation: 1 },
     stepCount: { minWidth: 28, textAlign: 'center', fontSize: 16, fontWeight: '700', color: Colors.primary },
-    footer: { position: 'absolute', bottom: 0, left: 0, right: 0, padding: 20, backgroundColor: '#fff', borderTopWidth: 1, borderTopColor: '#F1F5F9' },
+    footer: { position: 'absolute', bottom: 0, left: 0, right: 0, padding: 20, backgroundColor: Colors.card, borderTopWidth: 1, borderTopColor: '#F1F5F9' },
     footerPriceRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 },
     footerTotalLabel: { fontSize: 11, fontWeight: '800', color: Colors.textSecondary, letterSpacing: 0.5 },
     footerTotalPrice: { fontSize: 24, fontWeight: '900', color: Colors.text },
@@ -506,7 +510,7 @@ const styles = StyleSheet.create({
     itemBadgeText: { color: Colors.primary, fontSize: 12, fontWeight: '800' },
     saveBtn: { backgroundColor: Colors.primary, padding: 16, borderRadius: 14, alignItems: 'center' },
     saveBtnText: { color: '#fff', fontSize: 16, fontWeight: '700' },
-    logisticsContainer: { backgroundColor: '#fff', padding: 20, borderRadius: 16, marginBottom: 20, shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.05, shadowRadius: 4, elevation: 2 },
+    logisticsContainer: { backgroundColor: Colors.card, padding: 20, borderRadius: 16, marginBottom: 20, shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.05, shadowRadius: 4, elevation: 2 },
     sectionHeading: { fontSize: 18, fontWeight: '800', color: Colors.text, marginBottom: 16 },
     subLabel: { fontSize: 14, fontWeight: '700', color: Colors.textSecondary, marginBottom: 10 },
     dateList: { flexDirection: 'row' },
@@ -528,7 +532,7 @@ const styles = StyleSheet.create({
     mapTriggerIcon: { width: 44, height: 44, borderRadius: 12, backgroundColor: '#EFF6FF', justifyContent: 'center', alignItems: 'center', marginRight: 15 },
     mapTriggerTitle: { fontSize: 15, fontWeight: '700', color: Colors.text, marginBottom: 4 },
     mapTriggerSub: { fontSize: 13, color: Colors.textSecondary },
-    mapModalContainer: { flex: 1, backgroundColor: '#fff' },
+    mapModalContainer: { flex: 1, backgroundColor: Colors.card },
     mapModalHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', padding: 20, paddingTop: 50, borderBottomWidth: 1, borderBottomColor: '#F1F5F9' },
     mapModalCloseBtn: { width: 40, height: 40, borderRadius: 20, backgroundColor: '#F8FAFC', justifyContent: 'center', alignItems: 'center' },
     mapModalTitle: { fontSize: 18, fontWeight: '800', color: Colors.text },
@@ -536,7 +540,7 @@ const styles = StyleSheet.create({
     fullMap: { flex: 1 },
     mapHintOverlay: { position: 'absolute', bottom: 20, alignSelf: 'center', backgroundColor: 'rgba(0,0,0,0.7)', paddingHorizontal: 16, paddingVertical: 10, borderRadius: 20 },
     mapHintText: { color: '#FFF', fontSize: 13, fontWeight: '600' },
-    mapModalFooter: { padding: 20, backgroundColor: '#fff', borderTopWidth: 1, borderTopColor: '#F1F5F9', paddingBottom: 40 },
+    mapModalFooter: { padding: 20, backgroundColor: Colors.card, borderTopWidth: 1, borderTopColor: '#F1F5F9', paddingBottom: 40 },
     mapModalConfirmBtn: { backgroundColor: Colors.primary, padding: 18, borderRadius: 16, alignItems: 'center' },
     mapModalConfirmText: { color: '#fff', fontSize: 16, fontWeight: '700' },
 });

@@ -1,4 +1,5 @@
 import React from 'react';
+import { useThemeColors } from '@/hooks/useThemeColors';
 import { View, Text, StyleSheet, TouchableOpacity, Dimensions } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
@@ -7,6 +8,9 @@ import Animated, { FadeInDown, FadeInUp } from 'react-native-reanimated';
 const { width, height } = Dimensions.get('window');
 
 export default function WelcomeScreen() {
+  const Colors = useThemeColors();
+  const styles = createStyles(Colors);
+
     const router = useRouter();
 
     return (
@@ -42,7 +46,7 @@ export default function WelcomeScreen() {
     );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (Colors: any) => StyleSheet.create({
     container: {
         flex: 1,
     },
@@ -84,7 +88,7 @@ const styles = StyleSheet.create({
         gap: 20,
     },
     buttonPrimary: {
-        backgroundColor: '#fff',
+        backgroundColor: Colors.card,
         paddingVertical: 18,
         borderRadius: 30,
         alignItems: 'center',

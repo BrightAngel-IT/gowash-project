@@ -1,15 +1,19 @@
 import React, { useEffect, useState } from 'react';
+import { useThemeColors } from '@/hooks/useThemeColors';
 import { View, Text, StyleSheet, FlatList, TouchableOpacity, Platform, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { Colors, Typography, Spacing, BorderRadius } from '@/constants/theme';
+import { Typography, Spacing, BorderRadius } from '@/constants/theme';
 import api from '@/constants/api';
 import { LinearGradient } from 'expo-linear-gradient';
 
 import { Image } from 'expo-image';
 
 export default function ExploreLaundriesScreen() {
+  const Colors = useThemeColors();
+  const styles = createStyles(Colors);
+
   const router = useRouter();
   const [laundries, setLaundries] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -94,7 +98,7 @@ export default function ExploreLaundriesScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (Colors: any) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#F8F9FA',
@@ -115,7 +119,7 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 12,
-    backgroundColor: '#fff',
+    backgroundColor: Colors.card,
     justifyContent: 'center',
     alignItems: 'center',
     elevation: 2,
@@ -127,7 +131,7 @@ const styles = StyleSheet.create({
   searchBar: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#fff',
+    backgroundColor: Colors.card,
     marginHorizontal: 24,
     paddingHorizontal: 16,
     paddingVertical: 12,
@@ -146,7 +150,7 @@ const styles = StyleSheet.create({
     paddingBottom: 100,
   },
   laundryCard: {
-    backgroundColor: '#fff',
+    backgroundColor: Colors.card,
     borderRadius: 20,
     marginBottom: 20,
     overflow: 'hidden',

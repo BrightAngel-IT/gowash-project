@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useThemeColors } from '@/hooks/useThemeColors';
 import {
     View,
     Text,
@@ -21,6 +22,9 @@ import api from '@/constants/api';
 const { width, height } = Dimensions.get('window');
 
 export default function ForgotPasswordScreen() {
+  const Colors = useThemeColors();
+  const styles = createStyles(Colors);
+
     const router = useRouter();
     const [email, setEmail] = useState('');
     const [otp, setOtp] = useState('');
@@ -201,7 +205,7 @@ export default function ForgotPasswordScreen() {
     );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (Colors: any) => StyleSheet.create({
     container: {
         flex: 1,
     },
@@ -264,7 +268,7 @@ const styles = StyleSheet.create({
         height: '100%',
     },
     buttonPrimary: {
-        backgroundColor: '#fff',
+        backgroundColor: Colors.card,
         paddingVertical: 18,
         borderRadius: 30,
         alignItems: 'center',

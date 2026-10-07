@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useThemeColors } from '@/hooks/useThemeColors';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Alert, ActivityIndicator, Modal, TextInput, Dimensions, Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter, useLocalSearchParams } from 'expo-router';
-import { Colors, Typography, Spacing, BorderRadius } from '@/constants/theme';
+import { Typography, Spacing, BorderRadius } from '@/constants/theme';
 import Animated, { FadeInDown, FadeInRight, BounceIn, Layout, FadeIn, FadeOut, SlideInRight, SlideOutLeft } from 'react-native-reanimated';
 import { LinearGradient } from 'expo-linear-gradient';
 import api, { getUser } from '@/constants/api';
@@ -59,6 +60,9 @@ const LAUNDRY_ITEMS = [
 ];
 
 export default function AdvancedScheduleScreen() {
+  const Colors = useThemeColors();
+  const styles = createStyles(Colors);
+
     const router = useRouter();
     const params = useLocalSearchParams();
     const { laundryId, laundryName } = params;
@@ -791,8 +795,8 @@ export default function AdvancedScheduleScreen() {
     );
 }
 
-const styles = StyleSheet.create({
-    container: { flex: 1, backgroundColor: '#FFFFFF' },
+const createStyles = (Colors: any) => StyleSheet.create({
+    container: { flex: 1, backgroundColor: Colors.card },
     header: { flexDirection: 'row', alignItems: 'center', padding: 20, borderBottomWidth: 1, borderBottomColor: '#F1F5F9' },
     backBtn: { width: 44, height: 44, borderRadius: 14, backgroundColor: '#F8FAFC', justifyContent: 'center', alignItems: 'center' },
     progressContainer: { flex: 1, marginHorizontal: 20 },
@@ -825,13 +829,13 @@ const styles = StyleSheet.create({
     tabText: { fontWeight: '700', color: Colors.textSecondary },
     catGroup: { marginBottom: 30 },
     catHeader: { fontSize: 13, fontWeight: '900', color: Colors.textSecondary, textTransform: 'uppercase', marginBottom: 15, marginLeft: 5 },
-    itemRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 16, backgroundColor: '#fff', borderRadius: 20, marginBottom: 10, borderWidth: 1, borderColor: '#F1F5F9', elevation: 2, shadowColor: '#000', shadowOpacity: 0.02 },
+    itemRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 16, backgroundColor: Colors.card, borderRadius: 20, marginBottom: 10, borderWidth: 1, borderColor: '#F1F5F9', elevation: 2, shadowColor: '#000', shadowOpacity: 0.02 },
     itemMain: { flexDirection: 'row', alignItems: 'center', gap: 15, flex: 1 },
     itemIconCircle: { width: 40, height: 40, borderRadius: 12, backgroundColor: '#F0F4FF', justifyContent: 'center', alignItems: 'center' },
     itemName: { fontSize: 16, fontWeight: '700', color: Colors.text },
     itemPrice: { fontSize: 12, color: Colors.textSecondary, fontWeight: '600' },
     stepper: { flexDirection: 'row', alignItems: 'center', gap: 15, backgroundColor: '#F8FAFC', padding: 5, borderRadius: 12 },
-    stepBtn: { width: 30, height: 30, borderRadius: 8, backgroundColor: '#fff', justifyContent: 'center', alignItems: 'center', elevation: 1 },
+    stepBtn: { width: 30, height: 30, borderRadius: 8, backgroundColor: Colors.card, justifyContent: 'center', alignItems: 'center', elevation: 1 },
     stepCount: { minWidth: 20, textAlign: 'center', fontSize: 16, fontWeight: '800', color: Colors.primary },
     subLabel: { fontSize: 15, fontWeight: '800', color: Colors.text, marginBottom: 12 },
     dateList: { marginBottom: 20 },
@@ -852,7 +856,7 @@ const styles = StyleSheet.create({
     fetchLocationText: { fontSize: 12, color: Colors.primary, fontWeight: '700' },
     reviewHeader: { flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 24 },
     reviewTitle: { fontSize: 22, fontWeight: '900', color: Colors.text },
-    receiptCard: { backgroundColor: '#fff', borderRadius: 32, padding: 24, elevation: 10, shadowColor: '#000', shadowOpacity: 0.1, shadowRadius: 20, marginBottom: 24, borderStyle: 'dashed', borderWidth: 1, borderColor: '#E2E8F0' },
+    receiptCard: { backgroundColor: Colors.card, borderRadius: 32, padding: 24, elevation: 10, shadowColor: '#000', shadowOpacity: 0.1, shadowRadius: 20, marginBottom: 24, borderStyle: 'dashed', borderWidth: 1, borderColor: '#E2E8F0' },
     receiptStore: { fontSize: 18, fontWeight: '900', color: Colors.primary, textAlign: 'center', marginBottom: 15 },
     receiptDivider: { height: 1, backgroundColor: '#F1F5F9', marginVertical: 15 },
     receiptService: { marginBottom: 20 },
@@ -868,7 +872,7 @@ const styles = StyleSheet.create({
     logisticSummary: { gap: 10 },
     logRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
     logText: { fontSize: 13, color: Colors.textSecondary, fontWeight: '600' },
-    footer: { padding: 24, backgroundColor: '#fff', borderTopWidth: 1, borderTopColor: '#F1F5F9', elevation: 20 },
+    footer: { padding: 24, backgroundColor: Colors.card, borderTopWidth: 1, borderTopColor: '#F1F5F9', elevation: 20 },
     footerPriceRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: 20 },
     footerTotalLabel: { fontSize: 12, fontWeight: '800', color: Colors.textSecondary },
     footerTotalPrice: { fontSize: 28, fontWeight: '900', color: Colors.text },
@@ -879,7 +883,7 @@ const styles = StyleSheet.create({
     nextBtnText: { color: '#fff', fontSize: 18, fontWeight: '900' },
     center: { flex: 1, justifyContent: 'center', alignItems: 'center' },
     modalOverlay: { flex: 1, backgroundColor: 'rgba(15, 23, 42, 0.85)', justifyContent: 'center', alignItems: 'center', padding: 24 },
-    successPopup: { backgroundColor: '#fff', width: '100%', borderRadius: 40, overflow: 'hidden' },
+    successPopup: { backgroundColor: Colors.card, width: '100%', borderRadius: 40, overflow: 'hidden' },
     successHeader: { padding: 40, alignItems: 'center' },
     successIconCircle: { width: 100, height: 100, borderRadius: 50, backgroundColor: 'rgba(255,255,255,0.2)', justifyContent: 'center', alignItems: 'center', marginBottom: 15 },
     successTitle: { fontSize: 28, fontWeight: '900', color: '#fff', marginBottom: 5 },
@@ -891,7 +895,7 @@ const styles = StyleSheet.create({
     piecesBadge: {
         flexDirection: 'row',
         alignItems: 'center',
-        backgroundColor: '#fff',
+        backgroundColor: Colors.card,
         borderRadius: 12,
         paddingHorizontal: 10,
         paddingVertical: 6,
@@ -935,13 +939,13 @@ const styles = StyleSheet.create({
     mapTriggerIcon: { width: 44, height: 44, borderRadius: 12, backgroundColor: '#EFF6FF', justifyContent: 'center', alignItems: 'center', marginRight: 15 },
     mapTriggerTitle: { fontSize: 15, fontWeight: '700', color: Colors.text, marginBottom: 4 },
     mapTriggerSub: { fontSize: 13, color: Colors.textSecondary },
-    mapModalContainer: { flex: 1, backgroundColor: '#fff' },
+    mapModalContainer: { flex: 1, backgroundColor: Colors.card },
     mapModalHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', padding: 20, paddingTop: 50, borderBottomWidth: 1, borderBottomColor: '#F1F5F9' },
     mapModalCloseBtn: { width: 40, height: 40, borderRadius: 20, backgroundColor: '#F8FAFC', justifyContent: 'center', alignItems: 'center' },
     mapModalTitle: { fontSize: 18, fontWeight: '800', color: Colors.text },
     mapModalBody: { flex: 1, position: 'relative' },
     fullMap: { flex: 1 },
-    mapModalFooter: { padding: 20, backgroundColor: '#fff', borderTopWidth: 1, borderTopColor: '#F1F5F9', paddingBottom: 40 },
+    mapModalFooter: { padding: 20, backgroundColor: Colors.card, borderTopWidth: 1, borderTopColor: '#F1F5F9', paddingBottom: 40 },
     mapModalConfirmBtn: { backgroundColor: Colors.primary, padding: 18, borderRadius: 16, alignItems: 'center' },
     mapModalConfirmText: { color: '#fff', fontSize: 16, fontWeight: '700' },
 });

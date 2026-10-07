@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
+import { useThemeColors } from '@/hooks/useThemeColors';
 import { View, Text, StyleSheet, FlatList, TouchableOpacity, Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Colors, Typography, Spacing } from '@/constants/theme';
+import { Typography, Spacing } from '@/constants/theme';
 import { Ionicons } from '@expo/vector-icons';
 import Animated, { FadeInDown, Layout } from 'react-native-reanimated';
 
@@ -14,6 +15,9 @@ import { useRouter } from 'expo-router';
 const tabs = ['Active', 'History'];
 
 export default function OrdersScreen() {
+  const Colors = useThemeColors();
+  const styles = createStyles(Colors);
+
     const router = useRouter();
     const [activeTab, setActiveTab] = useState('Active');
     const [orders, setOrders] = useState<any[]>([]);
@@ -131,7 +135,7 @@ export default function OrdersScreen() {
     );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (Colors: any) => StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: '#F7F9FC',
@@ -139,7 +143,7 @@ const styles = StyleSheet.create({
     header: {
         padding: 24,
         paddingBottom: 16,
-        backgroundColor: '#fff',
+        backgroundColor: Colors.card,
     },
     title: {
         ...Typography.h1,
@@ -149,7 +153,7 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         paddingHorizontal: 24,
         marginBottom: 16,
-        backgroundColor: '#fff',
+        backgroundColor: Colors.card,
         paddingBottom: 16,
     },
     tab: {
@@ -173,7 +177,7 @@ const styles = StyleSheet.create({
         padding: 24,
     },
     card: {
-        backgroundColor: '#fff',
+        backgroundColor: Colors.card,
         borderRadius: 20,
         padding: 20,
         marginBottom: 16,
