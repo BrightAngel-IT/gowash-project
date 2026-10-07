@@ -111,7 +111,7 @@ export default function SignupScreen() {
             style={styles.container}
         >
             <LinearGradient
-                colors={['#4c669f', '#3b5998', '#192f6a']}
+                colors={Colors.gradients.primary}
                 style={styles.background}
             />
 
@@ -268,7 +268,7 @@ const createStyles = (Colors: any) => StyleSheet.create({
         height: '100%',
     },
     buttonPrimary: {
-        backgroundColor: Colors.card,
+        backgroundColor: '#fff',
         paddingVertical: 18,
         borderRadius: 30,
         alignItems: 'center',
@@ -287,7 +287,7 @@ const createStyles = (Colors: any) => StyleSheet.create({
     },
     buttonGoogle: {
         flexDirection: 'row',
-        backgroundColor: Colors.card,
+        backgroundColor: '#fff',
         paddingVertical: 18,
         borderRadius: 30,
         alignItems: 'center',

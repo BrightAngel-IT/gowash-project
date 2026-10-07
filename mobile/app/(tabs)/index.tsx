@@ -197,12 +197,7 @@ export default function DashboardScreen() {
   };
 
   return (
-    <View style={styles.container}>
-      <LinearGradient
-        colors={['#f8f9fa', '#e9ecef']}
-        style={StyleSheet.absoluteFillObject}
-      />
-
+    <View style={[styles.container, { backgroundColor: Colors.background }]}>
       <SafeAreaView style={{ flex: 1 }}>
         {isLoading ? (
           <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>

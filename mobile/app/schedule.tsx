@@ -726,7 +726,7 @@ export default function AdvancedScheduleScreen() {
                     onPress={handleNext}
                     disabled={submitting}
                 >
-                    <LinearGradient colors={['#4c669f', '#3b5998']} style={styles.nextGradient}>
+                    <LinearGradient colors={Colors.gradients.primary} style={styles.nextGradient}>
                         <Text style={styles.nextBtnText}>{currentStep === STEPS.length - 1 ? 'Place Secure Order' : 'Continue'}</Text>
                         {submitting ? <ActivityIndicator color="#fff" style={{ marginLeft: 10 }} /> : <Ionicons name="arrow-forward" size={20} color="#fff" />}
                     </LinearGradient>
