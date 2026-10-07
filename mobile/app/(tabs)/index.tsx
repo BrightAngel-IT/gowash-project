@@ -188,9 +188,9 @@ export default function DashboardScreen() {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'Pending': return '#F59E0B';
-      case 'Confirmed': return '#10B981';
-      case 'Washing': return '#3B82F6';
+      case 'Pending': return Colors.warning;
+      case 'Confirmed': return Colors.success;
+      case 'Washing': return Colors.primary;
       case 'Ready': return '#8B5CF6';
       default: return Colors.primary;
     }
@@ -268,7 +268,7 @@ export default function DashboardScreen() {
                   </View>
                   <Text style={styles.serviceNameVertical}>{service.name}</Text>
                   <Text style={styles.servicePrice}>{service.price}</Text>
-                  <View style={{ position: 'absolute', bottom: 10, right: 10, backgroundColor: '#F1F5F9', borderRadius: 10, padding: 4 }}>
+                  <View style={{ position: 'absolute', bottom: 10, right: 10, backgroundColor: Colors.border, borderRadius: 10, padding: 4 }}>
                     <Ionicons name="chevron-forward" size={14} color={Colors.textSecondary} />
                   </View>
                 </TouchableOpacity>
@@ -388,7 +388,7 @@ export default function DashboardScreen() {
               <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 20 }}>
                 <View style={styles.driverModalHeader}>
                   <LinearGradient
-                    colors={['#10B981', '#059669']}
+                    colors={[Colors.success, Colors.success]}
                     style={styles.successIconCircle}
                   >
                     <Ionicons name="checkmark" size={32} color="#fff" />
@@ -450,7 +450,7 @@ export default function DashboardScreen() {
             <Animated.View entering={BounceIn} style={styles.statusUpdatePopup}>
               <ScrollView showsVerticalScrollIndicator={false}>
                 <LinearGradient
-                  colors={['#0ea5e9', '#0284c7']}
+                  colors={[Colors.primary, Colors.secondary]}
                   style={styles.popupHeader}
                 >
                   <View style={styles.iconCirclePopup}>
@@ -988,7 +988,7 @@ const createStyles = (Colors: any) => StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: '#10B981', // Green for call
+    backgroundColor: Colors.success, // Green for call
     justifyContent: 'center',
     alignItems: 'center',
   },

@@ -78,7 +78,7 @@ export default function ServicesScreen() {
 const createStyles = (Colors: any) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F7F9FC',
+    backgroundColor: Colors.background,
   },
   header: {
     padding: 24,
@@ -139,7 +139,7 @@ const createStyles = (Colors: any) => StyleSheet.create({
     position: 'absolute',
     bottom: 12,
     right: 12,
-    backgroundColor: '#F1F5F9',
+    backgroundColor: Colors.border,
     borderRadius: 10,
     padding: 4,
   }

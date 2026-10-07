@@ -35,11 +35,11 @@ export default function OrderDetailsScreen() {
 
     const getStatusColor = (status: string) => {
         switch (status) {
-            case 'Pending': return '#F59E0B';
-            case 'Confirmed': return '#10B981';
-            case 'Washing': return '#3B82F6';
+            case 'Pending': return Colors.warning;
+            case 'Confirmed': return Colors.success;
+            case 'Washing': return Colors.primary;
             case 'Ready': return '#8B5CF6';
-            case 'Delivered': return '#059669';
+            case 'Delivered': return Colors.success;
             case 'Cancelled': return '#EF4444';
             default: return Colors.textSecondary;
         }
@@ -181,9 +181,9 @@ export default function OrderDetailsScreen() {
 }
 
 const createStyles = (Colors: any) => StyleSheet.create({
-    container: { flex: 1, backgroundColor: '#F7F9FC' },
-    center: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#F7F9FC' },
-    header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', padding: 20, backgroundColor: Colors.card, borderBottomWidth: 1, borderBottomColor: '#F1F5F9' },
+    container: { flex: 1, backgroundColor: Colors.background },
+    center: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: Colors.background },
+    header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', padding: 20, backgroundColor: Colors.card, borderBottomWidth: 1, borderBottomColor: Colors.border },
     backIconBtn: { padding: 8, marginLeft: -8 },
     title: { ...Typography.h2, color: Colors.text },
     scrollContent: { padding: 20, paddingBottom: 100 },
@@ -192,7 +192,7 @@ const createStyles = (Colors: any) => StyleSheet.create({
     sectionTitle: { fontSize: 16, fontWeight: '700', color: Colors.text },
     statusBadge: { paddingHorizontal: 10, paddingVertical: 4, borderRadius: 8 },
     statusText: { fontSize: 12, fontWeight: '700' },
-    divider: { height: 1, backgroundColor: '#F1F5F9', marginVertical: 12 },
+    divider: { height: 1, backgroundColor: Colors.border, marginVertical: 12 },
     infoRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 10, paddingRight: 20 },
     infoText: { fontSize: 14, color: Colors.textSecondary, marginLeft: 10, lineHeight: 20 },
     itemRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 },
@@ -206,7 +206,7 @@ const createStyles = (Colors: any) => StyleSheet.create({
     summaryValue: { fontSize: 14, fontWeight: '600', color: Colors.text },
     grandTotalLabel: { fontSize: 16, fontWeight: '700', color: Colors.text },
     grandTotalValue: { fontSize: 18, fontWeight: '800', color: Colors.primary },
-    footer: { position: 'absolute', bottom: 0, left: 0, right: 0, padding: 20, backgroundColor: Colors.card, borderTopWidth: 1, borderTopColor: '#F1F5F9' },
+    footer: { position: 'absolute', bottom: 0, left: 0, right: 0, padding: 20, backgroundColor: Colors.card, borderTopWidth: 1, borderTopColor: Colors.border },
     editBtn: { backgroundColor: Colors.primary, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', padding: 16, borderRadius: 12 },
     editBtnText: { color: '#fff', fontSize: 16, fontWeight: '700', marginLeft: 8 },
     errorText: { fontSize: 16, color: Colors.text, marginBottom: 16 },

@@ -403,7 +403,7 @@ export default function AdvancedScheduleScreen() {
                                             onPress={() => toggleService(s.id)}
                                         >
                                             <LinearGradient
-                                                colors={isSelected ? [s.color, s.color + 'CC'] : ['#FFFFFF', '#F8FAFC']}
+                                                colors={isSelected ? [s.color, s.color + 'CC'] : ['#FFFFFF', Colors.card]}
                                                 style={styles.serviceGradient}
                                             >
                                                 <Ionicons name={s.icon as any} size={32} color={isSelected ? '#fff' : s.color} />
@@ -557,11 +557,11 @@ export default function AdvancedScheduleScreen() {
                         <View style={styles.timeGrid}>
                             <TouchableOpacity style={[styles.timeBox, deliverySpeed === 'Standard' && styles.timeBoxActive]} onPress={() => setDeliverySpeed('Standard')}>
                                 <Text style={[styles.timeText, deliverySpeed === 'Standard' && styles.textWhite]}>Standard Delivery</Text>
-                                <Text style={[{ fontSize: 11, color: Colors.textSecondary, marginTop: 4, textAlign: 'center' }, deliverySpeed === 'Standard' && {color: '#e2e8f0'}]}>2-3 Business Days</Text>
+                                <Text style={[{ fontSize: 11, color: Colors.textSecondary, marginTop: 4, textAlign: 'center' }, deliverySpeed === 'Standard' && {color: Colors.border}]}>2-3 Business Days</Text>
                             </TouchableOpacity>
                             <TouchableOpacity style={[styles.timeBox, deliverySpeed === 'Express' && styles.timeBoxActive]} onPress={() => setDeliverySpeed('Express')}>
                                 <Text style={[styles.timeText, deliverySpeed === 'Express' && styles.textWhite]}>Express Delivery</Text>
-                                <Text style={[{ fontSize: 11, color: Colors.textSecondary, marginTop: 4, textAlign: 'center' }, deliverySpeed === 'Express' && {color: '#e2e8f0'}]}>1 Business Day (Priority Fee)</Text>
+                                <Text style={[{ fontSize: 11, color: Colors.textSecondary, marginTop: 4, textAlign: 'center' }, deliverySpeed === 'Express' && {color: Colors.border}]}>1 Business Day (Priority Fee)</Text>
                             </TouchableOpacity>
                         </View>
 
@@ -737,7 +737,7 @@ export default function AdvancedScheduleScreen() {
             <Modal visible={showSuccessModal} transparent animationType="fade">
                 <View style={styles.modalOverlay}>
                     <Animated.View entering={BounceIn} style={styles.successPopup}>
-                        <LinearGradient colors={['#10B981', '#059669']} style={styles.successHeader}>
+                        <LinearGradient colors={[Colors.success, Colors.success]} style={styles.successHeader}>
                             <View style={styles.successIconCircle}><Ionicons name="checkmark-sharp" size={60} color="#fff" /></View>
                             <Text style={styles.successTitle}>Order Placed!</Text>
                             <Text style={styles.successSubtitle}>Ref: #GW-{Math.floor(Math.random() * 9000) + 1000}</Text>
@@ -797,11 +797,11 @@ export default function AdvancedScheduleScreen() {
 
 const createStyles = (Colors: any) => StyleSheet.create({
     container: { flex: 1, backgroundColor: Colors.card },
-    header: { flexDirection: 'row', alignItems: 'center', padding: 20, borderBottomWidth: 1, borderBottomColor: '#F1F5F9' },
-    backBtn: { width: 44, height: 44, borderRadius: 14, backgroundColor: '#F8FAFC', justifyContent: 'center', alignItems: 'center' },
+    header: { flexDirection: 'row', alignItems: 'center', padding: 20, borderBottomWidth: 1, borderBottomColor: Colors.border },
+    backBtn: { width: 44, height: 44, borderRadius: 14, backgroundColor: Colors.card, justifyContent: 'center', alignItems: 'center' },
     progressContainer: { flex: 1, marginHorizontal: 20 },
     laundryHeaderLabel: { fontSize: 16, fontWeight: '800', color: Colors.text, marginBottom: 6, textAlign: 'center' },
-    progressBarBg: { height: 6, backgroundColor: '#F1F5F9', borderRadius: 3, marginBottom: 8 },
+    progressBarBg: { height: 6, backgroundColor: Colors.border, borderRadius: 3, marginBottom: 8 },
     progressBarFill: { height: '100%', backgroundColor: Colors.primary, borderRadius: 3 },
     stepIndicator: { fontSize: 12, color: Colors.textSecondary, textTransform: 'uppercase', letterSpacing: 0.5 },
     stepContainer: { flex: 1, padding: 24 },
@@ -817,50 +817,50 @@ const createStyles = (Colors: any) => StyleSheet.create({
     textWhite: { color: '#fff' },
     addonsSection: { marginTop: 10 },
     sectionLabel: { fontSize: 14, fontWeight: '800', color: Colors.textSecondary, textTransform: 'uppercase', marginBottom: 15 },
-    addonRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 18, backgroundColor: '#F8FAFC', borderRadius: 20, marginBottom: 12, borderWidth: 1, borderColor: '#F1F5F9' },
+    addonRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 18, backgroundColor: Colors.card, borderRadius: 20, marginBottom: 12, borderWidth: 1, borderColor: Colors.border },
     addonRowActive: { borderColor: Colors.primary, backgroundColor: Colors.primary + '05' },
     addonInfo: { flexDirection: 'row', alignItems: 'center', gap: 12 },
     addonName: { fontSize: 15, fontWeight: '700', color: Colors.text },
     addonPrice: { fontSize: 14, fontWeight: '800', color: Colors.primary },
     textPrimary: { color: Colors.primary },
     activeServicePicker: { marginBottom: 20 },
-    serviceTab: { paddingHorizontal: 20, paddingVertical: 10, borderRadius: 12, backgroundColor: '#F1F5F9', marginRight: 10 },
+    serviceTab: { paddingHorizontal: 20, paddingVertical: 10, borderRadius: 12, backgroundColor: Colors.border, marginRight: 10 },
     serviceTabActive: { backgroundColor: Colors.primary },
     tabText: { fontWeight: '700', color: Colors.textSecondary },
     catGroup: { marginBottom: 30 },
     catHeader: { fontSize: 13, fontWeight: '900', color: Colors.textSecondary, textTransform: 'uppercase', marginBottom: 15, marginLeft: 5 },
-    itemRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 16, backgroundColor: Colors.card, borderRadius: 20, marginBottom: 10, borderWidth: 1, borderColor: '#F1F5F9', elevation: 2, shadowColor: '#000', shadowOpacity: 0.02 },
+    itemRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 16, backgroundColor: Colors.card, borderRadius: 20, marginBottom: 10, borderWidth: 1, borderColor: Colors.border, elevation: 2, shadowColor: '#000', shadowOpacity: 0.02 },
     itemMain: { flexDirection: 'row', alignItems: 'center', gap: 15, flex: 1 },
-    itemIconCircle: { width: 40, height: 40, borderRadius: 12, backgroundColor: '#F0F4FF', justifyContent: 'center', alignItems: 'center' },
+    itemIconCircle: { width: 40, height: 40, borderRadius: 12, backgroundColor: Colors.card, justifyContent: 'center', alignItems: 'center' },
     itemName: { fontSize: 16, fontWeight: '700', color: Colors.text },
     itemPrice: { fontSize: 12, color: Colors.textSecondary, fontWeight: '600' },
-    stepper: { flexDirection: 'row', alignItems: 'center', gap: 15, backgroundColor: '#F8FAFC', padding: 5, borderRadius: 12 },
+    stepper: { flexDirection: 'row', alignItems: 'center', gap: 15, backgroundColor: Colors.card, padding: 5, borderRadius: 12 },
     stepBtn: { width: 30, height: 30, borderRadius: 8, backgroundColor: Colors.card, justifyContent: 'center', alignItems: 'center', elevation: 1 },
     stepCount: { minWidth: 20, textAlign: 'center', fontSize: 16, fontWeight: '800', color: Colors.primary },
     subLabel: { fontSize: 15, fontWeight: '800', color: Colors.text, marginBottom: 12 },
     dateList: { marginBottom: 20 },
-    dateCard: { width: 65, height: 85, borderRadius: 20, backgroundColor: '#F8FAFC', justifyContent: 'center', alignItems: 'center', marginRight: 12, borderWidth: 1, borderColor: '#F1F5F9' },
+    dateCard: { width: 65, height: 85, borderRadius: 20, backgroundColor: Colors.card, justifyContent: 'center', alignItems: 'center', marginRight: 12, borderWidth: 1, borderColor: Colors.border },
     dateCardActive: { backgroundColor: Colors.primary, borderColor: Colors.primary },
     dateDay: { fontSize: 12, color: Colors.textSecondary, marginBottom: 5 },
     dateNum: { fontSize: 20, fontWeight: '900', color: Colors.text },
     timeGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12 },
-    timeBox: { width: '48%', padding: 18, borderRadius: 18, backgroundColor: '#F8FAFC', borderWidth: 1, borderColor: '#F1F5F9', alignItems: 'center' },
+    timeBox: { width: '48%', padding: 18, borderRadius: 18, backgroundColor: Colors.card, borderWidth: 1, borderColor: Colors.border, alignItems: 'center' },
     timeBoxActive: { backgroundColor: Colors.primary, borderColor: Colors.primary },
     timeText: { fontWeight: '700', color: Colors.textSecondary },
-    inputBox: { flexDirection: 'row', padding: 18, backgroundColor: '#F8FAFC', borderRadius: 20, borderWidth: 1, borderColor: '#F1F5F9', gap: 12 },
+    inputBox: { flexDirection: 'row', padding: 18, backgroundColor: Colors.card, borderRadius: 20, borderWidth: 1, borderColor: Colors.border, gap: 12 },
     input: { flex: 1, fontSize: 15, color: Colors.text, minHeight: 40, textAlignVertical: 'top' },
-    mapContainer: { height: 200, borderRadius: 20, overflow: 'hidden', marginTop: 15, borderWidth: 1, borderColor: '#F1F5F9' },
+    mapContainer: { height: 200, borderRadius: 20, overflow: 'hidden', marginTop: 15, borderWidth: 1, borderColor: Colors.border },
     map: { flex: 1 },
     mapHint: { position: 'absolute', bottom: 10, alignSelf: 'center', backgroundColor: 'rgba(255,255,255,0.9)', paddingHorizontal: 15, paddingVertical: 6, borderRadius: 12, fontSize: 12, fontWeight: '700', color: Colors.textSecondary, elevation: 4 },
     fetchLocationBtn: { flexDirection: 'row', alignItems: 'center', backgroundColor: Colors.primary + '10', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 10 },
     fetchLocationText: { fontSize: 12, color: Colors.primary, fontWeight: '700' },
     reviewHeader: { flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 24 },
     reviewTitle: { fontSize: 22, fontWeight: '900', color: Colors.text },
-    receiptCard: { backgroundColor: Colors.card, borderRadius: 32, padding: 24, elevation: 10, shadowColor: '#000', shadowOpacity: 0.1, shadowRadius: 20, marginBottom: 24, borderStyle: 'dashed', borderWidth: 1, borderColor: '#E2E8F0' },
+    receiptCard: { backgroundColor: Colors.card, borderRadius: 32, padding: 24, elevation: 10, shadowColor: '#000', shadowOpacity: 0.1, shadowRadius: 20, marginBottom: 24, borderStyle: 'dashed', borderWidth: 1, borderColor: Colors.border },
     receiptStore: { fontSize: 18, fontWeight: '900', color: Colors.primary, textAlign: 'center', marginBottom: 15 },
-    receiptDivider: { height: 1, backgroundColor: '#F1F5F9', marginVertical: 15 },
+    receiptDivider: { height: 1, backgroundColor: Colors.border, marginVertical: 15 },
     receiptService: { marginBottom: 20 },
-    receiptServiceName: { fontSize: 14, fontWeight: '900', color: '#64748B', textTransform: 'uppercase', marginBottom: 10 },
+    receiptServiceName: { fontSize: 14, fontWeight: '900', color: Colors.textSecondary, textTransform: 'uppercase', marginBottom: 10 },
     receiptItem: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 8 },
     receiptItemName: { fontSize: 15, color: Colors.text, fontWeight: '500' },
     receiptItemPrice: { fontSize: 15, fontWeight: '700', color: Colors.text },
@@ -872,7 +872,7 @@ const createStyles = (Colors: any) => StyleSheet.create({
     logisticSummary: { gap: 10 },
     logRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
     logText: { fontSize: 13, color: Colors.textSecondary, fontWeight: '600' },
-    footer: { padding: 24, backgroundColor: Colors.card, borderTopWidth: 1, borderTopColor: '#F1F5F9', elevation: 20 },
+    footer: { padding: 24, backgroundColor: Colors.card, borderTopWidth: 1, borderTopColor: Colors.border, elevation: 20 },
     footerPriceRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: 20 },
     footerTotalLabel: { fontSize: 12, fontWeight: '800', color: Colors.textSecondary },
     footerTotalPrice: { fontSize: 28, fontWeight: '900', color: Colors.text },
@@ -889,8 +889,8 @@ const createStyles = (Colors: any) => StyleSheet.create({
     successTitle: { fontSize: 28, fontWeight: '900', color: '#fff', marginBottom: 5 },
     successSubtitle: { fontSize: 14, color: 'rgba(255,255,255,0.8)', fontWeight: '700' },
     successBody: { padding: 30, alignItems: 'center' },
-    successMsg: { fontSize: 15, color: '#64748B', textAlign: 'center', lineHeight: 22, marginBottom: 30 },
-    finalBtn: { width: '100%', paddingVertical: 20, backgroundColor: '#10B981', borderRadius: 20, alignItems: 'center' },
+    successMsg: { fontSize: 15, color: Colors.textSecondary, textAlign: 'center', lineHeight: 22, marginBottom: 30 },
+    finalBtn: { width: '100%', paddingVertical: 20, backgroundColor: Colors.success, borderRadius: 20, alignItems: 'center' },
     finalBtnText: { color: '#fff', fontSize: 16, fontWeight: '900' },
     piecesBadge: {
         flexDirection: 'row',
@@ -902,7 +902,7 @@ const createStyles = (Colors: any) => StyleSheet.create({
         marginTop: 10,
         alignSelf: 'flex-start',
         borderWidth: 1,
-        borderColor: '#E2E8F0',
+        borderColor: Colors.border,
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.05,
@@ -931,21 +931,21 @@ const createStyles = (Colors: any) => StyleSheet.create({
         color: Colors.primary,
     },
     receiptItemPcs: { fontSize: 11, color: Colors.textSecondary, fontWeight: '600', fontStyle: 'italic' },
-    mapContainerSmall: { height: 180, width: '100%', borderRadius: 20, overflow: 'hidden', borderWidth: 1, borderColor: '#F1F5F9', marginBottom: 5 },
+    mapContainerSmall: { height: 180, width: '100%', borderRadius: 20, overflow: 'hidden', borderWidth: 1, borderColor: Colors.border, marginBottom: 5 },
     mapSmall: { width: '100%', height: '100%' },
     mapHintOverlay: { position: 'absolute', bottom: 20, alignSelf: 'center', backgroundColor: 'rgba(0,0,0,0.7)', paddingHorizontal: 16, paddingVertical: 10, borderRadius: 20 },
     mapHintText: { color: '#FFF', fontSize: 13, fontWeight: '600' },
-    mapTriggerCard: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#F8FAFC', padding: 16, borderRadius: 16, borderWidth: 1, borderColor: '#E2E8F0', marginBottom: 5 },
-    mapTriggerIcon: { width: 44, height: 44, borderRadius: 12, backgroundColor: '#EFF6FF', justifyContent: 'center', alignItems: 'center', marginRight: 15 },
+    mapTriggerCard: { flexDirection: 'row', alignItems: 'center', backgroundColor: Colors.card, padding: 16, borderRadius: 16, borderWidth: 1, borderColor: Colors.border, marginBottom: 5 },
+    mapTriggerIcon: { width: 44, height: 44, borderRadius: 12, backgroundColor: Colors.card, justifyContent: 'center', alignItems: 'center', marginRight: 15 },
     mapTriggerTitle: { fontSize: 15, fontWeight: '700', color: Colors.text, marginBottom: 4 },
     mapTriggerSub: { fontSize: 13, color: Colors.textSecondary },
     mapModalContainer: { flex: 1, backgroundColor: Colors.card },
-    mapModalHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', padding: 20, paddingTop: 50, borderBottomWidth: 1, borderBottomColor: '#F1F5F9' },
-    mapModalCloseBtn: { width: 40, height: 40, borderRadius: 20, backgroundColor: '#F8FAFC', justifyContent: 'center', alignItems: 'center' },
+    mapModalHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', padding: 20, paddingTop: 50, borderBottomWidth: 1, borderBottomColor: Colors.border },
+    mapModalCloseBtn: { width: 40, height: 40, borderRadius: 20, backgroundColor: Colors.card, justifyContent: 'center', alignItems: 'center' },
     mapModalTitle: { fontSize: 18, fontWeight: '800', color: Colors.text },
     mapModalBody: { flex: 1, position: 'relative' },
     fullMap: { flex: 1 },
-    mapModalFooter: { padding: 20, backgroundColor: Colors.card, borderTopWidth: 1, borderTopColor: '#F1F5F9', paddingBottom: 40 },
+    mapModalFooter: { padding: 20, backgroundColor: Colors.card, borderTopWidth: 1, borderTopColor: Colors.border, paddingBottom: 40 },
     mapModalConfirmBtn: { backgroundColor: Colors.primary, padding: 18, borderRadius: 16, alignItems: 'center' },
     mapModalConfirmText: { color: '#fff', fontSize: 16, fontWeight: '700' },
 });

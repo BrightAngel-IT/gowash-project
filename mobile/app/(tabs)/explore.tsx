@@ -101,7 +101,7 @@ export default function ExploreLaundriesScreen() {
 const createStyles = (Colors: any) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F8F9FA',
+    backgroundColor: Colors.background,
   },
   header: {
     flexDirection: 'row',
@@ -189,7 +189,7 @@ const createStyles = (Colors: any) => StyleSheet.create({
   ratingText: {
     fontSize: 12,
     fontWeight: '700',
-    color: '#FFB800',
+    color: Colors.warning,
     marginLeft: 4,
   },
   laundryAddress: {
@@ -210,7 +210,7 @@ const createStyles = (Colors: any) => StyleSheet.create({
   tagText: {
     fontSize: 11,
     fontWeight: '600',
-    color: '#4A5568',
+    color: Colors.textSecondary,
   },
   center: {
     flex: 1,

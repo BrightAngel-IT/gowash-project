@@ -51,11 +51,11 @@ export default function OrdersScreen() {
 
     const getStatusColor = (status: string) => {
         switch (status) {
-            case 'Pending': return '#F59E0B';
-            case 'Confirmed': return '#10B981';
-            case 'Washing': return '#3B82F6';
+            case 'Pending': return Colors.warning;
+            case 'Confirmed': return Colors.success;
+            case 'Washing': return Colors.primary;
             case 'Ready': return '#8B5CF6';
-            case 'Delivered': return '#059669';
+            case 'Delivered': return Colors.success;
             case 'Cancelled': return '#EF4444';
             default: return Colors.textSecondary;
         }
@@ -138,7 +138,7 @@ export default function OrdersScreen() {
 const createStyles = (Colors: any) => StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#F7F9FC',
+        backgroundColor: Colors.background,
     },
     header: {
         padding: 24,
