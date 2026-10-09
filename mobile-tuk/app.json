@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "mobile-tuk",
+    "name": "Go Wash Driver",
     "slug": "mobile-tuk",
     "version": "1.0.0",
     "icon": "./assets/images/icon.png",
@@ -10,12 +10,20 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.brightaangel.mobiletuk",
+      "buildNumber": "1",
       "infoPlist": {
         "UIBackgroundModes": [
           "location",
           "remote-notification"
-        ]
-      }
+        ],
+        "NSLocationWhenInUseUsageDescription": "Go Wash Driver needs your location to track rides and navigate to customer pickup points.",
+        "NSLocationAlwaysAndWhenInUseUsageDescription": "Go Wash Driver needs background location to receive incoming orders and provide live tracking to customers.",
+        "NSLocationAlwaysUsageDescription": "Go Wash Driver requires continuous background location access for ride updates and dispatch.",
+        "NSCameraUsageDescription": "Go Wash Driver needs camera access to capture vehicle photos and service proof.",
+        "NSPhotoLibraryUsageDescription": "Go Wash Driver needs access to photo library to upload documents.",
+        "ITSAppUsesNonExemptEncryption": false
+      },
+      "googleServicesFile": "./GoogleService-Info.plist"
     },
     "android": {
       "adaptiveIcon": {
@@ -46,6 +54,14 @@
       "orientation": "portrait"
     },
     "plugins": [
+      [
+        "expo-build-properties",
+        {
+          "ios": {
+            "useFrameworks": "static"
+          }
+        }
+      ],
       "expo-router",
       [
         "expo-notifications",
