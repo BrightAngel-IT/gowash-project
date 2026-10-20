@@ -11,12 +11,50 @@ import laundryRoutes from './laundryRoutes.js';
 import { getTimeSlots, createTimeSlot, updateTimeSlot, deleteTimeSlot } from '../controllers/timeSlotController.js';
 import { getLaundryItemPrices, updateLaundryItemPrice } from '../controllers/itemPriceController.js';
 
-const router = express.Router();
+import { query, dbConfigSummary } from '../config/database.js';
 
+const router = express.Router();
 
 // Health check
 router.get('/health', (req, res) => {
     res.json({ status: 'ok', timestamp: new Date() });
+});
+
+// Diagnostic route for DB connection and server environment
+router.get('/debug-db', async (req, res) => {
+    let dbStatus = 'unknown';
+    let dbError = null;
+    let sampleResult = null;
+
+    try {
+        const result = await query('SELECT 1 as connected, NOW() as server_time');
+        dbStatus = 'connected';
+        sampleResult = result.rows[0];
+    } catch (err) {
+        dbStatus = 'error';
+        dbError = {
+            message: err.message,
+            code: err.code,
+            stack: err.stack ? err.stack.split('\n')[0] : null
+        };
+    }
+
+    res.json({
+        status: 'ok',
+        process: {
+            uptimeSeconds: Math.floor(process.uptime()),
+            startedAt: new Date(Date.now() - process.uptime() * 1000).toISOString(),
+            pid: process.pid,
+            nodeVersion: process.version,
+            cwd: process.cwd()
+        },
+        database: {
+            status: dbStatus,
+            config: dbConfigSummary,
+            error: dbError,
+            sample: sampleResult
+        }
+    });
 });
 
 // Auth Routes
