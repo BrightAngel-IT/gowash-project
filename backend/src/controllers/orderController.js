@@ -170,7 +170,7 @@ export const getUserOrders = async (req, res) => {
         res.json(result.rows);
     } catch (error) {
         console.error('Get orders error:', error);
-        res.status(500).json({ message: "Server error" });
+        res.status(500).json({ message: "Server error", error: error.message });
     }
 };
 
