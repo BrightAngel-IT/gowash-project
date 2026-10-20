@@ -27,11 +27,29 @@ dotenv.config(); // fallback to standard dotenv
 const { Pool } = pg;
 
 // Parse and validate DATABASE_URL
-const rawDbUrl = (process.env.DATABASE_URL || '').trim();
+let rawDbUrl = (process.env.DATABASE_URL || '').trim();
+
+// Strip common copy-paste errors (e.g. key pasted into value in cPanel: "DATABASE_URL=postgresql://...")
+if (rawDbUrl.startsWith('DATABASE_URL=')) {
+    rawDbUrl = rawDbUrl.substring('DATABASE_URL='.length).trim();
+}
+// Strip quotes if any (e.g. "postgresql://..." or 'postgresql://...')
+if ((rawDbUrl.startsWith('"') && rawDbUrl.endsWith('"')) || (rawDbUrl.startsWith("'") && rawDbUrl.endsWith("'"))) {
+    rawDbUrl = rawDbUrl.slice(1, -1).trim();
+}
+
 // A valid database URL that has credentials MUST contain '@' (e.g., postgres://user:pass@host:5432/db)
 const hasValidDatabaseUrl = 
     (rawDbUrl.startsWith('postgres://') || rawDbUrl.startsWith('postgresql://')) && 
     rawDbUrl.includes('@');
+
+const isCloudPostgres = 
+    rawDbUrl.includes('supabase') || 
+    rawDbUrl.includes('neon.tech') || 
+    rawDbUrl.includes('pooler') || 
+    rawDbUrl.includes('render.com') ||
+    rawDbUrl.includes('amazonaws.com') ||
+    rawDbUrl.includes('sslmode=require');
 
 const dbUser = (process.env.DB_USER && process.env.DB_USER.trim()) || 
                (process.env.PGUSER && process.env.PGUSER.trim()) || 
@@ -40,17 +58,38 @@ const dbHost = (process.env.DB_HOST && process.env.DB_HOST.trim()) || 'localhost
 const dbName = (process.env.DB_NAME && process.env.DB_NAME.trim()) || 'gowash';
 const dbPass = process.env.DB_PASSWORD || process.env.PGPASSWORD || '1234';
 const dbPort = parseInt(process.env.DB_PORT, 10) || 5432;
-const dbSsl = process.env.DB_SSL === 'true' || 
-             (hasValidDatabaseUrl && (rawDbUrl.includes('supabase') || rawDbUrl.includes('neon.tech') || rawDbUrl.includes('pooler') || rawDbUrl.includes('sslmode=require')));
+
+// SSL configuration: Cloud Postgres needs rejectUnauthorized: false; local postgres usually does not support SSL
+const dbSsl = hasValidDatabaseUrl
+    ? (process.env.DB_SSL === 'false' ? false : (isCloudPostgres || process.env.DB_SSL === 'true' ? { rejectUnauthorized: false } : false))
+    : (process.env.DB_SSL === 'true' ? { rejectUnauthorized: false } : false);
+
+// Extract safe URL host info for diagnostics
+let urlHost = null;
+let urlUser = null;
+let urlDb = null;
+if (hasValidDatabaseUrl) {
+    try {
+        const parsed = new URL(rawDbUrl);
+        urlHost = parsed.hostname;
+        urlUser = parsed.username;
+        urlDb = parsed.pathname;
+    } catch (e) {
+        urlHost = 'unparseable';
+    }
+}
 
 export const dbConfigSummary = {
     usingUrl: hasValidDatabaseUrl,
+    urlHost,
+    urlUser,
+    urlDb,
     urlLength: rawDbUrl.length,
     urlProtocol: rawDbUrl ? rawDbUrl.split('://')[0] : null,
     hasAtInUrl: rawDbUrl.includes('@'),
-    host: hasValidDatabaseUrl ? 'from_url' : dbHost,
-    user: hasValidDatabaseUrl ? 'from_url' : dbUser,
-    database: hasValidDatabaseUrl ? 'from_url' : dbName,
+    host: hasValidDatabaseUrl ? urlHost : dbHost,
+    user: hasValidDatabaseUrl ? urlUser : dbUser,
+    database: hasValidDatabaseUrl ? urlDb : dbName,
     port: hasValidDatabaseUrl ? 'from_url' : dbPort,
     hasPassword: hasValidDatabaseUrl ? true : Boolean(dbPass),
     ssl: Boolean(dbSsl),
