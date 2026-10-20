@@ -21,6 +21,7 @@ export type Driver = {
     accountHolderName?: string;
     accountNumber?: string;
     profileImageUrl?: string;
+    isProfileIncomplete?: boolean;
 };
 
 type AuthContextType = {

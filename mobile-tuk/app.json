@@ -1,90 +1,41 @@
 {
-  "expo": {
-    "name": "Go Wash Driver",
-    "slug": "mobile-tuk",
-    "version": "1.0.0",
-    "icon": "./assets/images/icon.png",
-    "orientation": "portrait",
-    "scheme": "mobile-tuk",
-    "userInterfaceStyle": "automatic",
-    "ios": {
-      "supportsTablet": true,
-      "bundleIdentifier": "com.brightaangel.mobiletuk",
-      "buildNumber": "1",
-      "infoPlist": {
-        "UIBackgroundModes": [
-          "location",
-          "remote-notification"
+    "expo": {
+        "name": "mobile-tuk",
+        "slug": "mobile-tuk",
+        "owner": "bright-aangel",
+        "version": "1.0.0",
+        "orientation": "portrait",
+        "icon": "./assets/images/icon.png",
+        "scheme": "mobile-tuk",
+        "userInterfaceStyle": "automatic",
+        "newArchEnabled": true,
+        "ios": {
+            "supportsTablet": true,
+            "bundleIdentifier": "com.brightangel.gowash.tuk"
+        },
+        "android": {
+            "adaptiveIcon": {
+                "backgroundColor": "#ffffff"
+            },
+            "package": "com.brightangel.gowash.tuk"
+        },
+
+        "web": {
+            "output": "static",
+            "favicon": "./assets/images/favicon.png"
+        },
+        "plugins": [
+            "expo-router"
         ],
-        "NSLocationWhenInUseUsageDescription": "Go Wash Driver needs your location to track rides and navigate to customer pickup points.",
-        "NSLocationAlwaysAndWhenInUseUsageDescription": "Go Wash Driver needs background location to receive incoming orders and provide live tracking to customers.",
-        "NSLocationAlwaysUsageDescription": "Go Wash Driver requires continuous background location access for ride updates and dispatch.",
-        "NSCameraUsageDescription": "Go Wash Driver needs camera access to capture vehicle photos and service proof.",
-        "NSPhotoLibraryUsageDescription": "Go Wash Driver needs access to photo library to upload documents.",
-        "ITSAppUsesNonExemptEncryption": false
-      },
-      "googleServicesFile": "./GoogleService-Info.plist"
-    },
-    "android": {
-      "adaptiveIcon": {
-        "backgroundColor": "#ffffff"
-      },
-      "package": "com.brightaangel.mobiletuk",
-      "googleServicesFile": "./google-services.json",
-      "permissions": [
-        "android.permission.USE_FULL_SCREEN_INTENT",
-        "android.permission.VIBRATE",
-        "android.permission.SYSTEM_ALERT_WINDOW",
-        "android.permission.WAKE_LOCK",
-        "android.permission.POST_NOTIFICATIONS",
-        "android.permission.RECEIVE_BOOT_COMPLETED"
-      ]
-    },
-    "web": {
-      "bundler": "metro",
-      "output": "static",
-      "name": "Go Wash Driver",
-      "shortName": "Go Wash",
-      "themeColor": "#ffffff",
-      "backgroundColor": "#ffffff",
-      "display": "standalone",
-      "scope": "/",
-      "startUrl": "/",
-      "favicon": "./assets/images/icon.png",
-      "orientation": "portrait"
-    },
-    "plugins": [
-      [
-        "expo-build-properties",
-        {
-          "ios": {
-            "useFrameworks": "static"
-          }
+        "experiments": {
+            "typedRoutes": true,
+            "tsconfigPaths": true
+        },
+
+        "extra": {
+            "eas": {
+                "projectId": "fd415f73-bc2f-40b9-a98a-40e1e6baea5d"
+            }
         }
-      ],
-      "expo-router",
-      [
-        "expo-notifications",
-        {
-          "icon": "./assets/images/icon.png",
-          "color": "#ffffff",
-          "sounds": [
-            "./assets/sounds/ringtone.wav"
-          ]
-        }
-      ],
-      "@react-native-firebase/app",
-      "@react-native-firebase/messaging"
-    ],
-    "experiments": {
-      "typedRoutes": true
-    },
-    "extra": {
-      "router": {},
-      "eas": {
-        "projectId": "fd415f73-bc2f-40b9-a98a-40e1e6baea5d"
-      }
-    },
-    "owner": "bright-aangel"
-  }
+    }
 }

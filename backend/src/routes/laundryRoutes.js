@@ -1,7 +1,6 @@
 import express from 'express';
 import {
     getAllLaundries,
-    getLaundriesWithSalesStats,
     getLaundryById,
     createLaundry,
     updateLaundry,
@@ -11,7 +10,6 @@ import {
 const router = express.Router();
 
 router.get('/', getAllLaundries);
-router.get('/sales-stats', getLaundriesWithSalesStats);
 router.get('/:id', getLaundryById);
 router.post('/', createLaundry);
 router.put('/:id', updateLaundry);

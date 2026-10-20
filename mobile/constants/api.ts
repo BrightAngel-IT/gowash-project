@@ -4,15 +4,15 @@ import { Platform } from 'react-native';
 
 import Constants from 'expo-constants';
 
-// For physical devices on Wi-Fi, we dynamically detect your machine's local IP from the Expo manifest.
-// This ensures that the connection survives IP changes when you switch networks.
+// Use production URL if not in development
+const isDev = __DEV__;
 const debuggerHost = Constants.expoConfig?.hostUri;
 const ip = debuggerHost ? debuggerHost.split(':')[0] : 'localhost';
 
-export const SOCKET_URL = __DEV__
-    ? `http://${ip}:5005`
-    : 'https://gowashbackend.nilmaalliance.com';
+export const SOCKET_URL = `https://gowashbackend.nilmaalliance.com`;
+
 const BASE_URL = `${SOCKET_URL}/api`;
+
 
 const api = axios.create({
     baseURL: BASE_URL,

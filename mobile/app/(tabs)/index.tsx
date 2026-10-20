@@ -1,7 +1,6 @@
 
 import React, { useRef, useEffect, useState } from 'react';
-import { useThemeColors } from '@/hooks/useThemeColors';
-import { View, Text, StyleSheet, ScrollView, Image, TouchableOpacity, Dimensions, Animated as RNAnimated, Platform, Modal, Alert, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Image, TouchableOpacity, Dimensions, Animated as RNAnimated, Platform, Modal, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
@@ -9,7 +8,7 @@ import * as Linking from 'expo-linking';
 import { LinearGradient } from 'expo-linear-gradient';
 import Animated, { FadeInDown, FadeInRight, FadeOutUp, BounceIn } from 'react-native-reanimated';
 import { BlurView } from 'expo-blur';
-import { Spacing, BorderRadius, Typography } from '@/constants/theme';
+import { Colors, Spacing, BorderRadius, Typography } from '@/constants/theme';
 import { useIsFocused } from '@react-navigation/native';
 import { Audio } from 'expo-av';
 import io from 'socket.io-client';
@@ -19,9 +18,6 @@ import api, { getUser, SOCKET_URL } from '@/constants/api';
 const { width } = Dimensions.get('window');
 
 export default function DashboardScreen() {
-  const Colors = useThemeColors();
-  const styles = createStyles(Colors);
-
   const router = useRouter();
   const isFocused = useIsFocused();
   const scrollY = useRef(new RNAnimated.Value(0)).current;
@@ -99,35 +95,25 @@ export default function DashboardScreen() {
 
     return () => {
       clearInterval(interval);
+      if (sound) sound.unloadAsync();
       if (socketRef.current) {
         socketRef.current.disconnect();
         socketRef.current = null;
       }
     };
-  }, [user?.id]);
-
-  useEffect(() => {
-    return () => {
-      if (sound) sound.unloadAsync();
-    };
-  }, [sound]);
-
-  const [isLoading, setIsLoading] = useState(true);
+  }, [user, sound]);
 
   const loadData = async () => {
     try {
-      setIsLoading(true);
       const userData = await getUser();
       setUser(userData);
-      await Promise.all([fetchServices(), fetchLaundries()]);
+      fetchServices();
+      fetchLaundries();
       if (userData) {
         pollOrderStatus(userData.id);
       }
     } catch (error) {
       console.error('Error loading dashboard data:', error);
-      Alert.alert('Connection Error', 'Failed to load dashboard data. Please try again.');
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -188,25 +174,23 @@ export default function DashboardScreen() {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'Pending': return Colors.warning;
-      case 'Confirmed': return Colors.success;
-      case 'Washing': return Colors.primary;
+      case 'Pending': return '#F59E0B';
+      case 'Confirmed': return '#10B981';
+      case 'Washing': return '#3B82F6';
       case 'Ready': return '#8B5CF6';
       default: return Colors.primary;
     }
   };
 
   return (
-    <View style={[styles.container, { backgroundColor: Colors.background }]}>
+    <View style={styles.container}>
+      <LinearGradient
+        colors={['#f8f9fa', '#e9ecef']}
+        style={StyleSheet.absoluteFillObject}
+      />
+
       <SafeAreaView style={{ flex: 1 }}>
-        {isLoading ? (
-          <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-            <ActivityIndicator size="large" color={Colors.primary} />
-            <Text style={{ marginTop: 10, color: Colors.text, fontWeight: '500' }}>Loading your dashboard...</Text>
-          </View>
-        ) : (
-          <>
-            <View style={styles.header}>
+        <View style={styles.header}>
           <View>
             <Text style={styles.greeting}>Hey there,</Text>
             <Text style={styles.username}>{user?.name || 'Friend'} 👋</Text>
@@ -268,9 +252,6 @@ export default function DashboardScreen() {
                   </View>
                   <Text style={styles.serviceNameVertical}>{service.name}</Text>
                   <Text style={styles.servicePrice}>{service.price}</Text>
-                  <View style={{ position: 'absolute', bottom: 10, right: 10, backgroundColor: Colors.border, borderRadius: 10, padding: 4 }}>
-                    <Ionicons name="chevron-forward" size={14} color={Colors.textSecondary} />
-                  </View>
                 </TouchableOpacity>
               </Animated.View>
             ))}
@@ -328,7 +309,7 @@ export default function DashboardScreen() {
                         styles.progressBarFill,
                         {
                           width: activeOrder.status === 'Washing' ? '40%' : activeOrder.status === 'Ready' ? '100%' : '20%',
-                          backgroundColor: Colors.card
+                          backgroundColor: '#fff'
                         }
                       ]}
                     />
@@ -388,7 +369,7 @@ export default function DashboardScreen() {
               <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 20 }}>
                 <View style={styles.driverModalHeader}>
                   <LinearGradient
-                    colors={[Colors.success, Colors.success]}
+                    colors={['#10B981', '#059669']}
                     style={styles.successIconCircle}
                   >
                     <Ionicons name="checkmark" size={32} color="#fff" />
@@ -450,7 +431,7 @@ export default function DashboardScreen() {
             <Animated.View entering={BounceIn} style={styles.statusUpdatePopup}>
               <ScrollView showsVerticalScrollIndicator={false}>
                 <LinearGradient
-                  colors={[Colors.primary, Colors.secondary]}
+                  colors={['#0ea5e9', '#0284c7']}
                   style={styles.popupHeader}
                 >
                   <View style={styles.iconCirclePopup}>
@@ -478,14 +459,12 @@ export default function DashboardScreen() {
             </Animated.View>
           </View>
         </Modal>
-          </>
-        )}
       </SafeAreaView>
     </View>
   );
 }
 
-const createStyles = (Colors: any) => StyleSheet.create({
+const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
@@ -510,7 +489,7 @@ const createStyles = (Colors: any) => StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 14,
-    backgroundColor: Colors.card,
+    backgroundColor: '#fff',
     justifyContent: 'center',
     alignItems: 'center',
     shadowColor: "#000",
@@ -572,7 +551,7 @@ const createStyles = (Colors: any) => StyleSheet.create({
     lineHeight: 20,
   },
   bannerButton: {
-    backgroundColor: Colors.card,
+    backgroundColor: '#fff',
     paddingVertical: 10,
     paddingHorizontal: 20,
     borderRadius: 12,
@@ -595,7 +574,7 @@ const createStyles = (Colors: any) => StyleSheet.create({
   searchContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: Colors.card,
+    backgroundColor: '#fff',
     paddingHorizontal: 16,
     paddingVertical: 14,
     borderRadius: 16,
@@ -636,8 +615,7 @@ const createStyles = (Colors: any) => StyleSheet.create({
   },
   serviceCardVertical: {
     width: 110,
-    height: 160,
-    backgroundColor: Colors.card,
+    backgroundColor: '#fff',
     padding: 16,
     borderRadius: 20,
     alignItems: 'center',
@@ -669,7 +647,7 @@ const createStyles = (Colors: any) => StyleSheet.create({
   },
   laundryQuickCard: {
     width: 160,
-    backgroundColor: Colors.card,
+    backgroundColor: '#fff',
     borderRadius: 24,
     overflow: 'hidden',
     shadowColor: "#000",
@@ -710,7 +688,7 @@ const createStyles = (Colors: any) => StyleSheet.create({
     overflow: 'hidden',
   },
   orderCardHeader: {
-    backgroundColor: Colors.card,
+    backgroundColor: '#fff',
     borderTopLeftRadius: 19,
     borderTopRightRadius: 19,
     borderBottomLeftRadius: 24,
@@ -776,7 +754,7 @@ const createStyles = (Colors: any) => StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: Colors.card,
+    backgroundColor: '#fff',
     margin: 4,
     marginTop: 0,
     paddingVertical: 12,
@@ -841,7 +819,7 @@ const createStyles = (Colors: any) => StyleSheet.create({
     padding: 30,
   },
   statusUpdatePopup: {
-    backgroundColor: Colors.card,
+    backgroundColor: '#fff',
     width: '100%',
     borderRadius: 30,
     overflow: 'hidden',
@@ -910,7 +888,7 @@ const createStyles = (Colors: any) => StyleSheet.create({
     fontWeight: '800',
   },
   driverModalContent: {
-    backgroundColor: Colors.card,
+    backgroundColor: '#fff',
     borderRadius: 30,
     padding: 0,
     width: '100%',
@@ -988,7 +966,7 @@ const createStyles = (Colors: any) => StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: Colors.success, // Green for call
+    backgroundColor: '#10B981', // Green for call
     justifyContent: 'center',
     alignItems: 'center',
   },

@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { useThemeColors } from '@/hooks/useThemeColors';
 import {
     View,
     Text,
@@ -22,9 +21,6 @@ import api from '@/constants/api';
 const { width, height } = Dimensions.get('window');
 
 export default function ForgotPasswordScreen() {
-  const Colors = useThemeColors();
-  const styles = createStyles(Colors);
-
     const router = useRouter();
     const [email, setEmail] = useState('');
     const [otp, setOtp] = useState('');
@@ -111,7 +107,7 @@ export default function ForgotPasswordScreen() {
             style={styles.container}
         >
             <LinearGradient
-                colors={Colors.gradients.primary}
+                colors={['#4c669f', '#3b5998', '#192f6a']}
                 style={styles.background}
             />
 
@@ -151,13 +147,13 @@ export default function ForgotPasswordScreen() {
                                 <View style={styles.inputContainer}>
                                     <Ionicons name="key-outline" size={20} color="#fff" style={styles.inputIcon} />
                                     <TextInput
-                                        style={styles.input}
                                         placeholder="Enter OTP"
                                         placeholderTextColor="rgba(255,255,255,0.7)"
                                         value={otp}
                                         onChangeText={setOtp}
                                         keyboardType="number-pad"
                                         maxLength={6}
+                                        style={[styles.input, { letterSpacing: 8, textAlign: 'center', fontSize: 24 }]}
                                     />
                                 </View>
                                 <TouchableOpacity style={styles.buttonPrimary} onPress={handleVerifyOtp} disabled={loading}>
@@ -205,7 +201,7 @@ export default function ForgotPasswordScreen() {
     );
 }
 
-const createStyles = (Colors: any) => StyleSheet.create({
+const styles = StyleSheet.create({
     container: {
         flex: 1,
     },

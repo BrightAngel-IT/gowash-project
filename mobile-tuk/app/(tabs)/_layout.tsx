@@ -3,12 +3,10 @@
 import { Tabs } from 'expo-router';
 import { View, useColorScheme } from 'react-native';
 import { Colors } from '../../constants/Colors';
-import { Home, ClipboardList, History, User, LayoutGrid, Navigation } from 'lucide-react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Home, ClipboardList, History, User } from 'lucide-react-native';
 
 export default function TabLayout() {
     const colorScheme = (useColorScheme() ?? 'dark') as 'light' | 'dark';
-    const insets = useSafeAreaInsets();
 
     return (
         <Tabs
@@ -19,8 +17,8 @@ export default function TabLayout() {
                 tabBarStyle: {
                     backgroundColor: Colors[colorScheme].card,
                     borderTopColor: Colors[colorScheme].border,
-                    height: 65 + (insets.bottom > 0 ? insets.bottom : 15),
-                    paddingBottom: 10 + (insets.bottom > 0 ? insets.bottom : 15),
+                    height: 65,
+                    paddingBottom: 10,
                     paddingTop: 10,
                 },
                 tabBarLabelStyle: {
@@ -36,11 +34,10 @@ export default function TabLayout() {
                 }}
             />
             <Tabs.Screen
-                name="active-trip"
+                name="jobs"
                 options={{
-                    title: 'Active Trip',
-                    href: null,
-                    tabBarIcon: ({ color }) => <Navigation size={24} color={color} />,
+                    title: 'Requests',
+                    tabBarIcon: ({ color }) => <ClipboardList size={24} color={color} />,
                 }}
             />
             <Tabs.Screen

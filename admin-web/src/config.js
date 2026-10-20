@@ -1,7 +1,8 @@
 // Dynamic host detection for development and production
-const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+const isLocal = window.location.hostname === 'localhost';
 const host = isLocal ? 'localhost' : window.location.hostname;
 
+// Replace 'gowash-api.yourdomain.com' with your actual production API subdomain if different
 export const API_URL = isLocal 
   ? `http://${host}:5005/api` 
   : `https://gowashbackend.nilmaalliance.com/api`;

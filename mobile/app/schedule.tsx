@@ -1,17 +1,17 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useThemeColors } from '@/hooks/useThemeColors';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Alert, ActivityIndicator, Modal, TextInput, Dimensions, Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter, useLocalSearchParams } from 'expo-router';
-import { Typography, Spacing, BorderRadius } from '@/constants/theme';
+import { Colors, Typography, Spacing, BorderRadius } from '@/constants/theme';
 import Animated, { FadeInDown, FadeInRight, BounceIn, Layout, FadeIn, FadeOut, SlideInRight, SlideOutLeft } from 'react-native-reanimated';
 import { LinearGradient } from 'expo-linear-gradient';
 import api, { getUser } from '@/constants/api';
 import * as Location from 'expo-location';
-import { MapView, Marker } from '@/components/MapComponent';
+import AppMap, { Marker } from '@/components/AppMap';
 
-// Removed global Dimensions width to use responsive styles
+const { width } = Dimensions.get('window');
+
 const STEPS = ['Services', 'Items', 'Logistics', 'Review'];
 
 const ADDONS = [
@@ -60,9 +60,6 @@ const LAUNDRY_ITEMS = [
 ];
 
 export default function AdvancedScheduleScreen() {
-  const Colors = useThemeColors();
-  const styles = createStyles(Colors);
-
     const router = useRouter();
     const params = useLocalSearchParams();
     const { laundryId, laundryName } = params;
@@ -70,8 +67,6 @@ export default function AdvancedScheduleScreen() {
     const [currentStep, setCurrentStep] = useState(0);
     const [selectedDate, setSelectedDate] = useState(dates[0].full);
     const [selectedTime, setSelectedTime] = useState(timeSlots[0]);
-    const [deliveryDate, setDeliveryDate] = useState(dates[2].full); // Default 2 days later
-    const [deliverySpeed, setDeliverySpeed] = useState('Standard');
     const [services, setServices] = useState<any[]>([]);
     const [activeServiceId, setActiveServiceId] = useState<number | null>(null);
     const [loading, setLoading] = useState(true);
@@ -89,7 +84,6 @@ export default function AdvancedScheduleScreen() {
     const [address, setAddress] = useState('123, Green Valley, Colombo 03');
     const [notes, setNotes] = useState('');
     const [isLocating, setIsLocating] = useState(false);
-    const [showMapModal, setShowMapModal] = useState(false);
     const [customerCoords, setCustomerCoords] = useState<{lat: number, lng: number}>({lat: 6.9271, lng: 79.8612});
 
     const handleMapPress = async (e: any) => {
@@ -176,22 +170,6 @@ export default function AdvancedScheduleScreen() {
     const handleFetchLocation = async () => {
         try {
             setIsLocating(true);
-            const userAgreed = await new Promise((resolve) => {
-                Alert.alert(
-                    'Use Your Location',
-                    'GoWash needs to access your location to find the exact pickup spot for your laundry.',
-                    [
-                        { text: 'Not Now', onPress: () => resolve(false), style: 'cancel' },
-                        { text: 'Allow', onPress: () => resolve(true) }
-                    ]
-                );
-            });
-
-            if (!userAgreed) {
-                setIsLocating(false);
-                return;
-            }
-
             let { status } = await Location.requestForegroundPermissionsAsync();
             if (status !== 'granted') {
                 Alert.alert('Permission Denied', 'Please allow location access to fetch your current address.');
@@ -297,29 +275,29 @@ export default function AdvancedScheduleScreen() {
         });
 
         const addonsTotal = selectedAddons.reduce((sum, id) => sum + (ADDONS.find(a => a.id === id)?.price || 0), 0);
-        const serviceFee = itemsTotal > 0 ? 39 : 0; // Fixed Service Fee
+        const serviceFee = itemsTotal > 0 ? 150 : 0;
         
-        let deliveryFee = 0;
-        let priorityFee = 0;
-        if (itemsTotal > 0) {
-            // Fixed Delivery Fee
-            deliveryFee = 125;
-            
-            if (deliverySpeed === 'Express') {
-                if (totalItemsCount < 5) {
-                    priorityFee = 1000;
-                } else {
-                    priorityFee = 1000 + ((totalItemsCount - 4) * 100);
-                }
-            }
+        // Dynamic Delivery Fee Calculation (Client-side estimation)
+        let deliveryFee = itemsTotal > 0 ? 250 : 0;
+        if (customerCoords && laundry?.lat && laundry?.lng) {
+            const R = 6371;
+            const dLat = (laundry.lat - customerCoords.lat) * Math.PI / 180;
+            const dLon = (laundry.lng - customerCoords.lng) * Math.PI / 180;
+            const a = 
+                Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                Math.cos(customerCoords.lat * Math.PI / 180) * Math.cos(laundry.lat * Math.PI / 180) * 
+                Math.sin(dLon / 2) * Math.sin(dLon / 2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+            const distance = R * c;
+            deliveryFee = Math.max(150, Math.round(distance * 100));
         }
 
-        const grandTotal = itemsTotal + addonsTotal + serviceFee + deliveryFee + priorityFee;
+        const grandTotal = itemsTotal + addonsTotal + serviceFee + deliveryFee;
 
-        return { itemsTotal, addonsTotal, serviceFee, deliveryFee, priorityFee, grandTotal, totalItemsCount, breakdown };
+        return { itemsTotal, addonsTotal, serviceFee, deliveryFee, grandTotal, totalItemsCount, breakdown };
     };
 
-    const { itemsTotal, addonsTotal, serviceFee, deliveryFee, priorityFee, grandTotal, totalItemsCount, breakdown } = calculateTotals();
+    const { itemsTotal, addonsTotal, serviceFee, deliveryFee, grandTotal, totalItemsCount, breakdown } = calculateTotals();
 
     const handleNext = () => {
         if (currentStep === 0 && Object.keys(basket).length === 0) {
@@ -369,7 +347,7 @@ export default function AdvancedScheduleScreen() {
                 customerName: user.name,
                 notes: `${notes} [Items: ${summary}] [Add-ons: ${addonsNames || 'None'}]`,
                 orderItems: orderItemsFormatted,
-                deliveryFee: deliveryFee + priorityFee,
+                deliveryFee: deliveryFee,
                 customerLat: customerCoords?.lat,
                 customerLng: customerCoords?.lng
             };
@@ -403,7 +381,7 @@ export default function AdvancedScheduleScreen() {
                                             onPress={() => toggleService(s.id)}
                                         >
                                             <LinearGradient
-                                                colors={isSelected ? [s.color, s.color + 'CC'] : Colors.gradients.card}
+                                                colors={isSelected ? [s.color, s.color + 'CC'] : ['#FFFFFF', '#F8FAFC']}
                                                 style={styles.serviceGradient}
                                             >
                                                 <Ionicons name={s.icon as any} size={32} color={isSelected ? '#fff' : s.color} />
@@ -428,7 +406,7 @@ export default function AdvancedScheduleScreen() {
                                             <Ionicons name={a.icon as any} size={20} color={selectedAddons.includes(a.id) ? Colors.primary : Colors.textSecondary} />
                                             <Text style={[styles.addonName, selectedAddons.includes(a.id) && styles.textPrimary]}>{a.name}</Text>
                                         </View>
-                                        <Text style={styles.addonPrice}>+ LKR {Number(a.price).toLocaleString('en-US')}</Text>
+                                        <Text style={styles.addonPrice}>+ LKR {a.price}</Text>
                                     </TouchableOpacity>
                                 ))}
                             </View>
@@ -478,7 +456,7 @@ export default function AdvancedScheduleScreen() {
                                                         <Text style={styles.itemName}>{item.name}</Text>
                                                         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                                                             <Text style={styles.itemPrice}>
-                                                                LKR {Number(unitPrice).toLocaleString('en-US')} 
+                                                                LKR {unitPrice} 
                                                                 <Text style={{ fontSize: 10, color: Colors.textSecondary }}> / {item.current_unit === 'kg' ? 'KG' : 'PC'}</Text>
                                                             </Text>
                                                         </View>
@@ -528,16 +506,7 @@ export default function AdvancedScheduleScreen() {
                         <Text style={styles.subLabel}>Choose Pickup Date</Text>
                         <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.dateList}>
                             {dates.map((d, i) => (
-                                <TouchableOpacity 
-                                    key={i} 
-                                    style={[styles.dateCard, selectedDate === d.full && styles.dateCardActive]} 
-                                    onPress={() => {
-                                        setSelectedDate(d.full);
-                                        if (deliveryDate < d.full) {
-                                            setDeliveryDate(d.full);
-                                        }
-                                    }}
-                                >
+                                <TouchableOpacity key={i} style={[styles.dateCard, selectedDate === d.full && styles.dateCardActive]} onPress={() => setSelectedDate(d.full)}>
                                     <Text style={[styles.dateDay, selectedDate === d.full && styles.textWhite]}>{d.day}</Text>
                                     <Text style={[styles.dateNum, selectedDate === d.full && styles.textWhite]}>{d.date}</Text>
                                 </TouchableOpacity>
@@ -553,68 +522,45 @@ export default function AdvancedScheduleScreen() {
                             ))}
                         </View>
 
-                        <Text style={[styles.subLabel, { marginTop: 20 }]}>Delivery Speed</Text>
-                        <View style={styles.timeGrid}>
-                            <TouchableOpacity style={[styles.timeBox, deliverySpeed === 'Standard' && styles.timeBoxActive]} onPress={() => setDeliverySpeed('Standard')}>
-                                <Text style={[styles.timeText, deliverySpeed === 'Standard' && styles.textWhite]}>Standard Delivery</Text>
-                                <Text style={[{ fontSize: 11, color: Colors.textSecondary, marginTop: 4, textAlign: 'center' }, deliverySpeed === 'Standard' && {color: Colors.border}]}>2-3 Business Days</Text>
-                            </TouchableOpacity>
-                            <TouchableOpacity style={[styles.timeBox, deliverySpeed === 'Express' && styles.timeBoxActive]} onPress={() => setDeliverySpeed('Express')}>
-                                <Text style={[styles.timeText, deliverySpeed === 'Express' && styles.textWhite]}>Express Delivery</Text>
-                                <Text style={[{ fontSize: 11, color: Colors.textSecondary, marginTop: 4, textAlign: 'center' }, deliverySpeed === 'Express' && {color: Colors.border}]}>1 Business Day (Priority Fee)</Text>
-                            </TouchableOpacity>
-                        </View>
-
-                        <Text style={[styles.subLabel, { marginTop: 20 }]}>Choose Delivery Date</Text>
-                        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.dateList}>
-                            {dates.map((d, i) => {
-                                const isBeforePickup = d.full < selectedDate;
-                                return (
-                                <TouchableOpacity 
-                                    key={i} 
-                                    style={[
-                                        styles.dateCard, 
-                                        deliveryDate === d.full && styles.dateCardActive,
-                                        isBeforePickup && { opacity: 0.3 }
-                                    ]} 
-                                    disabled={isBeforePickup}
-                                    onPress={() => setDeliveryDate(d.full)}
-                                >
-                                    <Text style={[styles.dateDay, deliveryDate === d.full && styles.textWhite]}>{d.day}</Text>
-                                    <Text style={[styles.dateNum, deliveryDate === d.full && styles.textWhite]}>{d.date}</Text>
-                                </TouchableOpacity>
-                            )})}
-                        </ScrollView>
-
                         <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 20, marginBottom: 8 }}>
-                            <Text style={styles.subLabel}>Pickup/Delivery Location</Text>
+                            <Text style={styles.subLabel}>Pickup Address</Text>
                             <TouchableOpacity onPress={handleFetchLocation} disabled={isLocating} style={styles.fetchLocationBtn}>
                                 {isLocating ? (
                                     <ActivityIndicator size="small" color={Colors.primary} />
                                 ) : (
                                     <>
                                         <Ionicons name="navigate-outline" size={14} color={Colors.primary} style={{ marginRight: 4 }} />
-                                        <Text style={styles.fetchLocationText}>My Location</Text>
+                                        <Text style={styles.fetchLocationText}>Fetch Current</Text>
                                     </>
                                 )}
                             </TouchableOpacity>
                         </View>
-
-                        <TouchableOpacity style={styles.mapTriggerCard} onPress={() => setShowMapModal(true)}>
-                            <View style={styles.mapTriggerIcon}>
-                                <Ionicons name="map-outline" size={24} color={Colors.primary} />
-                            </View>
-                            <View style={{ flex: 1 }}>
-                                <Text style={styles.mapTriggerTitle}>Adjust Pin on Map</Text>
-                                <Text style={styles.mapTriggerSub} numberOfLines={1}>Tap here to open the map</Text>
-                            </View>
-                            <Ionicons name="chevron-forward" size={20} color={Colors.textSecondary} />
-                        </TouchableOpacity>
-
-                        <Text style={[styles.subLabel, { marginTop: 15 }]}>Address Details</Text>
                         <View style={styles.inputBox}>
                             <Ionicons name="location-outline" size={20} color={Colors.textSecondary} />
                             <TextInput style={styles.input} value={address} onChangeText={setAddress} multiline placeholder="Enter detailed address" />
+                        </View>
+
+                        <View style={styles.mapContainer}>
+                            <AppMap
+                                style={styles.map}
+                                region={{
+                                    latitude: customerCoords.lat,
+                                    longitude: customerCoords.lng,
+                                    latitudeDelta: 0.01,
+                                    longitudeDelta: 0.01,
+                                }}
+                                onPress={handleMapPress}
+                            >
+                                <Marker
+                                    coordinate={{
+                                        latitude: customerCoords.lat,
+                                        longitude: customerCoords.lng
+                                    }}
+                                    draggable
+                                    onDragEnd={handleMapPress}
+                                />
+                            </AppMap>
+                            <Text style={styles.mapHint}>Tap or drag pin to set exact location</Text>
                         </View>
 
                         <Text style={[styles.subLabel, { marginTop: 20 }]}>Additional Instructions</Text>
@@ -647,7 +593,7 @@ export default function AdvancedScheduleScreen() {
                                                     <Text style={styles.receiptItemName}>{it.name} x {it.qty} {it.unit === 'kg' ? 'KG' : ''}</Text>
                                                     {it.pieces && <Text style={styles.receiptItemPcs}>({it.pieces} pieces)</Text>}
                                                 </View>
-                                                <Text style={styles.receiptItemPrice}>LKR {Number(it.sub).toLocaleString('en-US')}</Text>
+                                                <Text style={styles.receiptItemPrice}>LKR {it.sub}</Text>
                                             </View>
                                         ))}
                                     </View>
@@ -661,7 +607,7 @@ export default function AdvancedScheduleScreen() {
                                             return (
                                                 <View key={id} style={styles.receiptItem}>
                                                     <Text style={styles.receiptItemName}>{a?.name}</Text>
-                                                    <Text style={styles.receiptItemPrice}>LKR {Number(a?.price).toLocaleString('en-US')}</Text>
+                                                    <Text style={styles.receiptItemPrice}>LKR {a?.price}</Text>
                                                 </View>
                                             );
                                         })}
@@ -669,18 +615,14 @@ export default function AdvancedScheduleScreen() {
                                 )}
 
                                 <View style={styles.receiptDivider} />
-                                <View style={styles.receiptTotalRow}><Text style={styles.receiptLabel}>Amount</Text><Text style={styles.receiptValue}>Rs. {Number(itemsTotal + addonsTotal).toLocaleString('en-US')}</Text></View>
-                                <View style={styles.receiptTotalRow}><Text style={styles.receiptLabel}>Service Fee (Fixed)</Text><Text style={styles.receiptValue}>Rs. {Number(serviceFee).toLocaleString('en-US')}</Text></View>
-                                <View style={styles.receiptTotalRow}><Text style={styles.receiptLabel}>Delivery Fee (Fixed)</Text><Text style={styles.receiptValue}>Rs. {Number(deliveryFee).toLocaleString('en-US')}</Text></View>
-                                {priorityFee > 0 && (
-                                    <View style={styles.receiptTotalRow}><Text style={styles.receiptLabel}>Priority Service Fee</Text><Text style={styles.receiptValue}>Rs. {Number(priorityFee).toLocaleString('en-US')}</Text></View>
-                                )}
-                                <View style={[styles.receiptTotalRow, { marginTop: 10 }]}><Text style={styles.receiptGrandLabel}>Total</Text><Text style={styles.receiptGrandValue}>Rs. {Number(grandTotal).toLocaleString('en-US')}</Text></View>
+                                <View style={styles.receiptTotalRow}><Text style={styles.receiptLabel}>Items Subtotal</Text><Text style={styles.receiptValue}>LKR {itemsTotal + addonsTotal}</Text></View>
+                                <View style={styles.receiptTotalRow}><Text style={styles.receiptLabel}>Service Fee</Text><Text style={styles.receiptValue}>LKR {serviceFee}</Text></View>
+                                <View style={styles.receiptTotalRow}><Text style={styles.receiptLabel}>Delivery Charge</Text><Text style={styles.receiptValue}>LKR {deliveryFee}</Text></View>
+                                <View style={[styles.receiptTotalRow, { marginTop: 10 }]}><Text style={styles.receiptGrandLabel}>Total Payable</Text><Text style={styles.receiptGrandValue}>LKR {grandTotal}.00</Text></View>
                             </View>
 
                             <View style={styles.logisticSummary}>
-                                <View style={styles.logRow}><Ionicons name="calendar" size={16} color={Colors.textSecondary} /><Text style={styles.logText}>Pickup: {selectedDate} • {selectedTime}</Text></View>
-                                <View style={styles.logRow}><Ionicons name="calendar" size={16} color={Colors.textSecondary} /><Text style={styles.logText}>Delivery: {deliveryDate} ({deliverySpeed})</Text></View>
+                                <View style={styles.logRow}><Ionicons name="calendar" size={16} color={Colors.textSecondary} /><Text style={styles.logText}>{selectedDate} • {selectedTime}</Text></View>
                                 <View style={styles.logRow}><Ionicons name="location" size={16} color={Colors.textSecondary} /><Text style={styles.logText} numberOfLines={1}>{address}</Text></View>
                             </View>
                         </Animated.View>
@@ -714,7 +656,7 @@ export default function AdvancedScheduleScreen() {
                 <View style={styles.footerPriceRow}>
                     <View>
                         <Text style={styles.footerTotalLabel}>ESTIMATED TOTAL</Text>
-                        <Text style={styles.footerTotalPrice}>LKR {Number(currentStep === 3 ? grandTotal : (itemsTotal + addonsTotal + serviceFee)).toLocaleString('en-US', {minimumFractionDigits: 2})}</Text>
+                        <Text style={styles.footerTotalPrice}>LKR {grandTotal}.00</Text>
                     </View>
                     <View style={styles.itemBadge}>
                         <Text style={styles.itemBadgeText}>{totalItemsCount} ITEMS</Text>
@@ -726,7 +668,7 @@ export default function AdvancedScheduleScreen() {
                     onPress={handleNext}
                     disabled={submitting}
                 >
-                    <LinearGradient colors={Colors.gradients.primary} style={styles.nextGradient}>
+                    <LinearGradient colors={['#4c669f', '#3b5998']} style={styles.nextGradient}>
                         <Text style={styles.nextBtnText}>{currentStep === STEPS.length - 1 ? 'Place Secure Order' : 'Continue'}</Text>
                         {submitting ? <ActivityIndicator color="#fff" style={{ marginLeft: 10 }} /> : <Ionicons name="arrow-forward" size={20} color="#fff" />}
                     </LinearGradient>
@@ -737,7 +679,7 @@ export default function AdvancedScheduleScreen() {
             <Modal visible={showSuccessModal} transparent animationType="fade">
                 <View style={styles.modalOverlay}>
                     <Animated.View entering={BounceIn} style={styles.successPopup}>
-                        <LinearGradient colors={[Colors.success, Colors.success]} style={styles.successHeader}>
+                        <LinearGradient colors={['#10B981', '#059669']} style={styles.successHeader}>
                             <View style={styles.successIconCircle}><Ionicons name="checkmark-sharp" size={60} color="#fff" /></View>
                             <Text style={styles.successTitle}>Order Placed!</Text>
                             <Text style={styles.successSubtitle}>Ref: #GW-{Math.floor(Math.random() * 9000) + 1000}</Text>
@@ -751,64 +693,24 @@ export default function AdvancedScheduleScreen() {
                     </Animated.View>
                 </View>
             </Modal>
-
-            {/* Map Selection Modal */}
-            <Modal visible={showMapModal} animationType="slide" transparent={false}>
-                <View style={styles.mapModalContainer}>
-                    <View style={styles.mapModalHeader}>
-                        <TouchableOpacity onPress={() => setShowMapModal(false)} style={styles.mapModalCloseBtn}>
-                            <Ionicons name="close" size={24} color={Colors.text} />
-                        </TouchableOpacity>
-                        <Text style={styles.mapModalTitle}>Select Location</Text>
-                        <View style={{ width: 40 }} />
-                    </View>
-                    <View style={styles.mapModalBody}>
-                        <MapView
-                            style={styles.fullMap}
-                            region={{
-                                latitude: customerCoords?.lat || 6.9271,
-                                longitude: customerCoords?.lng || 79.8612,
-                                latitudeDelta: 0.005,
-                                longitudeDelta: 0.005,
-                            }}
-                            onPress={handleMapPress}
-                        >
-                            {customerCoords?.lat && (
-                                <Marker 
-                                    coordinate={{ latitude: customerCoords.lat, longitude: customerCoords.lng }} 
-                                    pinColor={Colors.primary}
-                                />
-                            )}
-                        </MapView>
-                        <View style={styles.mapHintOverlay}>
-                            <Text style={styles.mapHintText}>Tap anywhere to move the pin</Text>
-                        </View>
-                    </View>
-                    <View style={styles.mapModalFooter}>
-                        <TouchableOpacity style={styles.mapModalConfirmBtn} onPress={() => setShowMapModal(false)}>
-                            <Text style={styles.mapModalConfirmText}>Confirm Location</Text>
-                        </TouchableOpacity>
-                    </View>
-                </View>
-            </Modal>
         </SafeAreaView>
     );
 }
 
-const createStyles = (Colors: any) => StyleSheet.create({
-    container: { flex: 1, backgroundColor: Colors.card },
-    header: { flexDirection: 'row', alignItems: 'center', padding: 20, borderBottomWidth: 1, borderBottomColor: Colors.border },
-    backBtn: { width: 44, height: 44, borderRadius: 14, backgroundColor: Colors.card, justifyContent: 'center', alignItems: 'center' },
+const styles = StyleSheet.create({
+    container: { flex: 1, backgroundColor: '#FFFFFF' },
+    header: { flexDirection: 'row', alignItems: 'center', padding: 20, borderBottomWidth: 1, borderBottomColor: '#F1F5F9' },
+    backBtn: { width: 44, height: 44, borderRadius: 14, backgroundColor: '#F8FAFC', justifyContent: 'center', alignItems: 'center' },
     progressContainer: { flex: 1, marginHorizontal: 20 },
     laundryHeaderLabel: { fontSize: 16, fontWeight: '800', color: Colors.text, marginBottom: 6, textAlign: 'center' },
-    progressBarBg: { height: 6, backgroundColor: Colors.border, borderRadius: 3, marginBottom: 8 },
+    progressBarBg: { height: 6, backgroundColor: '#F1F5F9', borderRadius: 3, marginBottom: 8 },
     progressBarFill: { height: '100%', backgroundColor: Colors.primary, borderRadius: 3 },
     stepIndicator: { fontSize: 12, color: Colors.textSecondary, textTransform: 'uppercase', letterSpacing: 0.5 },
     stepContainer: { flex: 1, padding: 24 },
     stepTitle: { fontSize: 24, fontWeight: '900', color: Colors.text, marginBottom: 8 },
     stepSubtitle: { fontSize: 14, color: Colors.textSecondary, marginBottom: 24, lineHeight: 20 },
     servicesGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 15, marginBottom: 30 },
-    serviceBox: { width: '47%', borderRadius: 24, height: 140, overflow: 'hidden', elevation: 4, shadowColor: '#000', shadowOpacity: 0.05, shadowRadius: 10, shadowOffset: { width: 0, height: 4 } },
+    serviceBox: { width: (width - 68) / 2.2, borderRadius: 24, height: 140, overflow: 'hidden', elevation: 4, shadowColor: '#000', shadowOpacity: 0.05, shadowRadius: 10, shadowOffset: { width: 0, height: 4 } },
     serviceBoxActive: { transform: [{ scale: 1.02 }] },
     serviceGradient: { flex: 1, padding: 16, justifyContent: 'flex-end' },
     serviceBoxName: { fontSize: 13, fontWeight: '800', color: Colors.text, marginTop: 10 },
@@ -817,50 +719,50 @@ const createStyles = (Colors: any) => StyleSheet.create({
     textWhite: { color: '#fff' },
     addonsSection: { marginTop: 10 },
     sectionLabel: { fontSize: 14, fontWeight: '800', color: Colors.textSecondary, textTransform: 'uppercase', marginBottom: 15 },
-    addonRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 18, backgroundColor: Colors.card, borderRadius: 20, marginBottom: 12, borderWidth: 1, borderColor: Colors.border },
+    addonRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 18, backgroundColor: '#F8FAFC', borderRadius: 20, marginBottom: 12, borderWidth: 1, borderColor: '#F1F5F9' },
     addonRowActive: { borderColor: Colors.primary, backgroundColor: Colors.primary + '05' },
     addonInfo: { flexDirection: 'row', alignItems: 'center', gap: 12 },
     addonName: { fontSize: 15, fontWeight: '700', color: Colors.text },
     addonPrice: { fontSize: 14, fontWeight: '800', color: Colors.primary },
     textPrimary: { color: Colors.primary },
     activeServicePicker: { marginBottom: 20 },
-    serviceTab: { paddingHorizontal: 20, paddingVertical: 10, borderRadius: 12, backgroundColor: Colors.border, marginRight: 10 },
+    serviceTab: { paddingHorizontal: 20, paddingVertical: 10, borderRadius: 12, backgroundColor: '#F1F5F9', marginRight: 10 },
     serviceTabActive: { backgroundColor: Colors.primary },
     tabText: { fontWeight: '700', color: Colors.textSecondary },
     catGroup: { marginBottom: 30 },
     catHeader: { fontSize: 13, fontWeight: '900', color: Colors.textSecondary, textTransform: 'uppercase', marginBottom: 15, marginLeft: 5 },
-    itemRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 16, backgroundColor: Colors.card, borderRadius: 20, marginBottom: 10, borderWidth: 1, borderColor: Colors.border, elevation: 2, shadowColor: '#000', shadowOpacity: 0.02 },
-    itemMain: { flexDirection: 'row', alignItems: 'center', gap: 15, flex: 1 },
-    itemIconCircle: { width: 40, height: 40, borderRadius: 12, backgroundColor: Colors.card, justifyContent: 'center', alignItems: 'center' },
+    itemRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 16, backgroundColor: '#fff', borderRadius: 20, marginBottom: 10, borderWidth: 1, borderColor: '#F1F5F9', elevation: 2, shadowColor: '#000', shadowOpacity: 0.02 },
+    itemMain: { flexDirection: 'row', alignItems: 'center', gap: 15 },
+    itemIconCircle: { width: 40, height: 40, borderRadius: 12, backgroundColor: '#F0F4FF', justifyContent: 'center', alignItems: 'center' },
     itemName: { fontSize: 16, fontWeight: '700', color: Colors.text },
     itemPrice: { fontSize: 12, color: Colors.textSecondary, fontWeight: '600' },
-    stepper: { flexDirection: 'row', alignItems: 'center', gap: 15, backgroundColor: Colors.card, padding: 5, borderRadius: 12 },
-    stepBtn: { width: 30, height: 30, borderRadius: 8, backgroundColor: Colors.card, justifyContent: 'center', alignItems: 'center', elevation: 1 },
+    stepper: { flexDirection: 'row', alignItems: 'center', gap: 15, backgroundColor: '#F8FAFC', padding: 5, borderRadius: 12 },
+    stepBtn: { width: 30, height: 30, borderRadius: 8, backgroundColor: '#fff', justifyContent: 'center', alignItems: 'center', elevation: 1 },
     stepCount: { minWidth: 20, textAlign: 'center', fontSize: 16, fontWeight: '800', color: Colors.primary },
     subLabel: { fontSize: 15, fontWeight: '800', color: Colors.text, marginBottom: 12 },
     dateList: { marginBottom: 20 },
-    dateCard: { width: 65, height: 85, borderRadius: 20, backgroundColor: Colors.card, justifyContent: 'center', alignItems: 'center', marginRight: 12, borderWidth: 1, borderColor: Colors.border },
+    dateCard: { width: 65, height: 85, borderRadius: 20, backgroundColor: '#F8FAFC', justifyContent: 'center', alignItems: 'center', marginRight: 12, borderWidth: 1, borderColor: '#F1F5F9' },
     dateCardActive: { backgroundColor: Colors.primary, borderColor: Colors.primary },
     dateDay: { fontSize: 12, color: Colors.textSecondary, marginBottom: 5 },
     dateNum: { fontSize: 20, fontWeight: '900', color: Colors.text },
     timeGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12 },
-    timeBox: { width: '48%', padding: 18, borderRadius: 18, backgroundColor: Colors.card, borderWidth: 1, borderColor: Colors.border, alignItems: 'center' },
+    timeBox: { width: (width - 60) / 2, padding: 18, borderRadius: 18, backgroundColor: '#F8FAFC', borderWidth: 1, borderColor: '#F1F5F9', alignItems: 'center' },
     timeBoxActive: { backgroundColor: Colors.primary, borderColor: Colors.primary },
     timeText: { fontWeight: '700', color: Colors.textSecondary },
-    inputBox: { flexDirection: 'row', padding: 18, backgroundColor: Colors.card, borderRadius: 20, borderWidth: 1, borderColor: Colors.border, gap: 12 },
+    inputBox: { flexDirection: 'row', padding: 18, backgroundColor: '#F8FAFC', borderRadius: 20, borderWidth: 1, borderColor: '#F1F5F9', gap: 12 },
     input: { flex: 1, fontSize: 15, color: Colors.text, minHeight: 40, textAlignVertical: 'top' },
-    mapContainer: { height: 200, borderRadius: 20, overflow: 'hidden', marginTop: 15, borderWidth: 1, borderColor: Colors.border },
+    mapContainer: { height: 200, borderRadius: 20, overflow: 'hidden', marginTop: 15, borderWidth: 1, borderColor: '#F1F5F9' },
     map: { flex: 1 },
     mapHint: { position: 'absolute', bottom: 10, alignSelf: 'center', backgroundColor: 'rgba(255,255,255,0.9)', paddingHorizontal: 15, paddingVertical: 6, borderRadius: 12, fontSize: 12, fontWeight: '700', color: Colors.textSecondary, elevation: 4 },
     fetchLocationBtn: { flexDirection: 'row', alignItems: 'center', backgroundColor: Colors.primary + '10', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 10 },
     fetchLocationText: { fontSize: 12, color: Colors.primary, fontWeight: '700' },
     reviewHeader: { flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 24 },
     reviewTitle: { fontSize: 22, fontWeight: '900', color: Colors.text },
-    receiptCard: { backgroundColor: Colors.card, borderRadius: 32, padding: 24, elevation: 10, shadowColor: '#000', shadowOpacity: 0.1, shadowRadius: 20, marginBottom: 24, borderStyle: 'dashed', borderWidth: 1, borderColor: Colors.border },
+    receiptCard: { backgroundColor: '#fff', borderRadius: 32, padding: 24, elevation: 10, shadowColor: '#000', shadowOpacity: 0.1, shadowRadius: 20, marginBottom: 24, borderStyle: 'dashed', borderWidth: 1, borderColor: '#E2E8F0' },
     receiptStore: { fontSize: 18, fontWeight: '900', color: Colors.primary, textAlign: 'center', marginBottom: 15 },
-    receiptDivider: { height: 1, backgroundColor: Colors.border, marginVertical: 15 },
+    receiptDivider: { height: 1, backgroundColor: '#F1F5F9', marginVertical: 15 },
     receiptService: { marginBottom: 20 },
-    receiptServiceName: { fontSize: 14, fontWeight: '900', color: Colors.textSecondary, textTransform: 'uppercase', marginBottom: 10 },
+    receiptServiceName: { fontSize: 14, fontWeight: '900', color: '#64748B', textTransform: 'uppercase', marginBottom: 10 },
     receiptItem: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 8 },
     receiptItemName: { fontSize: 15, color: Colors.text, fontWeight: '500' },
     receiptItemPrice: { fontSize: 15, fontWeight: '700', color: Colors.text },
@@ -871,8 +773,8 @@ const createStyles = (Colors: any) => StyleSheet.create({
     receiptGrandValue: { fontSize: 22, fontWeight: '900', color: Colors.primary },
     logisticSummary: { gap: 10 },
     logRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
-    logText: { fontSize: 13, color: Colors.textSecondary, fontWeight: '600' },
-    footer: { padding: 24, backgroundColor: Colors.card, borderTopWidth: 1, borderTopColor: Colors.border, elevation: 20 },
+    logText: { fontSize: 14, color: Colors.textSecondary, fontWeight: '500' },
+    footer: { padding: 24, backgroundColor: '#fff', borderTopWidth: 1, borderTopColor: '#F1F5F9', elevation: 20 },
     footerPriceRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: 20 },
     footerTotalLabel: { fontSize: 12, fontWeight: '800', color: Colors.textSecondary },
     footerTotalPrice: { fontSize: 28, fontWeight: '900', color: Colors.text },
@@ -883,26 +785,26 @@ const createStyles = (Colors: any) => StyleSheet.create({
     nextBtnText: { color: '#fff', fontSize: 18, fontWeight: '900' },
     center: { flex: 1, justifyContent: 'center', alignItems: 'center' },
     modalOverlay: { flex: 1, backgroundColor: 'rgba(15, 23, 42, 0.85)', justifyContent: 'center', alignItems: 'center', padding: 24 },
-    successPopup: { backgroundColor: Colors.card, width: '100%', borderRadius: 40, overflow: 'hidden' },
+    successPopup: { backgroundColor: '#fff', width: '100%', borderRadius: 40, overflow: 'hidden' },
     successHeader: { padding: 40, alignItems: 'center' },
     successIconCircle: { width: 100, height: 100, borderRadius: 50, backgroundColor: 'rgba(255,255,255,0.2)', justifyContent: 'center', alignItems: 'center', marginBottom: 15 },
     successTitle: { fontSize: 28, fontWeight: '900', color: '#fff', marginBottom: 5 },
     successSubtitle: { fontSize: 14, color: 'rgba(255,255,255,0.8)', fontWeight: '700' },
     successBody: { padding: 30, alignItems: 'center' },
-    successMsg: { fontSize: 15, color: Colors.textSecondary, textAlign: 'center', lineHeight: 22, marginBottom: 30 },
-    finalBtn: { width: '100%', paddingVertical: 20, backgroundColor: Colors.success, borderRadius: 20, alignItems: 'center' },
+    successMsg: { fontSize: 15, color: '#64748B', textAlign: 'center', lineHeight: 22, marginBottom: 30 },
+    finalBtn: { width: '100%', paddingVertical: 20, backgroundColor: '#10B981', borderRadius: 20, alignItems: 'center' },
     finalBtnText: { color: '#fff', fontSize: 16, fontWeight: '900' },
     piecesBadge: {
         flexDirection: 'row',
         alignItems: 'center',
-        backgroundColor: Colors.card,
+        backgroundColor: '#fff',
         borderRadius: 12,
         paddingHorizontal: 10,
         paddingVertical: 6,
         marginTop: 10,
         alignSelf: 'flex-start',
         borderWidth: 1,
-        borderColor: Colors.border,
+        borderColor: '#E2E8F0',
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.05,
@@ -930,22 +832,5 @@ const createStyles = (Colors: any) => StyleSheet.create({
         fontWeight: '900',
         color: Colors.primary,
     },
-    receiptItemPcs: { fontSize: 11, color: Colors.textSecondary, fontWeight: '600', fontStyle: 'italic' },
-    mapContainerSmall: { height: 180, width: '100%', borderRadius: 20, overflow: 'hidden', borderWidth: 1, borderColor: Colors.border, marginBottom: 5 },
-    mapSmall: { width: '100%', height: '100%' },
-    mapHintOverlay: { position: 'absolute', bottom: 20, alignSelf: 'center', backgroundColor: 'rgba(0,0,0,0.7)', paddingHorizontal: 16, paddingVertical: 10, borderRadius: 20 },
-    mapHintText: { color: '#FFF', fontSize: 13, fontWeight: '600' },
-    mapTriggerCard: { flexDirection: 'row', alignItems: 'center', backgroundColor: Colors.card, padding: 16, borderRadius: 16, borderWidth: 1, borderColor: Colors.border, marginBottom: 5 },
-    mapTriggerIcon: { width: 44, height: 44, borderRadius: 12, backgroundColor: Colors.card, justifyContent: 'center', alignItems: 'center', marginRight: 15 },
-    mapTriggerTitle: { fontSize: 15, fontWeight: '700', color: Colors.text, marginBottom: 4 },
-    mapTriggerSub: { fontSize: 13, color: Colors.textSecondary },
-    mapModalContainer: { flex: 1, backgroundColor: Colors.card },
-    mapModalHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', padding: 20, paddingTop: 50, borderBottomWidth: 1, borderBottomColor: Colors.border },
-    mapModalCloseBtn: { width: 40, height: 40, borderRadius: 20, backgroundColor: Colors.card, justifyContent: 'center', alignItems: 'center' },
-    mapModalTitle: { fontSize: 18, fontWeight: '800', color: Colors.text },
-    mapModalBody: { flex: 1, position: 'relative' },
-    fullMap: { flex: 1 },
-    mapModalFooter: { padding: 20, backgroundColor: Colors.card, borderTopWidth: 1, borderTopColor: Colors.border, paddingBottom: 40 },
-    mapModalConfirmBtn: { backgroundColor: Colors.primary, padding: 18, borderRadius: 16, alignItems: 'center' },
-    mapModalConfirmText: { color: '#fff', fontSize: 16, fontWeight: '700' },
+    receiptItemPcs: { fontSize: 11, color: Colors.textSecondary, fontWeight: '600', fontStyle: 'italic' }
 });

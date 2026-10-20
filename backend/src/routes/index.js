@@ -1,10 +1,10 @@
 import express from 'express';
 import { getAllServices, getServiceById, createService, updateService, deleteService } from '../controllers/serviceController.js';
 
-import { createOrder, getUserOrders, getOrderById, updateOrderStatus, getOrderStats, editOrder } from '../controllers/orderController.js';
+import { createOrder, getUserOrders, getOrderById, updateOrderStatus, getOrderStats } from '../controllers/orderController.js';
 import { getUserProfile, updateUserProfile, getAllUsers, getUserStats } from '../controllers/userController.js';
 import { generateOrdersCSV, generateRevenueReport, generateCustomerReport } from '../controllers/reportController.js';
-import { getDashboard, getAvailableJobs, updateStatus, acceptJob, getAllDrivers, getDriverProfile, getDriverHistory, updatePushToken, updateRideStatus, createPayout, getPayoutHistory } from '../controllers/driverController.js';
+import { getDashboard, getAvailableJobs, updateStatus, acceptJob, getAllDrivers, getDriverProfile, getDriverHistory } from '../controllers/driverController.js';
 import authRoutes from './authRoutes.js';
 import laundryRoutes from './laundryRoutes.js';
 
@@ -17,23 +17,6 @@ const router = express.Router();
 // Health check
 router.get('/health', (req, res) => {
     res.json({ status: 'ok', timestamp: new Date() });
-});
-
-import db from '../config/database.js';
-import { getMessaging, firebaseError } from '../config/firebase.js';
-
-router.get('/debug/drivers', async (req, res) => {
-    try {
-        const result = await db.query('SELECT id, status, push_token FROM drivers');
-        const firebaseReady = getMessaging() !== null;
-        res.json({
-            firebaseInitialized: firebaseReady,
-            firebaseError: firebaseError,
-            drivers: result.rows
-        });
-    } catch (e) {
-        res.status(500).json({ error: e.message });
-    }
 });
 
 // Auth Routes
@@ -54,7 +37,6 @@ router.use('/laundries', laundryRoutes);
 router.post('/orders', createOrder);
 router.get('/orders', getUserOrders);
 router.get('/orders/:id', getOrderById);
-router.put('/orders/:id', editOrder);
 router.patch('/orders/:id/status', updateOrderStatus);
 router.get('/stats/orders', getOrderStats);
 
@@ -76,11 +58,8 @@ router.get('/drivers/:driverId/history', getDriverHistory);
 router.get('/drivers/jobs/available', getAvailableJobs);
 router.patch('/drivers/:driverId/status', updateStatus);
 router.post('/drivers/:driverId/accept-job', acceptJob);
-router.patch('/drivers/:driverId/push-token', updatePushToken);
-router.patch('/drivers/:driverId/ride-assignments/:assignmentId/status', updateRideStatus);
 router.get('/admin/drivers', getAllDrivers);
-router.post('/drivers/:driverId/payout', createPayout);
-router.get('/drivers/:driverId/payouts', getPayoutHistory);
+
 // Time Slot Pricing Routes
 router.get('/time-slots', getTimeSlots);
 router.post('/time-slots', createTimeSlot);

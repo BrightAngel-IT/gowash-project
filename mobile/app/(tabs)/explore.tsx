@@ -1,19 +1,15 @@
 import React, { useEffect, useState } from 'react';
-import { useThemeColors } from '@/hooks/useThemeColors';
 import { View, Text, StyleSheet, FlatList, TouchableOpacity, Platform, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { Typography, Spacing, BorderRadius } from '@/constants/theme';
+import { Colors, Typography, Spacing, BorderRadius } from '@/constants/theme';
 import api from '@/constants/api';
 import { LinearGradient } from 'expo-linear-gradient';
-
+import Animated, { FadeInDown } from 'react-native-reanimated';
 import { Image } from 'expo-image';
 
 export default function ExploreLaundriesScreen() {
-  const Colors = useThemeColors();
-  const styles = createStyles(Colors);
-
   const router = useRouter();
   const [laundries, setLaundries] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -34,7 +30,7 @@ export default function ExploreLaundriesScreen() {
   };
 
   const renderLaundryItem = ({ item, index }: { item: any, index: number }) => (
-    <View>
+    <Animated.View entering={FadeInDown.delay(index * 100).springify()}>
       <TouchableOpacity
         style={styles.laundryCard}
         onPress={() => router.push({ pathname: '/schedule', params: { laundryId: item.id, laundryName: item.name } })}
@@ -64,7 +60,7 @@ export default function ExploreLaundriesScreen() {
           </View>
         </View>
       </TouchableOpacity>
-    </View>
+    </Animated.View>
   );
 
   return (
@@ -98,10 +94,10 @@ export default function ExploreLaundriesScreen() {
   );
 }
 
-const createStyles = (Colors: any) => StyleSheet.create({
+const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.background,
+    backgroundColor: '#F8F9FA',
   },
   header: {
     flexDirection: 'row',
@@ -119,7 +115,7 @@ const createStyles = (Colors: any) => StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 12,
-    backgroundColor: Colors.card,
+    backgroundColor: '#fff',
     justifyContent: 'center',
     alignItems: 'center',
     elevation: 2,
@@ -131,7 +127,7 @@ const createStyles = (Colors: any) => StyleSheet.create({
   searchBar: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: Colors.card,
+    backgroundColor: '#fff',
     marginHorizontal: 24,
     paddingHorizontal: 16,
     paddingVertical: 12,
@@ -150,7 +146,7 @@ const createStyles = (Colors: any) => StyleSheet.create({
     paddingBottom: 100,
   },
   laundryCard: {
-    backgroundColor: Colors.card,
+    backgroundColor: '#fff',
     borderRadius: 20,
     marginBottom: 20,
     overflow: 'hidden',
@@ -189,7 +185,7 @@ const createStyles = (Colors: any) => StyleSheet.create({
   ratingText: {
     fontSize: 12,
     fontWeight: '700',
-    color: Colors.warning,
+    color: '#FFB800',
     marginLeft: 4,
   },
   laundryAddress: {
@@ -210,7 +206,7 @@ const createStyles = (Colors: any) => StyleSheet.create({
   tagText: {
     fontSize: 11,
     fontWeight: '600',
-    color: Colors.textSecondary,
+    color: '#4A5568',
   },
   center: {
     flex: 1,

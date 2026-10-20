@@ -1,27 +1,22 @@
 {
   "expo": {
-    "name": "Go Wash",
-    "slug": "go-wash",
+
+    "name": "mobile",
+    "slug": "mobile",
+    "owner": "bright-aangel",
     "version": "1.0.0",
+
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "gowash",
+    "scheme": "mobile",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.brightaangel.gowash",
-      "buildNumber": "7",
-      "usesAppleSignIn": true,
-      "infoPlist": {
-        "NSLocationWhenInUseUsageDescription": "Go Wash needs your location to find nearby drivers and set pickup/delivery addresses.",
-        "NSLocationAlwaysAndWhenInUseUsageDescription": "Go Wash needs your location to show live pickup status and delivery updates.",
-        "NSCameraUsageDescription": "Go Wash needs access to the camera to allow uploading photos.",
-        "NSPhotoLibraryUsageDescription": "Go Wash needs access to photo library for profile and order pictures.",
-        "ITSAppUsesNonExemptEncryption": false
-      }
+      "bundleIdentifier": "com.brightangel.gowash.user"
     },
     "android": {
+      "package": "com.brightangel.gowash.user",
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
         "foregroundImage": "./assets/images/android-icon-foreground.png",
@@ -29,35 +24,14 @@
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
       "edgeToEdgeEnabled": true,
-      "predictiveBackGestureEnabled": false,
-      "package": "com.brightaangel.gowash",
-      "googleServicesFile": "./google-services.json"
+      "predictiveBackGestureEnabled": false
     },
     "web": {
-      "output": "static",
-      "favicon": "./assets/images/favicon.png",
-      "name": "Go Wash",
-      "shortName": "Go Wash",
-      "themeColor": "#E6F4FE",
-      "backgroundColor": "#ffffff",
-      "display": "standalone",
-      "scope": "/",
-      "startUrl": "/",
-      "orientation": "portrait"
+      "output": "single",
+      "favicon": "./assets/images/favicon.png"
     },
     "plugins": [
-      [
-        "expo-build-properties",
-        {
-          "ios": {
-            "useFrameworks": "static"
-          }
-        }
-      ],
       "expo-router",
-      "expo-notifications",
-      "expo-apple-authentication",
-      "@react-native-google-signin/google-signin",
       [
         "expo-splash-screen",
         {
@@ -73,13 +47,13 @@
     ],
     "experiments": {
       "typedRoutes": true,
-      "reactCompiler": true
+      "reactCompiler": false,
+      "tsconfigPaths": true
     },
-    "owner": "bright-aangel",
+
     "extra": {
-      "router": {},
       "eas": {
-        "projectId": "e9425891-19fe-4065-a556-01d1562b83dd"
+        "projectId": "8dd7c92f-bf51-473d-9c11-9f0544a10d97"
       }
     }
   }

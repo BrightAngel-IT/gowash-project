@@ -12,10 +12,7 @@ import {
     X,
     ExternalLink,
     Loader2,
-    CheckCircle2,
-    BarChart2,
-    DollarSign,
-    Package
+    CheckCircle2
 } from 'lucide-react';
 import './SuperAdmin.css';
 import { API_URL } from './config';
@@ -25,14 +22,7 @@ const SuperAdminPanel = () => {
     const [loading, setLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const [statsModalOpen, setStatsModalOpen] = useState(false);
-    const [ordersModalOpen, setOrdersModalOpen] = useState(false);
-    const [ordersFilterStatus, setOrdersFilterStatus] = useState('All');
-    const [allOrders, setAllOrders] = useState([]);
-    const [ordersLoading, setOrdersLoading] = useState(false);
-    const [statusFilter, setStatusFilter] = useState('All');
     const [currentLaundry, setCurrentLaundry] = useState(null);
-    const [selectedStatsLaundry, setSelectedStatsLaundry] = useState(null);
     const [formData, setFormData] = useState({
         name: '',
         address: '',
@@ -54,7 +44,7 @@ const SuperAdminPanel = () => {
     const fetchLaundries = async () => {
         try {
             setLoading(true);
-            const res = await axios.get(`${API_URL}/laundries/sales-stats`);
+            const res = await axios.get(`${API_URL}/laundries`);
             setLaundries(res.data);
         } catch (err) {
             console.error('Error fetching laundries:', err);
@@ -64,40 +54,16 @@ const SuperAdminPanel = () => {
     };
 
     const filteredLaundries = laundries.filter(l =>
-        (statusFilter === 'All' || (l.status || 'active').toLowerCase() === statusFilter.toLowerCase()) &&
-        (l.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        l.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         l.address.toLowerCase().includes(searchQuery.toLowerCase()) ||
         l.manager_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        l.username?.toLowerCase().includes(searchQuery.toLowerCase()))
+        l.username?.toLowerCase().includes(searchQuery.toLowerCase())
     );
-
-    const handleBranchStatClick = (status) => {
-        setStatusFilter(status);
-    };
-
-    const handleOrderStatClick = async (filterType) => {
-        setOrdersFilterStatus(filterType);
-        setOrdersModalOpen(true);
-        if (allOrders.length === 0) {
-            setOrdersLoading(true);
-            try {
-                const res = await axios.get(`${API_URL}/orders`);
-                setAllOrders(res.data);
-            } catch (err) {
-                console.error('Error fetching all orders:', err);
-            } finally {
-                setOrdersLoading(false);
-            }
-        }
-    };
 
     const stats = {
         total: laundries.length,
         active: laundries.filter(l => l.status === 'active').length,
-        inactive: laundries.filter(l => l.status === 'inactive').length,
-        totalOrders: laundries.reduce((sum, l) => sum + (parseInt(l.total_orders) || 0), 0),
-        pendingOrders: laundries.reduce((sum, l) => sum + (parseInt(l.pending_count) || 0), 0),
-        finishedOrders: laundries.reduce((sum, l) => sum + (parseInt(l.completed_count) || 0), 0)
+        inactive: laundries.filter(l => l.status === 'inactive').length
     };
 
     const handleOpenModal = (laundry = null) => {
@@ -138,16 +104,6 @@ const SuperAdminPanel = () => {
     const handleCloseModal = () => {
         setIsModalOpen(false);
         setCurrentLaundry(null);
-    };
-
-    const handleOpenStatsModal = (laundry) => {
-        setSelectedStatsLaundry(laundry);
-        setStatsModalOpen(true);
-    };
-
-    const handleCloseStatsModal = () => {
-        setStatsModalOpen(false);
-        setSelectedStatsLaundry(null);
     };
 
     const handleInputChange = (e) => {
@@ -210,29 +166,17 @@ const SuperAdminPanel = () => {
             </div>
 
             <div className="stats-summary">
-                <div className={`mini-stat clickable-stat ${statusFilter === 'All' ? 'active-filter' : ''}`} onClick={() => handleBranchStatClick('All')}>
+                <div className="mini-stat">
                     <span className="label">Total Branches</span>
                     <span className="value">{stats.total}</span>
                 </div>
-                <div className={`mini-stat clickable-stat ${statusFilter === 'active' ? 'active-filter' : ''}`} onClick={() => handleBranchStatClick('active')}>
+                <div className="mini-stat">
                     <span className="label">Active</span>
                     <span className="value text-success">{stats.active}</span>
                 </div>
-                <div className={`mini-stat clickable-stat ${statusFilter === 'inactive' ? 'active-filter' : ''}`} onClick={() => handleBranchStatClick('inactive')}>
+                <div className="mini-stat">
                     <span className="label">Inactive</span>
                     <span className="value text-danger">{stats.inactive}</span>
-                </div>
-                <div className="mini-stat clickable-stat" onClick={() => handleOrderStatClick('All')}>
-                    <span className="label">Total Orders</span>
-                    <span className="value text-primary">{stats.totalOrders}</span>
-                </div>
-                <div className="mini-stat clickable-stat" onClick={() => handleOrderStatClick('Pending')}>
-                    <span className="label">Pending Orders</span>
-                    <span className="value text-warning">{stats.pendingOrders}</span>
-                </div>
-                <div className="mini-stat clickable-stat" onClick={() => handleOrderStatClick('Finished')}>
-                    <span className="label">Finished Orders</span>
-                    <span className="value text-info">{stats.finishedOrders}</span>
                 </div>
             </div>
 
@@ -273,9 +217,6 @@ const SuperAdminPanel = () => {
                                 </div>
 
                                 <div className="card-actions">
-                                    <button className="action-btn view-stats" onClick={() => handleOpenStatsModal(laundry)}>
-                                        <BarChart2 size={16} /> View Stats
-                                    </button>
                                     <button className="action-btn edit" onClick={() => handleOpenModal(laundry)}>
                                         <Edit3 size={16} /> Edit
                                     </button>
@@ -450,146 +391,6 @@ const SuperAdminPanel = () => {
                                 </button>
                             </div>
                         </form>
-                    </div>
-                </div>
-            )}
-
-            {statsModalOpen && selectedStatsLaundry && (
-                <div className="modal-overlay">
-                    <div className="modal-content stats-modal">
-                        <button className="close-modal" onClick={handleCloseStatsModal}>
-                            <X size={24} />
-                        </button>
-                        <div className="modal-header">
-                            <h2>Performance Stats</h2>
-                            <p className="text-muted">{selectedStatsLaundry.name} - Sales & Orders Overview</p>
-                        </div>
-                        <div className="modal-body stats-body">
-                            <div className="stats-cards-grid">
-                                <div className="stat-card primary">
-                                    <div className="stat-icon"><DollarSign size={24} /></div>
-                                    <div className="stat-info">
-                                        <span className="stat-label">Total Income</span>
-                                        <span className="stat-value">LKR {Number(selectedStatsLaundry.total_income || 0).toLocaleString('en-US', {minimumFractionDigits: 2})}</span>
-                                    </div>
-                                </div>
-                                <div className="stat-card secondary">
-                                    <div className="stat-icon"><Package size={24} /></div>
-                                    <div className="stat-info">
-                                        <span className="stat-label">Total Orders</span>
-                                        <span className="stat-value">{selectedStatsLaundry.total_orders || 0}</span>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <div className="stats-breakdown">
-                                <h3>Status Breakdown</h3>
-                                <div className="breakdown-list">
-                                    <div className="breakdown-item success">
-                                        <div className="bd-left">
-                                            <CheckCircle2 size={18} />
-                                            <span>Completed (Delivered)</span>
-                                        </div>
-                                        <div className="bd-right">
-                                            <span className="bd-count">{selectedStatsLaundry.completed_count || 0} Orders</span>
-                                            <span className="bd-amount">LKR {Number(selectedStatsLaundry.completed_amount || 0).toLocaleString('en-US', {minimumFractionDigits: 2})}</span>
-                                        </div>
-                                    </div>
-                                    <div className="breakdown-item warning">
-                                        <div className="bd-left">
-                                            <Loader2 size={18} />
-                                            <span>Processing (Washing/Ready)</span>
-                                        </div>
-                                        <div className="bd-right">
-                                            <span className="bd-count">{selectedStatsLaundry.processing_count || 0} Orders</span>
-                                            <span className="bd-amount">LKR {Number(selectedStatsLaundry.processing_amount || 0).toLocaleString('en-US', {minimumFractionDigits: 2})}</span>
-                                        </div>
-                                    </div>
-                                    <div className="breakdown-item info">
-                                        <div className="bd-left">
-                                            <Clock size={18} />
-                                            <span>Pending (Confirmed/Pickup)</span>
-                                        </div>
-                                        <div className="bd-right">
-                                            <span className="bd-count">{selectedStatsLaundry.pending_count || 0} Orders</span>
-                                            <span className="bd-amount">LKR {Number(selectedStatsLaundry.pending_amount || 0).toLocaleString('en-US', {minimumFractionDigits: 2})}</span>
-                                        </div>
-                                    </div>
-                                    <div className="breakdown-item danger">
-                                        <div className="bd-left">
-                                            <X size={18} />
-                                            <span>Cancelled</span>
-                                        </div>
-                                        <div className="bd-right">
-                                            <span className="bd-count">{selectedStatsLaundry.cancelled_count || 0} Orders</span>
-                                            <span className="bd-amount">LKR {Number(selectedStatsLaundry.cancelled_amount || 0).toLocaleString('en-US', {minimumFractionDigits: 2})}</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            )}
-
-            {ordersModalOpen && (
-                <div className="modal-overlay">
-                    <div className="modal-content orders-modal">
-                        <div className="modal-header">
-                            <h2>{ordersFilterStatus === 'All' ? 'All Orders' : `${ordersFilterStatus} Orders`}</h2>
-                            <button className="close-btn" onClick={() => setOrdersModalOpen(false)}>
-                                <X size={24} />
-                            </button>
-                        </div>
-                        <div className="modal-body orders-modal-body">
-                            {ordersLoading ? (
-                                <div className="loader-container">
-                                    <Loader2 className="animate-spin" size={48} color="#4facfe" />
-                                </div>
-                            ) : (
-                                <div className="table-responsive">
-                                    <table className="orders-table">
-                                        <thead>
-                                            <tr>
-                                                <th>Order ID</th>
-                                                <th>Date</th>
-                                                <th>Customer</th>
-                                                <th>Branch</th>
-                                                <th>Status</th>
-                                                <th>Amount</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {allOrders.filter(o => {
-                                                if (ordersFilterStatus === 'All') return true;
-                                                if (ordersFilterStatus === 'Pending') return o.status === 'Pending' || o.status === 'Confirmed' || o.status === 'Pickup';
-                                                if (ordersFilterStatus === 'Finished') return o.status === 'Delivered';
-                                                return true;
-                                            }).map(order => (
-                                                <tr key={order.id}>
-                                                    <td>#{order.id}</td>
-                                                    <td>{new Date(order.created_at).toLocaleDateString()}</td>
-                                                    <td>{order.customer_name}</td>
-                                                    <td>{order.laundryName || 'N/A'}</td>
-                                                    <td><span className={`status-badge ${order.status.toLowerCase()}`}>{order.status}</span></td>
-                                                    <td>LKR {Number(order.total_price).toLocaleString('en-US')}</td>
-                                                </tr>
-                                            ))}
-                                            {allOrders.filter(o => {
-                                                if (ordersFilterStatus === 'All') return true;
-                                                if (ordersFilterStatus === 'Pending') return o.status === 'Pending' || o.status === 'Confirmed' || o.status === 'Pickup';
-                                                if (ordersFilterStatus === 'Finished') return o.status === 'Delivered';
-                                                return true;
-                                            }).length === 0 && (
-                                                <tr>
-                                                    <td colSpan="6" style={{textAlign: 'center', padding: '20px'}}>No orders found.</td>
-                                                </tr>
-                                            )}
-                                        </tbody>
-                                    </table>
-                                </div>
-                            )}
-                        </div>
                     </div>
                 </div>
             )}

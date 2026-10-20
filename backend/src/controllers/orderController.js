@@ -1,5 +1,4 @@
 import db from '../config/database.js';
-import { getMessaging } from '../config/firebase.js';
 
 // Helper to calculate distance
 const calculateDistance = (lat1, lon1, lat2, lon2) => {
@@ -14,134 +13,6 @@ const calculateDistance = (lat1, lon1, lat2, lon2) => {
     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
     const d = R * c;
     return parseFloat(d.toFixed(1));
-};
-
-// Helper to send Firebase Push Notifications
-const sendPushNotifications = async (tokens, title, body, data = {}) => {
-    if (!tokens || tokens.length === 0) return;
-    
-    const messaging = getMessaging();
-    if (!messaging) {
-        console.log('⚠️ Firebase Messaging is not initialized. Cannot send push notifications.');
-        return;
-    }
-
-    const payload = {
-        notification: {
-            title: title || 'New Delivery Request!',
-            body: body || 'You have a new job ready for pickup.',
-        },
-        data: {
-            orderId: data.orderId ? data.orderId.toString() : '',
-            type: 'NEW_JOB',
-            distance: data.distance ? data.distance.toString() : '0',
-            price: data.price ? data.price.toString() : '0',
-            pickup: data.pickup || ''
-        },
-        android: {
-            priority: 'high',
-            notification: {
-                sound: 'ringtone',
-                channelId: 'new_job_channel'
-            }
-        },
-        apns: {
-            payload: {
-                aps: {
-                    sound: 'default'
-                }
-            }
-        },
-        tokens: tokens,
-    };
-
-    try {
-        const response = await messaging.sendEachForMulticast(payload);
-        console.log(`📡 Sent push notifications to ${response.successCount} devices. Failed: ${response.failureCount}`);
-    } catch (error) {
-        console.error('Error sending push notifications:', error);
-    }
-};
-
-// Helper to parse legacy notes for old orders
-const parseLegacyNotes = (order) => {
-    let cleanNotes = order.notes || '';
-    
-    // Always clean notes to avoid displaying legacy tags
-    if (cleanNotes) {
-        cleanNotes = cleanNotes.replace(/\[Items:[\s\S]*?\]/g, '').replace(/\[Add-ons:[\s\S]*?\]/g, '').trim();
-    }
-
-    if (order.itemsList && order.itemsList.length > 0) {
-        order.notes = cleanNotes;
-        return order;
-    }
-
-    if (!order.notes || !order.notes.includes('[Items:')) {
-        order.notes = cleanNotes;
-        return order;
-    }
-
-    let itemsList = [];
-    try {
-        const match = order.notes.match(/\[Items:\s*([\s\S]+?)\]/);
-        if (match) {
-            if (match[1].includes(':')) {
-                const services = match[1].split(' | ');
-                services.forEach(srv => {
-                    const parts = srv.split(': ');
-                    if (parts.length === 2) {
-                        const srvName = parts[0].trim();
-                        const srvItems = parts[1].trim();
-                        srvItems.split(',').forEach(itemStr => {
-                            const itemStrTrim = itemStr.trim();
-                            if (!itemStrTrim) return;
-                            const lastXIndex = itemStrTrim.lastIndexOf('x');
-                            let name = itemStrTrim;
-                            let qty = 1;
-                            if (lastXIndex !== -1 && lastXIndex > 0) {
-                                name = itemStrTrim.substring(0, lastXIndex).trim();
-                                qty = parseInt(itemStrTrim.substring(lastXIndex + 1).trim()) || 1;
-                            }
-                            itemsList.push({
-                                item_id: name.toLowerCase().replace(/\s+/g, '_'),
-                                item_name: `${srvName} - ${name}`,
-                                quantity: qty,
-                                price_per_unit: '-',
-                                total_price: '-'
-                            });
-                        });
-                    }
-                });
-            } else {
-                match[1].split(',').forEach(itemStr => {
-                    const itemStrTrim = itemStr.trim();
-                    if (!itemStrTrim) return;
-                    const lastXIndex = itemStrTrim.lastIndexOf('x');
-                    let name = itemStrTrim;
-                    let qty = 1;
-                    if (lastXIndex !== -1 && lastXIndex > 0) {
-                        name = itemStrTrim.substring(0, lastXIndex).trim();
-                        qty = parseInt(itemStrTrim.substring(lastXIndex + 1).trim()) || 1;
-                    }
-                    itemsList.push({
-                        item_id: name.toLowerCase().replace(/\s+/g, '_'),
-                        item_name: name,
-                        quantity: qty,
-                        price_per_unit: '-',
-                        total_price: '-'
-                    });
-                });
-            }
-        }
-        cleanNotes = cleanNotes.replace(/\[Items:.*?\]/g, '').replace(/\[Add-ons:.*?\]/g, '').trim();
-    } catch (e) {
-        console.log('Error parsing legacy items', e);
-    }
-
-    order.itemsList = itemsList;
-    order.notes = cleanNotes;
-    return order;
 };
 
 // Create a new order
@@ -174,8 +45,13 @@ export const createOrder = async (req, res) => {
         }
         const customerName = users.rows[0].name;
 
-        // Use the delivery fee from the frontend (which includes fixed base fee + any express fees)
-        let finalDeliveryFee = deliveryFee !== undefined ? deliveryFee : 125;
+        // Calculate delivery fee: Rs 100 per KM
+        let finalDeliveryFee = deliveryFee || 0;
+        if (customerLat && customerLng && laundryLat && laundryLng) {
+            const distance = calculateDistance(customerLat, customerLng, laundryLat, laundryLng);
+            finalDeliveryFee = Math.max(150, Math.round(distance * 100)); // Minimum 150 LKR
+            console.log(`📏 Calculated distance: ${distance} km, fee: ${finalDeliveryFee}`);
+        }
 
         // Calculate total price: items + finalDeliveryFee
         const totalPrice = (reqTotalPrice - (deliveryFee || 0)) + finalDeliveryFee;
@@ -214,52 +90,8 @@ export const createOrder = async (req, res) => {
             [orderId]
         );
 
-        const createdOrder = newOrder.rows[0];
-
-        // 🔔 Notify Drivers immediately when customer places an order
-        const io = req.app.get('io');
-        if (io) {
-            io.emit('new_driver_job', createdOrder);
-            console.log(`📡 Emitted new_driver_job for newly created order #${createdOrder.id}`);
-        }
-
-        try {
-            const onlineDrivers = await db.query("SELECT push_token, lat, lng FROM drivers WHERE status = 'online' AND push_token IS NOT NULL");
-            
-            if (onlineDrivers.rows.length > 0) {
-                for (const driver of onlineDrivers.rows) {
-                    if (!driver.push_token) continue;
-                    
-                    const title = "New Job Available!";
-                    
-                    // Format Earnings
-                    const earnings = (createdOrder.delivery_fee * 0.8).toFixed(2); // Example: driver gets 80% of delivery fee
-                    
-                    // Distance calculation
-                    const pickupLat = createdOrder.laundry_lat;
-                    const pickupLng = createdOrder.laundry_lng;
-                    const distance = calculateDistance(driver.lat, driver.lng, pickupLat, pickupLng);
-                    
-                    const pickupLoc = createdOrder.laundryName;
-                    
-                    const body = `Distance: ${distance}km | Earn: LKR ${earnings}\nPickup at: ${pickupLoc}`;
-                    
-                    await sendPushNotifications([driver.push_token], title, body, { 
-                        orderId: createdOrder.id,
-                        distance: distance,
-                        price: earnings,
-                        pickup: pickupLoc
-                    });
-                }
-            } else {
-                console.log(`⚠️ No online drivers with push tokens found to notify for order #${createdOrder.id}`);
-            }
-        } catch (e) {
-            console.error("Failed to send push notifications to drivers on create:", e);
-        }
-
         console.log('✅ Order created successfully:', orderId);
-        res.status(201).json(createdOrder);
+        res.status(201).json(newOrder.rows[0]);
     } catch (error) {
         console.error('❌ Order insertion failed:', error);
         res.status(500).json({
@@ -282,13 +114,42 @@ export const getUserOrders = async (req, res) => {
                 s.name as "serviceName", 
                 s.color as "serviceColor", 
                 l.name as "laundryName",
+                l.address as "laundryAddress",
+                l.phone as "laundryPhone",
+                l.email as "laundryEmail",
+                l.manager_name as "laundryManager",
+                u.name as "customerAccountName",
+                u.phone as "customerPhone",
+                u.email as "customerEmail",
                 COALESCE(
                     (SELECT json_agg(oi.*) FROM order_items oi WHERE oi.order_id = o.id),
                     '[]'::json
-                ) as "itemsList"
+                ) as "itemsList",
+                ra.id as "assignmentId",
+                ra.status as "rideStatus",
+                ra.assigned_at as "rideAssignedAt",
+                ra.completed_at as "rideCompletedAt",
+                d.id as "driverId",
+                d.vehicle_number as "driverVehicleNumber",
+                d.vehicle_type as "driverVehicleType",
+                d.status as "driverOperationalStatus",
+                d.rating as "driverRating",
+                du.name as "driverName",
+                du.phone as "driverPhone",
+                du.email as "driverEmail"
             FROM orders o 
             LEFT JOIN services s ON o.service_id = s.id
             LEFT JOIN laundries l ON o.laundry_id = l.id
+            LEFT JOIN users u ON o.user_id = u.id
+            LEFT JOIN LATERAL (
+                SELECT id, driver_id, status, assigned_at, completed_at
+                FROM ride_assignments 
+                WHERE order_id = o.id 
+                ORDER BY assigned_at DESC 
+                LIMIT 1
+            ) ra ON true
+            LEFT JOIN drivers d ON ra.driver_id = d.id
+            LEFT JOIN users du ON d.user_id = du.id
             WHERE 1=1
         `;
         let params = [];
@@ -306,8 +167,7 @@ export const getUserOrders = async (req, res) => {
         queryText += ' ORDER BY o.created_at DESC';
 
         const result = await db.query(queryText, params);
-        const orders = result.rows.map(parseLegacyNotes);
-        res.json(orders);
+        res.json(result.rows);
     } catch (error) {
         console.error('Get orders error:', error);
         res.status(500).json({ message: "Server error" });
@@ -318,22 +178,55 @@ export const getUserOrders = async (req, res) => {
 export const getOrderById = async (req, res) => {
     try {
         const result = await db.query(
-            `SELECT o.*, s.name as "serviceName", s.color as "serviceColor", 
-                    l.name as "laundryName", l.address as "laundryAddress",
-                    l.lat as "laundry_lat", l.lng as "laundry_lng",
-                    COALESCE(
-                        (SELECT json_agg(oi.*) FROM order_items oi WHERE oi.order_id = o.id),
-                        '[]'::json
-                    ) as "itemsList"
+            `SELECT 
+                o.*, 
+                s.name as "serviceName", 
+                s.color as "serviceColor", 
+                l.name as "laundryName", 
+                l.address as "laundryAddress",
+                l.phone as "laundryPhone",
+                l.email as "laundryEmail",
+                l.manager_name as "laundryManager",
+                l.lat as "laundry_lat", 
+                l.lng as "laundry_lng",
+                u.name as "customerAccountName",
+                u.phone as "customerPhone",
+                u.email as "customerEmail",
+                COALESCE(
+                    (SELECT json_agg(oi.*) FROM order_items oi WHERE oi.order_id = o.id),
+                    '[]'::json
+                ) as "itemsList",
+                ra.id as "assignmentId",
+                ra.status as "rideStatus",
+                ra.assigned_at as "rideAssignedAt",
+                ra.completed_at as "rideCompletedAt",
+                d.id as "driverId",
+                d.vehicle_number as "driverVehicleNumber",
+                d.vehicle_type as "driverVehicleType",
+                d.status as "driverOperationalStatus",
+                d.rating as "driverRating",
+                du.name as "driverName",
+                du.phone as "driverPhone",
+                du.email as "driverEmail"
              FROM orders o 
              LEFT JOIN services s ON o.service_id = s.id 
              LEFT JOIN laundries l ON o.laundry_id = l.id
+             LEFT JOIN users u ON o.user_id = u.id
+             LEFT JOIN LATERAL (
+                SELECT id, driver_id, status, assigned_at, completed_at
+                FROM ride_assignments 
+                WHERE order_id = o.id 
+                ORDER BY assigned_at DESC 
+                LIMIT 1
+             ) ra ON true
+             LEFT JOIN drivers d ON ra.driver_id = d.id
+             LEFT JOIN users du ON d.user_id = du.id
              WHERE o.id = $1`,
             [req.params.id]
         );
 
         if (result.rows.length > 0) {
-            res.json(parseLegacyNotes(result.rows[0]));
+            res.json(result.rows[0]);
         } else {
             res.status(404).json({ message: "Order not found" });
         }
@@ -357,7 +250,7 @@ export const updateOrderStatus = async (req, res) => {
     }
 
     try {
-        await db.query('UPDATE orders SET status = $1, updated_at = NOW() WHERE id = $2', [status, req.params.id]);
+        await db.query('UPDATE orders SET status = $1 WHERE id = $2', [status, req.params.id]);
 
         const result = await db.query(
             `SELECT o.*, s.name as "serviceName", s.color as "serviceColor", 
@@ -379,20 +272,6 @@ export const updateOrderStatus = async (req, res) => {
                 if (io) {
                     io.emit('new_driver_job', updatedOrder);
                     console.log(`📡 Emitted new_driver_job for order #${updatedOrder.id} with status ${status}`);
-                }
-
-                // Send push notifications to online drivers
-                try {
-                    const onlineDrivers = await db.query("SELECT push_token FROM drivers WHERE status = 'online' AND push_token IS NOT NULL");
-                    const tokens = onlineDrivers.rows.map(row => row.push_token);
-                    
-                    if (tokens.length > 0) {
-                        const title = "New Job Available!";
-                        const body = `Order #${updatedOrder.id} at ${updatedOrder.laundryName} is ready for ${status === 'Confirmed' ? 'pickup' : 'delivery'}.`;
-                        await sendPushNotifications(tokens, title, body, { orderId: updatedOrder.id });
-                    }
-                } catch (e) {
-                    console.error("Failed to send push notifications to drivers:", e);
                 }
             }
 
@@ -457,81 +336,6 @@ export const getOrderStats = async (req, res) => {
         });
     } catch (error) {
         console.error('Get stats error:', error);
-        res.status(500).json({ message: "Server error" });
-    }
-};
-
-// Edit an order (update items, total price, and details)
-export const editOrder = async (req, res) => {
-    const orderId = req.params.id;
-    const { items, totalPrice: reqTotalPrice, orderItems, deliveryFee, pickupDate, pickupTime, address, notes, customerLat, customerLng, serviceId } = req.body;
-    
-    try {
-        // Check if order exists and is Pending
-        const orderCheck = await db.query('SELECT status FROM orders WHERE id = $1', [orderId]);
-        if (orderCheck.rows.length === 0) {
-            return res.status(404).json({ message: "Order not found" });
-        }
-        if (orderCheck.rows[0].status !== 'Pending') {
-            return res.status(400).json({ message: "Only 'Pending' orders can be edited." });
-        }
-        
-        // Use the delivery fee from the frontend (which includes fixed base fee + any express fees)
-        let finalDeliveryFee = parseFloat(deliveryFee !== undefined ? deliveryFee : 125);
-        if (isNaN(finalDeliveryFee)) finalDeliveryFee = 0;
-
-        let reqTotalNum = parseFloat(reqTotalPrice);
-        if (isNaN(reqTotalNum)) reqTotalNum = 0;
-        
-        let incomingDeliveryFee = parseFloat(deliveryFee || 0);
-        if (isNaN(incomingDeliveryFee)) incomingDeliveryFee = 0;
-
-        const totalPrice = (reqTotalNum - incomingDeliveryFee) + finalDeliveryFee;
-        
-        // Delete existing items
-        await db.query('DELETE FROM order_items WHERE order_id = $1', [orderId]);
-        
-        // Insert new items
-        if (orderItems && Array.isArray(orderItems)) {
-            for (const item of orderItems) {
-                await db.query(
-                    `INSERT INTO order_items (order_id, service_id, item_id, item_name, quantity, price_per_unit, total_price, pieces) 
-                     VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
-                    [orderId, item.serviceId, item.itemId, item.itemName, item.quantity, item.pricePerUnit, item.totalPrice, item.pieces || null]
-                );
-            }
-        }
-        
-        // Update order record including logistics details
-        await db.query(
-            `UPDATE orders 
-             SET items = $1, total_price = $2, delivery_fee = $3, 
-                 pickup_date = COALESCE($4, pickup_date), 
-                 pickup_time = COALESCE($5, pickup_time), 
-                 address = COALESCE($6, address), 
-                 notes = COALESCE($7, notes),
-                 customer_lat = COALESCE($8, customer_lat),
-                 customer_lng = COALESCE($9, customer_lng),
-                 service_id = COALESCE($11, service_id)
-             WHERE id = $10`, 
-            [
-                items, 
-                totalPrice, 
-                finalDeliveryFee, 
-                pickupDate || null, 
-                pickupTime || null, 
-                address || null, 
-                notes || null, 
-                customerLat || null, 
-                customerLng || null, 
-                orderId,
-                serviceId || null
-            ]
-        );
-        
-        res.json({ message: "Order updated successfully" });
-    } catch (error) {
-        console.error('Edit order error:', error);
         res.status(500).json({ message: "Server error" });
     }
 };

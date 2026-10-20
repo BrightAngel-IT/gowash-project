@@ -1,6 +1,7 @@
 {
   "cli": {
-    "version": ">= 3.8.1"
+    "version": ">= 12.0.0",
+    "appVersionSource": "remote"
   },
   "build": {
     "development": {
@@ -8,31 +9,17 @@
       "distribution": "internal"
     },
     "preview": {
-      "distribution": "internal",
       "android": {
         "buildType": "apk"
-      },
-      "ios": {
-        "simulator": true
       }
     },
-    "preview-device": {
-      "distribution": "internal",
-      "ios": {
-        "simulator": false
-      }
-    },
+
+
     "production": {
-      "ios": {
-        "simulator": false
-      }
+      "autoIncrement": true
     }
   },
   "submit": {
-    "production": {
-      "ios": {
-        "ascAppId": "6818112163"
-      }
-    }
+    "production": {}
   }
 }

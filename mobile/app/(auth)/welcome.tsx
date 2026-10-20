@@ -1,5 +1,4 @@
 import React from 'react';
-import { useThemeColors } from '@/hooks/useThemeColors';
 import { View, Text, StyleSheet, TouchableOpacity, Dimensions } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
@@ -8,15 +7,12 @@ import Animated, { FadeInDown, FadeInUp } from 'react-native-reanimated';
 const { width, height } = Dimensions.get('window');
 
 export default function WelcomeScreen() {
-  const Colors = useThemeColors();
-  const styles = createStyles(Colors);
-
     const router = useRouter();
 
     return (
         <View style={styles.container}>
             <LinearGradient
-                colors={Colors.gradients.primary}
+                colors={['#4c669f', '#3b5998', '#192f6a']}
                 style={styles.background}
             />
 
@@ -46,7 +42,7 @@ export default function WelcomeScreen() {
     );
 }
 
-const createStyles = (Colors: any) => StyleSheet.create({
+const styles = StyleSheet.create({
     container: {
         flex: 1,
     },

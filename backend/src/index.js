@@ -1,10 +1,7 @@
-// GoWash Backend Server v1.0.1
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import routes from './routes/index.js';
-import db from './config/database.js';
-import { getMessaging } from './config/firebase.js';
 
 import http from 'http';
 import { Server } from 'socket.io';
@@ -79,37 +76,6 @@ io.on('connection', (socket) => {
     console.log('User disconnected:', socket.id);
   });
 });
-
-// Background Job: Notify online drivers about pending jobs every 30 seconds for 5 minutes
-setInterval(async () => {
-  try {
-    const jobsRes = await db.query(`
-      SELECT o.*, u.name as customer_name, s.name as service_name
-      FROM orders o
-      JOIN users u ON o.user_id = u.id
-      JOIN services s ON o.service_id = s.id
-      WHERE o.status IN ('Pending', 'Ready')
-      AND (
-        (o.status = 'Pending' AND o.created_at >= NOW() - INTERVAL '5 minutes')
-        OR
-        (o.status = 'Ready' AND o.updated_at >= NOW() - INTERVAL '5 minutes')
-      )
-      AND o.id NOT IN (SELECT order_id FROM ride_assignments WHERE status NOT IN ('delivered', 'cancelled'))
-      ORDER BY o.created_at DESC
-    `);
-    
-    if (jobsRes.rows.length > 0) {
-      const driversRes = await db.query("SELECT id, push_token FROM drivers WHERE status = 'online'");
-      
-      jobsRes.rows.forEach(job => {
-        // Emit Socket Event
-        io.emit('new_driver_job', job);
-      });
-    }
-  } catch (error) {
-    console.error('Error in background job loop:', error);
-  }
-}, 30000); // 30 seconds
 
 server.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);

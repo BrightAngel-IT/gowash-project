@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
-import { useThemeColors } from '@/hooks/useThemeColors';
 import { View, Text, StyleSheet, FlatList, TouchableOpacity, Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Typography, Spacing } from '@/constants/theme';
+import { Colors, Typography, Spacing } from '@/constants/theme';
 import { Ionicons } from '@expo/vector-icons';
 import Animated, { FadeInDown, Layout } from 'react-native-reanimated';
 
@@ -10,15 +9,10 @@ import Animated, { FadeInDown, Layout } from 'react-native-reanimated';
 
 import api, { getUser } from '@/constants/api';
 import { useFocusEffect } from '@react-navigation/native';
-import { useRouter } from 'expo-router';
 
 const tabs = ['Active', 'History'];
 
 export default function OrdersScreen() {
-  const Colors = useThemeColors();
-  const styles = createStyles(Colors);
-
-    const router = useRouter();
     const [activeTab, setActiveTab] = useState('Active');
     const [orders, setOrders] = useState<any[]>([]);
     const [loading, setLoading] = useState(false);
@@ -51,11 +45,11 @@ export default function OrdersScreen() {
 
     const getStatusColor = (status: string) => {
         switch (status) {
-            case 'Pending': return Colors.warning;
-            case 'Confirmed': return Colors.success;
-            case 'Washing': return Colors.primary;
+            case 'Pending': return '#F59E0B';
+            case 'Confirmed': return '#10B981';
+            case 'Washing': return '#3B82F6';
             case 'Ready': return '#8B5CF6';
-            case 'Delivered': return Colors.success;
+            case 'Delivered': return '#059669';
             case 'Cancelled': return '#EF4444';
             default: return Colors.textSecondary;
         }
@@ -90,7 +84,6 @@ export default function OrdersScreen() {
                         layout={Layout.springify()}
                         style={styles.card}
                     >
-                        <TouchableOpacity onPress={() => router.push(`/order/${item.id}`)} activeOpacity={0.8}>
                         <View style={styles.cardHeader}>
                             <View style={styles.typeContainer}>
                                 <View style={[styles.iconBox, { backgroundColor: getStatusColor(item.status) + '15' }]}>
@@ -98,7 +91,7 @@ export default function OrdersScreen() {
                                 </View>
                                 <View>
                                     <Text style={styles.orderType}>{item.serviceName}</Text>
-                                    <Text style={styles.orderDate}>{new Date(item.created_at).toLocaleString()}</Text>
+                                    <Text style={styles.orderDate}>{new Date(item.created_at).toLocaleDateString()}</Text>
                                 </View>
                             </View>
                             <View style={[styles.statusBadge, { backgroundColor: getStatusColor(item.status) + '20' }]}>
@@ -113,7 +106,7 @@ export default function OrdersScreen() {
                                 <Ionicons name="basket-outline" size={16} color={Colors.textSecondary} />
                                 <Text style={styles.footerText}>{item.items} Items</Text>
                             </View>
-                            <Text style={styles.price}>LKR {Number(item.total_price).toLocaleString('en-US')}</Text>
+                            <Text style={styles.price}>LKR {item.total_price}</Text>
                         </View>
 
                         {item.status === 'Active' || item.status === 'Washing' ? (
@@ -121,7 +114,6 @@ export default function OrdersScreen() {
                                 <View style={[styles.progressFill, { width: '60%', backgroundColor: Colors.primary }]} />
                             </View>
                         ) : null}
-                        </TouchableOpacity>
                     </Animated.View>
                 )}
                 ListEmptyComponent={
@@ -135,15 +127,15 @@ export default function OrdersScreen() {
     );
 }
 
-const createStyles = (Colors: any) => StyleSheet.create({
+const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: Colors.background,
+        backgroundColor: '#F7F9FC',
     },
     header: {
         padding: 24,
         paddingBottom: 16,
-        backgroundColor: Colors.card,
+        backgroundColor: '#fff',
     },
     title: {
         ...Typography.h1,
@@ -153,7 +145,7 @@ const createStyles = (Colors: any) => StyleSheet.create({
         flexDirection: 'row',
         paddingHorizontal: 24,
         marginBottom: 16,
-        backgroundColor: Colors.card,
+        backgroundColor: '#fff',
         paddingBottom: 16,
     },
     tab: {
@@ -177,7 +169,7 @@ const createStyles = (Colors: any) => StyleSheet.create({
         padding: 24,
     },
     card: {
-        backgroundColor: Colors.card,
+        backgroundColor: '#fff',
         borderRadius: 20,
         padding: 20,
         marginBottom: 16,

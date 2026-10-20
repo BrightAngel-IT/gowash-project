@@ -1,10 +1,9 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { useThemeColors } from '@/hooks/useThemeColors';
 import { View, Text, StyleSheet, FlatList, TouchableOpacity, Alert, ActivityIndicator, Modal, Platform, Vibration, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { Typography, Spacing } from '@/constants/theme';
+import { Colors, Typography, Spacing } from '@/constants/theme';
 import api, { getUser, logout } from '@/constants/api';
 import Animated, { FadeInDown, BounceIn } from 'react-native-reanimated';
 import { Audio } from 'expo-av';
@@ -12,9 +11,6 @@ import * as Speech from 'expo-speech';
 import { LinearGradient } from 'expo-linear-gradient';
 
 export default function ProfessionalDashboard() {
-  const Colors = useThemeColors();
-  const styles = createStyles(Colors);
-
     const router = useRouter();
     const [orders, setOrders] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
@@ -152,7 +148,7 @@ export default function ProfessionalDashboard() {
                         {item.itemsList.map((oi: any, idx: number) => (
                             <View key={idx} style={styles.itemBreakdownRow}>
                                 <Text style={styles.breakdownText}>• {oi.item_name} ({oi.quantity}) {oi.pieces ? `(${oi.pieces} pc)` : ''}</Text>
-                                <Text style={styles.breakdownSubtext}>LKR {Number(oi.total_price).toLocaleString('en-US')}</Text>
+                                <Text style={styles.breakdownSubtext}>LKR {oi.total_price}</Text>
                             </View>
                         ))}
                     </View>
@@ -163,7 +159,7 @@ export default function ProfessionalDashboard() {
                     <Text style={styles.detailText}>{item.pickup_date} • {item.pickup_time}</Text>
                 </View>
                 {item.notes && (
-                    <View style={[styles.detailRow, { marginTop: 8, paddingTop: 8, borderTopWidth: 1, borderTopColor: Colors.border }]}>
+                    <View style={[styles.detailRow, { marginTop: 8, paddingTop: 8, borderTopWidth: 1, borderTopColor: '#EEF2F6' }]}>
                         <Ionicons name="document-text-outline" size={16} color={Colors.primary} />
                         <Text style={[styles.detailText, { color: Colors.text, fontWeight: '600' }]} numberOfLines={2}>{item.notes}</Text>
                     </View>
@@ -204,11 +200,11 @@ export default function ProfessionalDashboard() {
 
     const getStatusColor = (status: string) => {
         switch (status) {
-            case 'Pending': return Colors.warning;
-            case 'Confirmed': return Colors.success;
-            case 'Washing': return Colors.primary;
+            case 'Pending': return '#F59E0B';
+            case 'Confirmed': return '#10B981';
+            case 'Washing': return '#3B82F6';
             case 'Ready': return '#8B5CF6';
-            case 'Delivered': return Colors.success;
+            case 'Delivered': return '#059669';
             case 'Cancelled': return '#EF4444';
             default: return Colors.textSecondary;
         }
@@ -232,8 +228,8 @@ export default function ProfessionalDashboard() {
                     <Text style={styles.statLabel}>Pending</Text>
                 </View>
                 <View style={[styles.statCard, { backgroundColor: '#E0F2FE' }]}>
-                    <Text style={[styles.statValue, { color: Colors.secondary }]}>{orders.filter(o => ['Confirmed', 'Washing'].includes(o.status)).length}</Text>
-                    <Text style={[styles.statLabel, { color: Colors.secondary }]}>Active</Text>
+                    <Text style={[styles.statValue, { color: '#0284C7' }]}>{orders.filter(o => ['Confirmed', 'Washing'].includes(o.status)).length}</Text>
+                    <Text style={[styles.statLabel, { color: '#0284C7' }]}>Active</Text>
                 </View>
                 <View style={[styles.statCard, { backgroundColor: '#F0FDF4' }]}>
                     <Text style={[styles.statValue, { color: '#16A34A' }]}>{orders.filter(o => o.status === 'Delivered').length}</Text>
@@ -302,7 +298,7 @@ export default function ProfessionalDashboard() {
                                         <Text style={styles.popupDetails}>{newOrder?.pickup_date} @ {newOrder?.pickup_time}</Text>
                                     </View>
                                     {newOrder?.notes && (
-                                        <View style={[styles.popupDataRow, { marginTop: 5, paddingTop: 5, borderTopWidth: 1, borderTopColor: Colors.border }]}>
+                                        <View style={[styles.popupDataRow, { marginTop: 5, paddingTop: 5, borderTopWidth: 1, borderTopColor: '#E2E8F0' }]}>
                                             <Ionicons name="document-text-outline" size={18} color={Colors.primary} />
                                             <Text style={[styles.popupDetails, { color: Colors.text }]}>{newOrder?.notes}</Text>
                                         </View>
@@ -310,7 +306,7 @@ export default function ProfessionalDashboard() {
                                 </View>
 
                                 <Text style={styles.popupPriceLabel}>BILLING TOTAL</Text>
-                                <Text style={styles.popupPrice}>LKR {Number(newOrder?.total_price || 0).toLocaleString('en-US', {minimumFractionDigits: 2})}</Text>
+                                <Text style={styles.popupPrice}>LKR {newOrder?.total_price}.00</Text>
                             </View>
 
                             <View style={styles.popupActions}>
@@ -325,7 +321,7 @@ export default function ProfessionalDashboard() {
                                     onPress={() => handleUpdateStatus(newOrder.id, 'Confirmed')}
                                 >
                                     <LinearGradient
-                                        colors={[Colors.success, Colors.success]}
+                                        colors={['#10B981', '#059669']}
                                         style={styles.actionGradient}
                                     >
                                         <Text style={styles.popupConfirmText}>Accept & Print</Text>
@@ -343,7 +339,7 @@ export default function ProfessionalDashboard() {
     );
 }
 
-const createStyles = (Colors: any) => StyleSheet.create({
+const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: '#F3F4F6',
@@ -354,7 +350,7 @@ const createStyles = (Colors: any) => StyleSheet.create({
         alignItems: 'center',
         padding: 24,
         paddingTop: 10,
-        backgroundColor: Colors.card,
+        backgroundColor: '#fff',
         borderBottomLeftRadius: 30,
         borderBottomRightRadius: 30,
         elevation: 10,
@@ -393,7 +389,7 @@ const createStyles = (Colors: any) => StyleSheet.create({
     },
     statCard: {
         flex: 1,
-        backgroundColor: Colors.card,
+        backgroundColor: '#fff',
         padding: 20,
         borderRadius: 24,
         alignItems: 'center',
@@ -406,7 +402,7 @@ const createStyles = (Colors: any) => StyleSheet.create({
     statValue: {
         fontSize: 28,
         fontWeight: '900',
-        color: Colors.warning,
+        color: '#F59E0B',
     },
     statLabel: {
         fontSize: 12,
@@ -427,7 +423,7 @@ const createStyles = (Colors: any) => StyleSheet.create({
         paddingBottom: 40,
     },
     orderCard: {
-        backgroundColor: Colors.card,
+        backgroundColor: '#fff',
         borderRadius: 28,
         padding: 20,
         marginBottom: 20,
@@ -437,7 +433,7 @@ const createStyles = (Colors: any) => StyleSheet.create({
         shadowOpacity: 0.08,
         shadowRadius: 15,
         borderWidth: 1,
-        borderColor: Colors.border,
+        borderColor: '#F1F5F9',
     },
     orderHeader: {
         flexDirection: 'row',
@@ -467,7 +463,7 @@ const createStyles = (Colors: any) => StyleSheet.create({
         textTransform: 'uppercase',
     },
     orderDetails: {
-        backgroundColor: Colors.card,
+        backgroundColor: '#F8FAFC',
         padding: 16,
         borderRadius: 20,
         gap: 10,
@@ -484,12 +480,12 @@ const createStyles = (Colors: any) => StyleSheet.create({
         fontWeight: '500',
     },
     itemBreakdownBox: {
-        backgroundColor: Colors.card,
+        backgroundColor: '#fff',
         borderRadius: 14,
         padding: 12,
         marginVertical: 4,
         borderWidth: 1,
-        borderColor: Colors.border,
+        borderColor: '#E2E8F0',
     },
     itemBreakdownRow: {
         flexDirection: 'row',
@@ -504,7 +500,7 @@ const createStyles = (Colors: any) => StyleSheet.create({
     },
     breakdownSubtext: {
         fontSize: 12,
-        color: Colors.textSecondary,
+        color: '#64748B',
         fontWeight: '600',
     },
     actionRow: {
@@ -527,10 +523,10 @@ const createStyles = (Colors: any) => StyleSheet.create({
         fontSize: 14,
     },
     cancelBtn: {
-        backgroundColor: Colors.border,
+        backgroundColor: '#F1F5F9',
     },
     cancelBtnText: {
-        color: Colors.textSecondary,
+        color: '#64748B',
         fontWeight: '800',
         fontSize: 14,
     },
@@ -566,7 +562,7 @@ const createStyles = (Colors: any) => StyleSheet.create({
         padding: 24,
     },
     notificationPopup: {
-        backgroundColor: Colors.card,
+        backgroundColor: '#fff',
         width: '100%',
         borderRadius: 40,
         overflow: 'hidden',
@@ -606,7 +602,7 @@ const createStyles = (Colors: any) => StyleSheet.create({
         padding: 30,
         alignItems: 'center',
         marginTop: -30,
-        backgroundColor: Colors.card,
+        backgroundColor: '#fff',
         borderTopLeftRadius: 40,
         borderTopRightRadius: 40,
     },
@@ -619,7 +615,7 @@ const createStyles = (Colors: any) => StyleSheet.create({
     },
     popupDataBox: {
         width: '100%',
-        backgroundColor: Colors.card,
+        backgroundColor: '#F8FAFC',
         padding: 20,
         borderRadius: 24,
         gap: 12,
@@ -638,7 +634,7 @@ const createStyles = (Colors: any) => StyleSheet.create({
     popupPriceLabel: {
         fontSize: 12,
         fontWeight: '800',
-        color: Colors.textSecondary,
+        color: '#94A3B8',
         letterSpacing: 1,
     },
     popupPrice: {
@@ -660,7 +656,7 @@ const createStyles = (Colors: any) => StyleSheet.create({
         overflow: 'hidden',
     },
     popupConfirm: {
-        backgroundColor: Colors.success,
+        backgroundColor: '#10B981',
     },
     actionGradient: {
         flex: 1,
@@ -673,12 +669,12 @@ const createStyles = (Colors: any) => StyleSheet.create({
         fontSize: 16,
     },
     popupCancel: {
-        backgroundColor: Colors.border,
+        backgroundColor: '#F1F5F9',
         justifyContent: 'center',
         alignItems: 'center',
     },
     popupCancelText: {
-        color: Colors.textSecondary,
+        color: '#64748B',
         fontWeight: '900',
         fontSize: 16,
     },

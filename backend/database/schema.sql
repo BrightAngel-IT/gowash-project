@@ -14,8 +14,6 @@ CREATE TABLE IF NOT EXISTS laundries (
     image_url TEXT,
     username VARCHAR(100) UNIQUE,
     password VARCHAR(255),
-    lat DECIMAL(9, 6),
-    lng DECIMAL(9, 6),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
@@ -52,7 +50,7 @@ CREATE TABLE IF NOT EXISTS services (
 CREATE TABLE IF NOT EXISTS orders (
     id SERIAL PRIMARY KEY,
     user_id INT NOT NULL,
-    service_id INT NOT NULL,
+    service_id INT,
     laundry_id INT,
     items INT NOT NULL,
     total_price DECIMAL(10, 2) NOT NULL,
@@ -63,8 +61,6 @@ CREATE TABLE IF NOT EXISTS orders (
     address TEXT NOT NULL,
     customer_name VARCHAR(255),
     notes TEXT,
-    customer_lat DECIMAL(9, 6),
-    customer_lng DECIMAL(9, 6),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
@@ -94,7 +90,6 @@ CREATE TABLE IF NOT EXISTS order_items (
     quantity INT NOT NULL,
     price_per_unit DECIMAL(10, 2) NOT NULL,
     total_price DECIMAL(10, 2) NOT NULL,
-    pieces INT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE CASCADE,
     FOREIGN KEY (service_id) REFERENCES services(id) ON DELETE RESTRICT
@@ -110,10 +105,10 @@ INSERT INTO users (name, email, password, phone, role) VALUES
 ON CONFLICT (email) DO NOTHING;
 
 -- Insert Sample Laundries
-INSERT INTO laundries (name, address, phone, email, manager_name, opening_time, closing_time, image_url, username, password, lat, lng) VALUES
-('GoWash Central', '123 Main St, Colombo', '0112233445', 'central@gowash.com', 'Amal Perera', '08:00 AM', '08:00 PM', 'https://images.unsplash.com/photo-1517677208171-0bc6725a3e60?q=80&w=2070&auto=format&fit=crop', 'central', 'admin123', 6.9147, 79.8778),
-('GoWash Kandy', '45 Hill Rd, Kandy', '0812233445', 'kandy@gowash.com', 'Kasun Silva', '09:00 AM', '07:00 PM', 'https://images.unsplash.com/photo-1545173168-9f1947eebb9f?q=80&w=2071&auto=format&fit=crop', 'kandy', 'admin123', 7.2906, 80.6337),
-('GoWash Galle', '78 Beach Rd, Galle', '0912233445', 'galle@gowash.com', 'Samith Fernado', '08:30 AM', '07:30 PM', 'https://images.unsplash.com/photo-1518131340027-e98218933b93?q=80&w=2071&auto=format&fit=crop', 'galle', 'admin123', 6.0367, 80.2170);
+INSERT INTO laundries (name, address, phone, email, manager_name, opening_time, closing_time, image_url) VALUES
+('GoWash Central', '123 Main St, Colombo', '0112233445', 'central@gowash.com', 'Amal Perera', '08:00 AM', '08:00 PM', 'https://images.unsplash.com/photo-1517677208171-0bc6725a3e60?q=80&w=2070&auto=format&fit=crop'),
+('GoWash Kandy', '45 Hill Rd, Kandy', '0812233445', 'kandy@gowash.com', 'Kasun Silva', '09:00 AM', '07:00 PM', 'https://images.unsplash.com/photo-1545173168-9f1947eebb9f?q=80&w=2071&auto=format&fit=crop'),
+('GoWash Galle', '78 Beach Rd, Galle', '0912233445', 'galle@gowash.com', 'Samith Fernado', '08:30 AM', '07:30 PM', 'https://images.unsplash.com/photo-1518131340027-e98218933b93?q=80&w=2071&auto=format&fit=crop');
 
 INSERT INTO users (name, email, password, phone, role) VALUES
 ('John Doe', 'user@gowash.com', 'password', '1234567890', 'customer')
@@ -165,7 +160,7 @@ CREATE TABLE IF NOT EXISTS drivers (
     account_holder_name VARCHAR(255),
     account_number VARCHAR(50),
     -- Operational status
-    status VARCHAR(20) DEFAULT 'offline' CHECK (status IN ('online', 'offline', 'busy', 'pending_approval', 'active', 'rejected')),
+    status VARCHAR(20) DEFAULT 'offline' CHECK (status IN ('online', 'offline', 'busy', 'pending_approval')),
     current_lat DECIMAL(9, 6),
     current_lng DECIMAL(9, 6),
     rating DECIMAL(3, 2) DEFAULT 5.00,
@@ -214,66 +209,3 @@ CREATE TABLE IF NOT EXISTS laundry_time_slots (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (laundry_id) REFERENCES laundries(id) ON DELETE CASCADE
 );
-
--- Master Items Table
-CREATE TABLE IF NOT EXISTS master_items (
-    id VARCHAR(100) PRIMARY KEY,
-    name VARCHAR(255) NOT NULL,
-    icon VARCHAR(100),
-    category VARCHAR(100),
-    base_price DECIMAL(10, 2)
-);
-
--- Laundry Item Prices Table
-CREATE TABLE IF NOT EXISTS laundry_item_prices (
-    id SERIAL PRIMARY KEY,
-    laundry_id INT NOT NULL,
-    item_id VARCHAR(100) NOT NULL,
-    price DECIMAL(10, 2) NOT NULL, 
-    unit VARCHAR(50) DEFAULT 'item',
-    FOREIGN KEY (laundry_id) REFERENCES laundries(id) ON DELETE CASCADE,
-    FOREIGN KEY (item_id) REFERENCES master_items(id) ON DELETE CASCADE,
-    UNIQUE(laundry_id, item_id)
-);
-
--- Laundry Service Item Prices Table
-CREATE TABLE IF NOT EXISTS laundry_service_item_prices (
-    id SERIAL PRIMARY KEY,
-    laundry_id INT NOT NULL,
-    service_id INT NOT NULL,
-    item_id VARCHAR(100) NOT NULL,
-    price DECIMAL(10, 2) NOT NULL,
-    unit VARCHAR(50) DEFAULT 'item',
-    FOREIGN KEY (laundry_id) REFERENCES laundries(id) ON DELETE CASCADE,
-    FOREIGN KEY (service_id) REFERENCES services(id) ON DELETE CASCADE,
-    FOREIGN KEY (item_id) REFERENCES master_items(id) ON DELETE CASCADE,
-    UNIQUE(laundry_id, service_id, item_id)
-);
-
--- Insert Master Items
-INSERT INTO master_items (id, name, icon, category, base_price) VALUES
-('shirt', 'Shirt', 'shirt-outline', 'Tops', 150.00),
-('tshirt', 'T-Shirt', 'shirt', 'Tops', 100.00),
-('blouse', 'Blouse', 'woman-outline', 'Tops', 150.00),
-('trouser', 'Trouser', 'body-outline', 'Bottoms', 150.00),
-('jeans', 'Jeans', 'body', 'Bottoms', 200.00),
-('shorts', 'Shorts', 'browsers-outline', 'Bottoms', 100.00),
-('saree', 'Saree', 'color-palette-outline', 'Dresses', 500.00),
-('dress', 'Dress', 'woman-outline', 'Dresses', 350.00),
-('suit', 'Suit (2Pcs)', 'briefcase-outline', 'Formal', 800.00),
-('jacket', 'Jacket', 'snow-outline', 'Formal', 600.00),
-('bedsheet', 'Bed Sheet', 'bed-outline', 'Household', 300.00),
-('towel', 'Towel', 'layers-outline', 'Household', 150.00),
-('curtain', 'Curtain (m)', 'browsers-outline', 'Premium', 400.00),
-('rug', 'Rug/Carpet', 'grid-outline', 'Premium', 1200.00),
-('shoes', 'Shoes', 'footsteps-outline', 'Premium', 1500.00),
-('suit_leather', 'Leather Jacket', 'layers-outline', 'Premium', 3000.00),
-('underwear', 'Underwear', 'shield-outline', 'Others', 50.00),
-('socks', 'Socks', 'footsteps-outline', 'Others', 50.00)
-ON CONFLICT (id) DO UPDATE SET 
-    name = EXCLUDED.name, 
-    icon = EXCLUDED.icon, 
-    category = EXCLUDED.category, 
-    base_price = EXCLUDED.base_price;
-
-  

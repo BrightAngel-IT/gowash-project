@@ -4,15 +4,15 @@ import { Platform } from 'react-native';
 
 import Constants from 'expo-constants';
 
-// For physical devices on Wi-Fi, we dynamically detect your machine's local IP from the Expo manifest.
-// This ensures that the connection survives IP changes when you switch networks.
+// Use production URL if not in development
+const isDev = __DEV__;
 const debuggerHost = Constants.expoConfig?.hostUri;
 const ip = debuggerHost ? debuggerHost.split(':')[0] : 'localhost';
 
-export const SOCKET_URL = __DEV__
-    ? `http://${ip}:5005`
-    : 'https://gowashbackend.nilmaalliance.com';
+export const SOCKET_URL = `https://gowashbackend.nilmaalliance.com`;
+
 const BASE_URL = `${SOCKET_URL}/api`;
+
 
 const api = axios.create({
     baseURL: BASE_URL,
@@ -41,11 +41,9 @@ export const getToken = async () => {
 export const driverApi = {
     getDashboard: (driverId: string) => api.get(`/drivers/${driverId}/dashboard`),
     getProfile: (driverId: string) => api.get(`/drivers/${driverId}/profile`),
-    getPayoutHistory: (driverId: string) => api.get(`/drivers/${driverId}/payouts`),
     getHistory: (driverId: string) => api.get(`/drivers/${driverId}/history`),
     getAvailableJobs: () => api.get('/drivers/jobs/available'),
     updateStatus: (driverId: string, status: string) => api.patch(`/drivers/${driverId}/status`, { status }),
-    updatePushToken: (driverId: string, push_token: string) => api.patch(`/drivers/${driverId}/push-token`, { push_token }),
     acceptJob: (driverId: string, orderId: string) => api.post(`/drivers/${driverId}/accept-job`, { orderId }),
     updateRideStatus: (driverId: string, assignmentId: string, status: string) =>
         api.patch(`/drivers/${driverId}/ride-assignments/${assignmentId}/status`, { status }),

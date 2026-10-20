@@ -925,3 +925,540 @@ h4,
     padding: 16px;
   }
 }
+/* ==========================================================================
+   Uber / PickMe Level Super Admin Dispatch & Investigation Command Center
+   ========================================================================== */
+
+.modal-content.investigation-modal {
+  max-width: 860px;
+  width: 95%;
+  border-radius: 24px;
+}
+
+/* Search bar interactive styling */
+.search-box-active {
+  position: relative;
+  display: flex;
+  align-items: center;
+  background: white;
+  border: 1.5px solid #cbd5e1;
+  border-radius: 12px;
+  padding: 8px 14px;
+  gap: 8px;
+  transition: all 0.2s ease;
+  width: 320px;
+}
+
+.search-box-active:focus-within {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.12);
+}
+
+.search-box-active input {
+  border: none;
+  outline: none;
+  width: 100%;
+  font-size: 13.5px;
+  color: #0f172a;
+}
+
+.clear-search-btn {
+  background: transparent;
+  border: none;
+  color: #94a3b8;
+  cursor: pointer;
+  padding: 2px;
+  display: flex;
+  align-items: center;
+}
+
+.clear-search-btn:hover {
+  color: #0f172a;
+}
+
+.search-active-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  color: #1e40af;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 20px;
+  margin-left: 8px;
+}
+
+/* Escalation & Risk Warning Banner */
+.escalation-alert-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 16px 20px;
+  background: #fffbeb;
+  border: 1.5px solid #fde68a;
+  border-radius: 16px;
+  color: #92400e;
+  animation: pulseAmber 2.5s infinite;
+}
+
+@keyframes pulseAmber {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.2); }
+  50% { box-shadow: 0 0 0 6px rgba(245, 158, 11, 0.15); }
+}
+
+.escalation-alert-banner.info {
+  background: #eff6ff;
+  border-color: #bfdbfe;
+  color: #1e40af;
+  animation: none;
+}
+
+.escalation-icon-box {
+  width: 36px;
+  height: 36px;
+  background: #fef3c7;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #d97706;
+  flex-shrink: 0;
+}
+
+.escalation-alert-banner.info .escalation-icon-box {
+  background: #dbeafe;
+  color: #2563eb;
+}
+
+.escalation-content {
+  flex: 1;
+}
+
+.escalation-content h4 {
+  font-size: 14px;
+  font-weight: 700;
+  margin: 0 0 2px 0;
+}
+
+.escalation-content p {
+  font-size: 13px;
+  margin: 0;
+  line-height: 1.45;
+  color: #78350f;
+}
+
+.escalation-alert-banner.info .escalation-content p {
+  color: #1e3a8a;
+}
+
+.escalation-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #d97706;
+  color: white;
+  padding: 8px 14px;
+  border-radius: 10px;
+  font-size: 12.5px;
+  font-weight: 700;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 10px rgba(217, 119, 6, 0.3);
+}
+
+.escalation-btn:hover {
+  background: #b45309;
+  transform: translateY(-1px);
+}
+
+/* Tri-Party Logistics Grid */
+.tri-party-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+
+.logistics-party-card {
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 18px;
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);
+  position: relative;
+  transition: all 0.2s ease;
+}
+
+.logistics-party-card:hover {
+  border-color: #cbd5e1;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.05);
+}
+
+.party-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+  padding-bottom: 10px;
+  border-bottom: 1px dashed #f1f5f9;
+}
+
+.party-tag {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #64748b;
+}
+
+.party-badge-pill {
+  font-size: 10.5px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 20px;
+}
+
+.party-badge-pill.driver {
+  background: #eff6ff;
+  color: #2563eb;
+  border: 1px solid #bfdbfe;
+}
+
+.party-badge-pill.laundry {
+  background: #f5f3ff;
+  color: #7c3aed;
+  border: 1px solid #ddd6fe;
+}
+
+.party-badge-pill.customer {
+  background: #ecfdf5;
+  color: #059669;
+  border: 1px solid #a7f3d0;
+}
+
+.party-avatar-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.party-avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  font-weight: 700;
+  color: white;
+  flex-shrink: 0;
+}
+
+.party-avatar.driver-av {
+  background: linear-gradient(135deg, #2563eb, #1d4ed8);
+}
+
+.party-avatar.laundry-av {
+  background: linear-gradient(135deg, #7c3aed, #6d28d9);
+}
+
+.party-avatar.customer-av {
+  background: linear-gradient(135deg, #10b981, #059669);
+}
+
+.party-names h4 {
+  font-family: 'Outfit', sans-serif;
+  font-size: 15px;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0 0 2px 0;
+}
+
+.party-subtext {
+  font-size: 12px;
+  color: #64748b;
+  margin: 0;
+}
+
+.party-meta-list {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  margin-bottom: 16px;
+  font-size: 12.5px;
+  color: #334155;
+}
+
+.party-meta-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.party-meta-row svg {
+  color: #94a3b8;
+  flex-shrink: 0;
+}
+
+.party-call-actions {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 8px;
+}
+
+.btn-party-call {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  background: #f8fafc;
+  border: 1px solid #cbd5e1;
+  color: #0f172a;
+  padding: 8px 12px;
+  border-radius: 10px;
+  font-size: 12.5px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+
+.btn-party-call:hover {
+  background: #2563eb;
+  border-color: #2563eb;
+  color: white;
+}
+
+.btn-party-copy {
+  background: #f8fafc;
+  border: 1px solid #cbd5e1;
+  color: #64748b;
+  padding: 8px 10px;
+  border-radius: 10px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.btn-party-copy:hover {
+  background: #e2e8f0;
+  color: #0f172a;
+}
+
+/* Uber Style Order Journey Stepper */
+.uber-journey-tracker {
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 18px;
+  padding: 20px;
+}
+
+.journey-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 18px;
+}
+
+.journey-header h4 {
+  font-family: 'Outfit', sans-serif;
+  font-size: 14.5px;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0;
+}
+
+.journey-stepper-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  position: relative;
+}
+
+.journey-step-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  width: 14%;
+  position: relative;
+  z-index: 2;
+}
+
+.step-node-icon {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: #f1f5f9;
+  border: 2px solid #cbd5e1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #94a3b8;
+  margin-bottom: 8px;
+  transition: all 0.3s;
+}
+
+.journey-step-item.completed .step-node-icon {
+  background: #10b981;
+  border-color: #10b981;
+  color: white;
+}
+
+.journey-step-item.active .step-node-icon {
+  background: #2563eb;
+  border-color: #2563eb;
+  color: white;
+  box-shadow: 0 0 0 5px rgba(37, 99, 235, 0.2);
+  animation: pulseNode 2s infinite;
+}
+
+@keyframes pulseNode {
+  0%, 100% { box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.3); }
+  50% { box-shadow: 0 0 0 7px rgba(37, 99, 235, 0.1); }
+}
+
+.step-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: #64748b;
+  line-height: 1.25;
+}
+
+.journey-step-item.active .step-label {
+  color: #2563eb;
+  font-weight: 700;
+}
+
+.journey-step-item.completed .step-label {
+  color: #0f172a;
+}
+
+/* Connecting bar behind nodes */
+.journey-track-line {
+  position: absolute;
+  top: 17px;
+  left: 5%;
+  right: 5%;
+  height: 3px;
+  background: #e2e8f0;
+  z-index: 1;
+}
+
+.journey-track-progress {
+  height: 100%;
+  background: linear-gradient(90deg, #10b981, #2563eb);
+  transition: width 0.4s ease;
+}
+
+/* Table Enhancements */
+.driver-pill-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.driver-pill-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 600;
+  color: #0f172a;
+  font-size: 13.5px;
+}
+
+.driver-plate-tag {
+  display: inline-block;
+  font-size: 11px;
+  font-family: monospace;
+  font-weight: 700;
+  background: #f1f5f9;
+  border: 1px solid #cbd5e1;
+  padding: 1px 6px;
+  border-radius: 4px;
+  color: #475569;
+}
+
+.driver-status-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10.5px;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 12px;
+  margin-top: 2px;
+  width: fit-content;
+}
+
+.driver-status-chip.picked_up {
+  background: #fef3c7;
+  color: #b45309;
+}
+
+.driver-status-chip.delivered {
+  background: #dcfce7;
+  color: #15803d;
+}
+
+.driver-status-chip.assigned, .driver-status-chip.accepted {
+  background: #e0f2fe;
+  color: #0369a1;
+}
+
+.driver-status-chip.unassigned {
+  background: #f1f5f9;
+  color: #64748b;
+  border: 1px dashed #cbd5e1;
+}
+
+.btn-track-investigate {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #2563eb;
+  color: white;
+  border: none;
+  padding: 7px 12px;
+  border-radius: 9px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  margin-left: 8px;
+  box-shadow: 0 2px 6px rgba(37, 99, 235, 0.25);
+  transition: all 0.2s ease;
+}
+
+.btn-track-investigate:hover {
+  background: #1d4ed8;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 10px rgba(37, 99, 235, 0.35);
+}
+
+@media (max-width: 900px) {
+  .tri-party-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .journey-stepper-row {
+    overflow-x: auto;
+    justify-content: flex-start;
+    gap: 16px;
+    padding-bottom: 10px;
+  }
+
+  .journey-step-item {
+    min-width: 80px;
+  }
+}

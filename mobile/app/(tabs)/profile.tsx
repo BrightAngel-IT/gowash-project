@@ -1,22 +1,16 @@
 import React from 'react';
-import { useThemeColors } from '@/hooks/useThemeColors';
-import { View, Text, StyleSheet, Image, TouchableOpacity, ScrollView, Switch, Alert } from 'react-native';
+import { View, Text, StyleSheet, Image, TouchableOpacity, ScrollView, Switch } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { Typography, Spacing } from '@/constants/theme';
+import { Colors, Typography, Spacing } from '@/constants/theme';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 import { getUser, logout as apiLogout } from '@/constants/api';
 
 export default function ProfileScreen() {
-  const Colors = useThemeColors();
-  const styles = createStyles(Colors);
-
     const router = useRouter();
     const [user, setUser] = React.useState<any>(null);
     const [stats, setStats] = React.useState({ orders: 0, spent: 0 });
-    const [notificationsEnabled, setNotificationsEnabled] = React.useState(true);
-    const [darkModeEnabled, setDarkModeEnabled] = React.useState(false);
 
     React.useEffect(() => {
         loadProfile();
@@ -35,41 +29,28 @@ export default function ProfileScreen() {
         router.replace('/(auth)/welcome');
     };
 
-    const handleFeature = (featureName: string) => {
-        Alert.alert('Coming Soon', `${featureName} is currently under development.`);
-    };
-
-    type MenuItem = {
-        icon: string;
-        label: string;
-        action: () => void;
-        type?: string;
-        value?: boolean | string;
-        color?: string;
-    };
-
-    const menuGroups: { title: string, items: MenuItem[] }[] = [
+    const menuGroups = [
         {
             title: 'Account',
             items: [
-                { icon: 'person-outline', label: 'Edit Profile', action: () => handleFeature('Edit Profile') },
-                { icon: 'location-outline', label: 'Saved Addresses', action: () => handleFeature('Saved Addresses') },
-                { icon: 'wallet-outline', label: 'Payment Methods', action: () => handleFeature('Payment Methods') },
+                { icon: 'person-outline', label: 'Edit Profile' },
+                { icon: 'location-outline', label: 'Saved Addresses' },
+                { icon: 'wallet-outline', label: 'Payment Methods' },
             ]
         },
         {
             title: 'Preferences',
             items: [
-                { icon: 'notifications-outline', label: 'Notifications', type: 'switch', value: notificationsEnabled, action: () => setNotificationsEnabled(!notificationsEnabled) },
-                { icon: 'moon-outline', label: 'Dark Mode', type: 'switch', value: darkModeEnabled, action: () => setDarkModeEnabled(!darkModeEnabled) },
-                { icon: 'language-outline', label: 'Language', value: 'English', action: () => handleFeature('Language Selection') },
+                { icon: 'notifications-outline', label: 'Notifications', type: 'switch', value: true },
+                { icon: 'moon-outline', label: 'Dark Mode', type: 'switch', value: false },
+                { icon: 'language-outline', label: 'Language', value: 'English' },
             ]
         },
         {
             title: 'Support',
             items: [
-                { icon: 'help-circle-outline', label: 'Help Center', action: () => handleFeature('Help Center') },
-                { icon: 'document-text-outline', label: 'Privacy Policy', action: () => handleFeature('Privacy Policy') },
+                { icon: 'help-circle-outline', label: 'Help Center' },
+                { icon: 'document-text-outline', label: 'Privacy Policy' },
                 { icon: 'log-out-outline', label: 'Log Out', color: Colors.error, action: handleLogout },
             ]
         }
@@ -130,7 +111,6 @@ export default function ProfileScreen() {
                                         {item.type === 'switch' ? (
                                             <Switch
                                                 value={item.value as boolean}
-                                                onValueChange={item.action}
                                                 trackColor={{ false: Colors.border, true: Colors.primary }}
                                                 thumbColor={'#fff'}
                                             />
@@ -156,10 +136,10 @@ export default function ProfileScreen() {
     );
 }
 
-const createStyles = (Colors: any) => StyleSheet.create({
+const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: Colors.background,
+        backgroundColor: '#F7F9FC',
     },
     scrollContent: {
         paddingBottom: 40,
@@ -167,7 +147,7 @@ const createStyles = (Colors: any) => StyleSheet.create({
     header: {
         alignItems: 'center',
         padding: 30,
-        backgroundColor: Colors.card,
+        backgroundColor: '#fff',
         borderBottomLeftRadius: 32,
         borderBottomRightRadius: 32,
         marginBottom: 24,
@@ -247,7 +227,7 @@ const createStyles = (Colors: any) => StyleSheet.create({
         letterSpacing: 1,
     },
     sectionContent: {
-        backgroundColor: Colors.card,
+        backgroundColor: '#fff',
         borderRadius: 20,
         paddingHorizontal: 20,
         shadowColor: Colors.text,

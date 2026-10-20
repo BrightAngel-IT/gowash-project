@@ -19,22 +19,15 @@ export const Colors = {
   }
 };
 
-export const DarkColors = {
-  primary: '#5C7CFA',
-  secondary: '#4b72c9',
-  accent: '#FF6B6B',
-  background: '#121212',
-  card: '#1E1E1E',
-  text: '#FFFFFF',
-  textSecondary: '#A0A0A5',
-  border: '#2C2C2C',
-  success: '#32D74B',
-  warning: '#FFD60A',
-  error: '#FF453A',
-  gradients: {
-    primary: ['#4b72c9', '#5C7CFA', '#748ffc'] as const,
-    card: ['#2A2A2A', '#1E1E1E'] as const,
-    accent: ['#FF8E53', '#FF6B6B'] as const,
+export const Themes = {
+  light: Colors,
+  dark: {
+    ...Colors,
+    background: '#121212',
+    card: '#1E1E1E',
+    text: '#ECEDEE',
+    textSecondary: '#9BA1A6',
+    border: '#2C2C2C',
   }
 };
 
