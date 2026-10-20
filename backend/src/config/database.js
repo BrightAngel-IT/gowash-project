@@ -68,12 +68,14 @@ const dbSsl = hasValidDatabaseUrl
 let urlHost = null;
 let urlUser = null;
 let urlDb = null;
+let urlPort = null;
 if (hasValidDatabaseUrl) {
     try {
         const parsed = new URL(rawDbUrl);
         urlHost = parsed.hostname;
         urlUser = parsed.username;
         urlDb = parsed.pathname;
+        urlPort = parsed.port || '5432';
     } catch (e) {
         urlHost = 'unparseable';
     }
@@ -82,6 +84,7 @@ if (hasValidDatabaseUrl) {
 export const dbConfigSummary = {
     usingUrl: hasValidDatabaseUrl,
     urlHost,
+    urlPort,
     urlUser,
     urlDb,
     urlLength: rawDbUrl.length,
@@ -90,7 +93,7 @@ export const dbConfigSummary = {
     host: hasValidDatabaseUrl ? urlHost : dbHost,
     user: hasValidDatabaseUrl ? urlUser : dbUser,
     database: hasValidDatabaseUrl ? urlDb : dbName,
-    port: hasValidDatabaseUrl ? 'from_url' : dbPort,
+    port: hasValidDatabaseUrl ? urlPort : dbPort,
     hasPassword: hasValidDatabaseUrl ? true : Boolean(dbPass),
     ssl: Boolean(dbSsl),
     loadedEnvPaths,

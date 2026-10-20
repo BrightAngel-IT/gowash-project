@@ -39,20 +39,25 @@ router.get('/debug-db', async (req, res) => {
         };
     }
 
-    res.json({
-        status: 'ok',
+    const isConnected = dbStatus === 'connected';
+
+    res.status(isConnected ? 200 : 500).json({
+        databaseConnected: isConnected,
+        databaseStatus: isConnected ? 'CONNECTED' : 'DISCONNECTED (ERROR)',
+        databaseError: dbError ? dbError.message : null,
+        troubleshooting: isConnected ? 'Database is healthy and ready.' : 'Supabase rejected the connection: either the project ref is paused, or host/region/password in DATABASE_URL is wrong. Copy the fresh Connection Pooling URI from Supabase Dashboard > Settings > Database > Connect and update DATABASE_URL in cPanel.',
+        database: {
+            status: dbStatus,
+            config: dbConfigSummary,
+            error: dbError,
+            sample: sampleResult
+        },
         process: {
             uptimeSeconds: Math.floor(process.uptime()),
             startedAt: new Date(Date.now() - process.uptime() * 1000).toISOString(),
             pid: process.pid,
             nodeVersion: process.version,
             cwd: process.cwd()
-        },
-        database: {
-            status: dbStatus,
-            config: dbConfigSummary,
-            error: dbError,
-            sample: sampleResult
         }
     });
 });
